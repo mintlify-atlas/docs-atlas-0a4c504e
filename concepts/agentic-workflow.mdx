@@ -1,0 +1,310 @@
+---
+title: "Agentic Workflow"
+description: "Understanding Avante's autonomous AI agents and tool execution capabilities"
+---
+
+## What is Agentic Mode?
+
+Agentic mode transforms Avante from a simple chat interface into an autonomous coding agent that can:
+
+- **Execute tools** like bash commands, file operations, and code search
+- **Make decisions** about which tools to use and when
+- **Generate code** and apply changes automatically
+- **Iterate on solutions** without constant user prompting
+
+This is the default mode in Avante.nvim and represents the future of AI-assisted coding.
+
+## Agentic vs Legacy Mode
+
+<Tabs>
+  <Tab title="Agentic Mode">
+    **Autonomous Agent Workflow**
+    
+    1. You ask a question or describe a task
+    2. Agent analyzes the request and available tools
+    3. Agent executes tools (read files, search code, run commands)
+    4. Agent generates a response based on gathered context
+    5. Agent can apply changes directly to your code
+    
+    ```lua
+    require('avante').setup({
+      mode = "agentic",  -- Default
+    })
+    ```
+    
+    **Pros:**
+    - More powerful and context-aware
+    - Can gather information autonomously
+    - Better for complex multi-step tasks
+    - Follows modern AI agent patterns
+  </Tab>
+  
+  <Tab title="Legacy Mode">
+    **Traditional Chat Workflow**
+    
+    1. You ask a question with all context provided
+    2. AI generates a response based only on your input
+    3. You manually review and apply suggestions
+    4. No autonomous tool execution
+    
+    ```lua
+    require('avante').setup({
+      mode = "legacy",
+    })
+    ```
+    
+    **Pros:**
+    - Simpler and more predictable
+    - No unexpected tool execution
+    - Lower token usage
+    - Faster for simple queries
+  </Tab>
+</Tabs>
+
+## Available Tools
+
+In agentic mode, the AI can use these tools autonomously:
+
+### File Operations
+
+<Accordion title="read_file - Read file contents">
+  Reads the contents of a file from your project.
+  
+  ```json
+  {
+    "tool": "read_file",
+    "parameters": {
+      "path": "src/main.lua"
+    }
+  }
+  ```
+</Accordion>
+
+<Accordion title="write_to_file - Create or overwrite files">
+  Creates a new file or overwrites an existing one.
+  
+  ```json
+  {
+    "tool": "write_to_file",
+    "parameters": {
+      "path": "src/new_module.lua",
+      "content": "-- New file content"
+    }
+  }
+  ```
+</Accordion>
+
+<Accordion title="edit_file - Apply targeted edits">
+  Makes surgical edits to specific parts of a file.
+  
+  ```json
+  {
+    "tool": "edit_file",
+    "parameters": {
+      "path": "src/config.lua",
+      "old_str": "timeout = 30000",
+      "new_str": "timeout = 60000"
+    }
+  }
+  ```
+</Accordion>
+
+### Code Search & Navigation
+
+<Accordion title="grep - Search code contents">
+  Searches for patterns in your codebase.
+  
+  ```json
+  {
+    "tool": "grep",
+    "parameters": {
+      "pattern": "function setup",
+      "path": "lua/"
+    }
+  }
+  ```
+</Accordion>
+
+<Accordion title="glob - Find files by pattern">
+  Finds files matching a glob pattern.
+  
+  ```json
+  {
+    "tool": "glob",
+    "parameters": {
+      "pattern": "**/*.lua"
+    }
+  }
+  ```
+</Accordion>
+
+### Execution & Analysis
+
+<Accordion title="bash - Execute shell commands">
+  Runs bash commands to gather information or make changes.
+  
+  ```json
+  {
+    "tool": "bash",
+    "parameters": {
+      "command": "git status"
+    }
+  }
+  ```
+  
+  <Warning>
+    The agent will ask for permission before running potentially destructive commands.
+  </Warning>
+</Accordion>
+
+<Accordion title="get_diagnostics - Fetch Neovim diagnostics">
+  Retrieves LSP diagnostics for the current file or project.
+  
+  ```json
+  {
+    "tool": "get_diagnostics",
+    "parameters": {}
+  }
+  ```
+</Accordion>
+
+## Tool Permissions
+
+Control which tools the agent can use:
+
+### Auto-Approve All Tools
+
+```lua
+require('avante').setup({
+  behaviour = {
+    auto_approve_tool_permissions = true,  -- Default
+  },
+})
+```
+
+### Prompt for All Tools
+
+```lua
+require('avante').setup({
+  behaviour = {
+    auto_approve_tool_permissions = false,
+  },
+})
+```
+
+### Auto-Approve Specific Tools
+
+```lua
+require('avante').setup({
+  behaviour = {
+    auto_approve_tool_permissions = { "bash", "str_replace" },
+  },
+})
+```
+
+## How Agentic Workflows Work
+
+Here's a typical agentic workflow:
+
+<Steps>
+  <Step title="User provides a high-level request">
+    ```vim
+    :AvanteAsk Add error handling to all API calls
+    ```
+  </Step>
+  
+  <Step title="Agent analyzes the codebase">
+    The agent uses `grep` to find all API call locations:
+    
+    ```json
+    {"tool": "grep", "parameters": {"pattern": "api\\.call|fetch|axios"}}
+    ```
+  </Step>
+  
+  <Step title="Agent reads relevant files">
+    For each file found, the agent uses `read_file` to examine the code:
+    
+    ```json
+    {"tool": "read_file", "parameters": {"path": "src/api/client.lua"}}
+    ```
+  </Step>
+  
+  <Step title="Agent generates and applies fixes">
+    The agent uses `str_replace` or `edit_file` to add error handling:
+    
+    ```json
+    {
+      "tool": "str_replace",
+      "parameters": {
+        "path": "src/api/client.lua",
+        "old_str": "local result = api.call()",
+        "new_str": "local ok, result = pcall(api.call)\nif not ok then\n  error('API call failed: ' .. result)\nend"
+      }
+    }
+    ```
+  </Step>
+  
+  <Step title="Agent reports results">
+    The agent summarizes what was changed and asks if you want to apply the changes.
+  </Step>
+</Steps>
+
+## Agent Client Protocol (ACP)
+
+Avante also supports external agentic tools through the [Agent Client Protocol](/features/acp-support):
+
+- **Gemini CLI** - Google's Gemini agent
+- **Claude Code** - Anthropic's coding agent  
+- **Goose** - Open source agent framework
+- **Codex** - OpenAI's coding agent
+
+These agents run as separate processes and communicate with Avante through a standardized protocol.
+
+## Best Practices
+
+<Tip>
+  **Be specific but high-level**: Give the agent clear goals, but let it figure out how to achieve them.
+  
+  ✅ Good: "Refactor the authentication system to use async/await"
+  
+  ❌ Bad: "Read auth.lua, then change line 45 to use async"
+</Tip>
+
+<Tip>
+  **Review before applying**: Always review agent-generated changes before applying them, especially for critical code.
+</Tip>
+
+<Tip>
+  **Use project instructions**: Add an `avante.md` file to give the agent context about your project's conventions and requirements.
+</Tip>
+
+## Configuration
+
+Fine-tune agentic behavior:
+
+```lua
+require('avante').setup({
+  mode = "agentic",
+  behaviour = {
+    auto_approve_tool_permissions = true,
+    acp_follow_agent_locations = true,  -- Auto-open files edited by ACP agents
+  },
+})
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="ACP Support" icon="handshake" href="/features/acp-support">
+    Use external AI agents with Avante
+  </Card>
+  <Card title="Available Tools" icon="wrench" href="/advanced/tools">
+    Complete tool reference
+  </Card>
+  <Card title="Project Instructions" icon="file-lines" href="/configuration/project-instructions">
+    Guide the agent with project context
+  </Card>
+  <Card title="Tool Permissions" icon="shield" href="/configuration/behavior">
+    Configure tool security
+  </Card>
+</CardGroup>

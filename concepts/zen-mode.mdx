@@ -1,0 +1,339 @@
+---
+title: "Zen Mode"
+description: "Terminal-based Vibe Coding experience that combines CLI convenience with full Neovim power"
+---
+
+## What is Zen Mode?
+
+Zen Mode transforms Avante.nvim into a terminal-based coding agent CLI that looks and feels like tools like Claude Code or Gemini CLI, but runs entirely within Neovim. This gives you the best of both worlds:
+
+- **CLI-like experience** for quick AI interactions
+- **Full Neovim power** underneath for editing and navigation
+- **Vim muscle memory** works perfectly
+- **Rich plugin ecosystem** available
+- **No context switching** between tools
+
+## Why Zen Mode?
+
+Modern coding agent CLIs have popularized the "Vibe Coding" workflow, but they have fundamental limitations:
+
+<CardGroup cols={2}>
+  <Card title="Terminal UX Problem" icon="terminal">
+    CLI tools struggle with editing multi-line prompts and code. They can't match 50+ years of terminal editor innovation.
+  </Card>
+  <Card title="Context Switching" icon="arrows-left-right">
+    Agent CLIs often need to jump to external editors to view or modify code, breaking your flow.
+  </Card>
+  <Card title="Limited Extensibility" icon="puzzle-piece">
+    No access to Neovim's thousands of mature plugins for navigation, editing, and productivity.
+  </Card>
+  <Card title="Vim Abstractions" icon="keyboard">
+    Can't leverage Vim's elegant action + text object model for efficient editing.
+  </Card>
+</CardGroup>
+
+**Zen Mode solves this**: It's a Vibe Coding Agent CLI interface, but it's actually Neovim underneath. You get a modern agent CLI UX with all of Neovim's power.
+
+## Quick Setup
+
+Create an alias to launch Zen Mode:
+
+```bash
+alias avante='nvim -c "lua vim.defer_fn(function()require(\"avante.api\").zen_mode()end, 100)"'
+```
+
+Add this to your shell configuration file (`~/.bashrc`, `~/.zshrc`, etc.), then reload your shell:
+
+```bash
+source ~/.zshrc  # or ~/.bashrc
+```
+
+Now you can start Zen Mode just like any coding agent CLI:
+
+```bash
+avante
+```
+
+## Using Zen Mode
+
+Once in Zen Mode, you have a focused AI coding interface:
+
+### Starting a Conversation
+
+<Steps>
+  <Step title="Launch Zen Mode">
+    ```bash
+    avante
+    ```
+    
+    This opens Neovim with the Avante sidebar in focus, ready for your first prompt.
+  </Step>
+  
+  <Step title="Type your request">
+    Use the input area to describe what you want:
+    
+    ```
+    Create a new authentication module with JWT support
+    ```
+    
+    Press `<CR>` (Enter) in normal mode or `<C-s>` in insert mode to submit.
+  </Step>
+  
+  <Step title="Review and interact">
+    The AI responds with code suggestions. You can:
+    - Apply changes with `a` (cursor) or `A` (all)
+    - Edit your request with `e`
+    - Retry with `r`
+    - Navigate with standard Vim movements
+  </Step>
+  
+  <Step title="Edit code with Vim">
+    Switch to the code buffer (`<Tab>`) and use all your Vim skills:
+    
+    ```vim
+    " Jump to function definition
+    gd
+    
+    " Visual select and edit
+    vip:AvanteEdit refactor this to use promises
+    
+    " Easy motion to navigate
+    <leader><leader>w
+    ```
+  </Step>
+</Steps>
+
+### Key Features in Zen Mode
+
+<Accordion title="Full Vim Editing Power">
+  Unlike traditional agent CLIs, you can:
+  
+  - Use Vim motions (`hjkl`, `w`, `b`, `f`, `t`, etc.)
+  - Leverage text objects (`ciw`, `dap`, `vi{`, etc.)
+  - Run Vim commands (`:s/old/new/g`, `:%s/foo/bar/g`)
+  - Access all your Vim plugins (telescope, treesitter, etc.)
+  
+  ```vim
+  " Multi-line editing example
+  :g/function/normal! $aend
+  
+  " Quick navigation
+  /error handling<CR>
+  
+  " Visual block mode
+  <C-v>jjjI-- <Esc>
+  ```
+</Accordion>
+
+<Accordion title="Agent Client Protocol (ACP) Support">
+  Zen Mode supports all ACP features:
+  
+  - File operations
+  - Tool execution  
+  - Multi-step workflows
+  - Context gathering
+  
+  See [ACP Support](/features/acp-support) for configuration.
+</Accordion>
+
+<Accordion title="Project Context">
+  Use `avante.md` files to give the agent project-specific context:
+  
+  ```markdown
+  # Project Instructions
+  
+  ## Tech Stack
+  - Neovim plugin (Lua)
+  - FFI integration with Rust
+  - Async I/O with vim.loop
+  
+  ## Coding Standards
+  - Follow Neovim Lua style guide
+  - Add type annotations with ---@type
+  - Write tests for new features
+  ```
+  
+  See [Project Instructions](/configuration/project-instructions).
+</Accordion>
+
+## Zen Mode vs Traditional Usage
+
+<Tabs>
+  <Tab title="Zen Mode">
+    **Optimized for terminal workflows**
+    
+    - Launch from command line: `avante`
+    - Sidebar-first interface
+    - Quick AI interactions without opening files
+    - CLI-like UX with Vim power underneath
+    
+    **Best for:**
+    - Starting new projects
+    - Quick prototyping
+    - Exploratory coding
+    - Terminal-centric workflows
+  </Tab>
+  
+  <Tab title="Regular Mode">
+    **Optimized for file editing workflows**
+    
+    - Open files first: `nvim src/main.lua`
+    - Toggle sidebar when needed: `:AvanteToggle`
+    - AI assists with specific files
+    - Traditional editor UX with AI superpowers
+    
+    **Best for:**
+    - Editing existing code
+    - File-focused workflows
+    - Integrating AI into normal editing
+    - IDE-like development
+  </Tab>
+</Tabs>
+
+## Advanced Configuration
+
+Customize Zen Mode behavior:
+
+```lua
+require('avante').setup({
+  -- Zen Mode opens with these settings by default
+  windows = {
+    position = "right",
+    width = 40,
+  },
+  behaviour = {
+    auto_suggestions = false,  -- Disable in Zen Mode for cleaner UX
+  },
+})
+```
+
+### Custom Zen Mode Alias
+
+You can create variations for different workflows:
+
+```bash
+# Zen Mode with specific provider
+alias avante-claude='nvim -c "lua vim.defer_fn(function() require(\"avante.api\").switch_provider(\"claude\"); require(\"avante.api\").zen_mode() end, 100)"'
+
+# Zen Mode for specific project
+alias avante-work='cd ~/work && nvim -c "lua vim.defer_fn(function()require(\"avante.api\").zen_mode()end, 100)"'
+
+# Zen Mode with custom instructions
+alias avante-docs='nvim -c "lua vim.g.avante_instructions = \"~/docs-rules.md\"; vim.defer_fn(function()require(\"avante.api\").zen_mode()end, 100)"'
+```
+
+## Keyboard Shortcuts in Zen Mode
+
+All standard Avante keybindings work, plus you have full Vim at your fingertips:
+
+| Action | Keybinding | Description |
+|--------|-----------|-------------|
+| Submit request | `<CR>` (normal) or `<C-s>` (insert) | Send your prompt to AI |
+| Switch windows | `<Tab>` | Toggle between chat and code |
+| Apply cursor | `a` | Apply suggestion at cursor |
+| Apply all | `A` | Apply all suggestions |
+| Edit request | `e` | Modify your last request |
+| Retry | `r` | Regenerate response |
+| Add file | `@` | Add file to context |
+| Remove file | `d` | Remove file from context |
+| Close | `q` or `<Esc>` | Exit Zen Mode |
+
+## Tips for Effective Zen Mode Usage
+
+<Tip>
+  **Use project instructions**: Create an `avante.md` file in your project root to give the agent context about your codebase, conventions, and requirements.
+</Tip>
+
+<Tip>
+  **Leverage Vim plugins**: Your favorite Neovim plugins (telescope, harpoon, vim-fugitive) work perfectly in Zen Mode.
+</Tip>
+
+<Tip>
+  **Split windows**: Use `:vsplit` and `:split` to view multiple files while chatting with the AI.
+</Tip>
+
+<Tip>
+  **Terminal integration**: Open a terminal inside Neovim (`:terminal`) to run commands without leaving Zen Mode.
+</Tip>
+
+## Example Workflow
+
+Here's a complete Zen Mode workflow for building a new feature:
+
+<Steps>
+  <Step title="Launch Zen Mode">
+    ```bash
+    cd ~/my-project
+    avante
+    ```
+  </Step>
+  
+  <Step title="Describe the feature">
+    ```
+    Create a new user authentication system with:
+    - Email/password login
+    - JWT token generation
+    - Password hashing with bcrypt
+    - Input validation
+    ```
+  </Step>
+  
+  <Step title="Review generated code">
+    The AI generates the authentication module. Use Vim navigation:
+    
+    ```vim
+    " Jump to function
+    /login_user<CR>
+    
+    " Check implementation
+    zz  " Center on screen
+    ```
+  </Step>
+  
+  <Step title="Apply and test">
+    ```vim
+    " Apply the changes
+    A
+    
+    " Switch to terminal
+    :terminal
+    lua test/auth_test.lua
+    ```
+  </Step>
+  
+  <Step title="Iterate on feedback">
+    ```
+    Add rate limiting to prevent brute force attacks
+    ```
+    
+    The agent updates the code with rate limiting logic.
+  </Step>
+</Steps>
+
+## Comparison with Other Agent CLIs
+
+| Feature | Zen Mode | Claude Code | Gemini CLI | Cursor CLI |
+|---------|----------|-------------|------------|------------|
+| **Vim Editing** | ✅ Full Vim | ❌ Limited | ❌ Limited | ❌ Limited |
+| **Plugin Support** | ✅ All Neovim plugins | ❌ None | ❌ None | ❌ None |
+| **Multi-line Editing** | ✅ Vim text objects | ⚠️ Basic | ⚠️ Basic | ⚠️ Basic |
+| **Context Switching** | ✅ None | ❌ External editor | ❌ External editor | ❌ External editor |
+| **Terminal Integration** | ✅ Native | ⚠️ Limited | ⚠️ Limited | ⚠️ Limited |
+| **Customization** | ✅ Full Lua/Vim script | ❌ Limited | ❌ Limited | ❌ Limited |
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Quick Start" icon="rocket" href="/quickstart">
+    Get started with Avante in 5 minutes
+  </Card>
+  <Card title="Project Instructions" icon="file-lines" href="/configuration/project-instructions">
+    Customize AI behavior for your project
+  </Card>
+  <Card title="ACP Support" icon="handshake" href="/features/acp-support">
+    Use external AI agents in Zen Mode
+  </Card>
+  <Card title="Keybindings" icon="keyboard" href="/api/keymaps">
+    Complete keybinding reference
+  </Card>
+</CardGroup>

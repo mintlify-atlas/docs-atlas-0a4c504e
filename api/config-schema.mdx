@@ -1,0 +1,945 @@
+---
+title: Configuration Schema
+description: Complete configuration schema with all options, types, and defaults
+---
+
+Complete reference for all Avante.nvim configuration options.
+
+## Core Configuration
+
+### debug
+
+Enable debug mode for verbose logging.
+
+- **Type:** `boolean`
+- **Default:** `false`
+
+```lua
+debug = false
+```
+
+**Source:** lua/avante/config.lua:30
+
+---
+
+### mode
+
+Interaction mode for AI responses.
+
+- **Type:** `"agentic" | "legacy"`
+- **Default:** `"agentic"`
+
+```lua
+mode = "agentic"
+```
+
+**Options:**
+- `"agentic"` - Uses tools to automatically generate code
+- `"legacy"` - Uses old planning method to generate code
+
+**Source:** lua/avante/config.lua:31-33
+
+---
+
+### provider
+
+Default AI provider.
+
+- **Type:** `string`
+- **Default:** `"claude"`
+
+```lua
+provider = "claude"
+```
+
+**Built-in providers:** `"claude"`, `"openai"`, `"azure"`, `"gemini"`, `"vertex"`, `"cohere"`, `"copilot"`, `"bedrock"`, `"ollama"`, `"watsonx_code_assistant"`, `"mistral"`
+
+**Source:** lua/avante/config.lua:34-36
+
+---
+
+### auto_suggestions_provider
+
+Provider for auto-suggestions (high-frequency operation).
+
+- **Type:** `string | nil`
+- **Default:** `nil`
+
+```lua
+auto_suggestions_provider = nil
+```
+
+<Warning>
+Using `"copilot"` for auto-suggestions can be expensive. Consider increasing `suggestion.debounce` if enabling.
+</Warning>
+
+**Source:** lua/avante/config.lua:37-40
+
+---
+
+### memory_summary_provider
+
+Provider for memory summarization.
+
+- **Type:** `string | nil`
+- **Default:** `nil`
+
+**Source:** lua/avante/config.lua:41
+
+---
+
+### tokenizer
+
+Tokenizer for counting tokens and encoding text.
+
+- **Type:** `"tiktoken" | "hf"`
+- **Default:** `"tiktoken"`
+
+```lua
+tokenizer = "tiktoken"
+```
+
+**Source:** lua/avante/config.lua:42-48
+
+---
+
+### system_prompt
+
+Custom system prompt for AI.
+
+- **Type:** `string | function | nil`
+- **Default:** `nil`
+
+```lua
+system_prompt = nil
+-- Or as a function
+system_prompt = function()
+  return "You are an expert programmer."
+end
+```
+
+**Source:** lua/avante/config.lua:49-50
+
+---
+
+### override_prompt_dir
+
+Override directory for custom prompts.
+
+- **Type:** `string | function | nil`
+- **Default:** `nil`
+
+**Source:** lua/avante/config.lua:51-52
+
+---
+
+### instructions_file
+
+Project-specific instruction file.
+
+- **Type:** `string`
+- **Default:** `"avante.md"`
+
+```lua
+instructions_file = "avante.md"
+```
+
+**Source:** lua/avante/config.lua:27
+
+---
+
+## Rules Configuration
+
+Configuration for project and global rules.
+
+### rules.project_dir
+
+Project-specific rules directory (relative path).
+
+- **Type:** `string | nil`
+- **Default:** `nil`
+
+**Source:** lua/avante/config.lua:53-56
+
+---
+
+### rules.global_dir
+
+Global rules directory (absolute path).
+
+- **Type:** `string | nil`
+- **Default:** `nil`
+
+**Source:** lua/avante/config.lua:53-56
+
+---
+
+## RAG Service Configuration
+
+Retrieval-Augmented Generation service settings.
+
+### rag_service.enabled
+
+Enable RAG service.
+
+- **Type:** `boolean`
+- **Default:** `false`
+
+**Source:** lua/avante/config.lua:57-78
+
+---
+
+### rag_service.host_mount
+
+Host mount path for RAG service.
+
+- **Type:** `string`
+- **Default:** `os.getenv("HOME")`
+
+---
+
+### rag_service.runner
+
+Runner for RAG service.
+
+- **Type:** `"docker" | "nix"`
+- **Default:** `"docker"`
+
+---
+
+### rag_service.image
+
+Docker image for RAG service.
+
+- **Type:** `string`
+- **Default:** `"quay.io/yetoneful/avante-rag-service:0.0.11"`
+
+---
+
+### rag_service.llm
+
+LLM configuration for RAG.
+
+- **Type:** `table`
+- **Fields:**
+  - `provider` (string) - LLM provider (default: `"openai"`)
+  - `endpoint` (string) - API endpoint
+  - `api_key` (string) - Environment variable name for API key
+  - `model` (string) - Model name
+  - `extra` (any|nil) - Extra configuration
+
+---
+
+### rag_service.embed
+
+Embedding model configuration.
+
+- **Type:** `table`
+- **Fields:** Same as `rag_service.llm`
+
+---
+
+### rag_service.docker_extra_args
+
+Extra Docker arguments.
+
+- **Type:** `string`
+- **Default:** `""`
+
+**Source:** lua/avante/config.lua:57-78
+
+---
+
+## Web Search Engine Configuration
+
+### web_search_engine.provider
+
+Web search provider.
+
+- **Type:** `string`
+- **Default:** `"tavily"`
+
+**Built-in providers:** `"tavily"`, `"serpapi"`, `"searchapi"`, `"google"`, `"kagi"`, `"brave"`, `"searxng"`
+
+**Source:** lua/avante/config.lua:79-245
+
+---
+
+### web_search_engine.proxy
+
+HTTP proxy for web search.
+
+- **Type:** `string | nil`
+- **Default:** `nil`
+
+---
+
+## ACP Providers Configuration
+
+Agent Client Protocol providers.
+
+### acp_providers
+
+Configuration for ACP providers.
+
+- **Type:** `table`
+- **Default providers:**
+  - `gemini-cli`
+  - `claude-code`
+  - `goose`
+  - `codex`
+  - `opencode`
+  - `kimi-cli`
+
+**Example:**
+```lua
+acp_providers = {
+  ["gemini-cli"] = {
+    command = "gemini",
+    args = { "--experimental-acp" },
+    env = {
+      NODE_NO_WARNINGS = "1",
+      GEMINI_API_KEY = os.getenv("GEMINI_API_KEY"),
+    },
+    auth_method = "gemini-api-key",
+  },
+}
+```
+
+**Source:** lua/avante/config.lua:247-290
+
+---
+
+## Providers Configuration
+
+### providers
+
+AI provider configurations.
+
+- **Type:** `table<string, table>`
+
+**Default providers:**
+- `openai` - OpenAI (GPT-4, etc.)
+- `copilot` - GitHub Copilot
+- `azure` - Azure OpenAI
+- `claude` - Anthropic Claude
+- `bedrock` - AWS Bedrock
+- `gemini` - Google Gemini
+- `vertex` - Google Vertex AI
+- `cohere` - Cohere
+- `ollama` - Ollama (local models)
+- `watsonx_code_assistant` - IBM watsonx
+- `vertex_claude` - Vertex AI Claude
+- `mistral` - Mistral AI
+
+**Provider schema:**
+```lua
+providers = {
+  openai = {
+    endpoint = "https://api.openai.com/v1",
+    model = "gpt-4o",
+    timeout = 30000,
+    context_window = 128000,
+    use_response_api = false,
+    support_previous_response_id = true,
+    extra_request_body = {
+      temperature = 0.75,
+      max_completion_tokens = 16384,
+      reasoning_effort = "medium",
+    },
+  },
+}
+```
+
+**Source:** lua/avante/config.lua:293-514
+
+---
+
+### Provider Inheritance
+
+Providers can inherit from other providers:
+
+```lua
+providers = {
+  ["claude-haiku"] = {
+    __inherited_from = "claude",
+    model = "claude-3-5-haiku-20241022",
+  },
+}
+```
+
+**Source:** lua/avante/config.lua:441-449
+
+---
+
+## Dual Boost Configuration
+
+Experimental dual-provider mode.
+
+### dual_boost.enabled
+
+- **Type:** `boolean`
+- **Default:** `false`
+
+### dual_boost.first_provider
+
+- **Type:** `string`
+- **Default:** `"openai"`
+
+### dual_boost.second_provider
+
+- **Type:** `string`
+- **Default:** `"claude"`
+
+### dual_boost.prompt
+
+Prompt template for combining responses.
+
+- **Type:** `string`
+- **Default:** Template for merging two outputs
+
+### dual_boost.timeout
+
+- **Type:** `number`
+- **Default:** `60000`
+
+**Source:** lua/avante/config.lua:516-531
+
+---
+
+## Behaviour Configuration
+
+### behaviour.auto_focus_sidebar
+
+- **Type:** `boolean`
+- **Default:** `true`
+
+### behaviour.auto_suggestions
+
+- **Type:** `boolean`
+- **Default:** `false`
+
+### behaviour.auto_suggestions_respect_ignore
+
+- **Type:** `boolean`
+- **Default:** `false`
+
+### behaviour.auto_set_highlight_group
+
+- **Type:** `boolean`
+- **Default:** `true`
+
+### behaviour.auto_set_keymaps
+
+- **Type:** `boolean`
+- **Default:** `true`
+
+### behaviour.auto_apply_diff_after_generation
+
+- **Type:** `boolean`
+- **Default:** `false`
+
+### behaviour.jump_result_buffer_on_finish
+
+- **Type:** `boolean`
+- **Default:** `false`
+
+### behaviour.support_paste_from_clipboard
+
+- **Type:** `boolean`
+- **Default:** Auto-detected based on img-clip availability
+
+### behaviour.minimize_diff
+
+- **Type:** `boolean`
+- **Default:** `true`
+
+### behaviour.enable_token_counting
+
+- **Type:** `boolean`
+- **Default:** `true`
+
+### behaviour.use_cwd_as_project_root
+
+- **Type:** `boolean`
+- **Default:** `false`
+
+### behaviour.auto_focus_on_diff_view
+
+- **Type:** `boolean`
+- **Default:** `false`
+
+### behaviour.auto_approve_tool_permissions
+
+- **Type:** `boolean | string[]`
+- **Default:** `true`
+
+**Options:**
+- `true` - Auto-approve all tools
+- `false` - Prompt for all tools
+- `["bash", "str_replace"]` - Auto-approve specific tools
+
+### behaviour.auto_check_diagnostics
+
+- **Type:** `boolean`
+- **Default:** `true`
+
+### behaviour.allow_access_to_git_ignored_files
+
+- **Type:** `boolean`
+- **Default:** `false`
+
+### behaviour.enable_fastapply
+
+- **Type:** `boolean`
+- **Default:** `false`
+
+### behaviour.include_generated_by_commit_line
+
+- **Type:** `boolean`
+- **Default:** `false`
+
+### behaviour.auto_add_current_file
+
+- **Type:** `boolean`
+- **Default:** `true`
+
+### behaviour.confirmation_ui_style
+
+- **Type:** `"popup" | "inline_buttons"`
+- **Default:** `"inline_buttons"`
+
+### behaviour.acp_follow_agent_locations
+
+- **Type:** `boolean`
+- **Default:** `true`
+
+**Source:** lua/avante/config.lua:545-572
+
+---
+
+## Prompt Logger Configuration
+
+### prompt_logger.enabled
+
+- **Type:** `boolean`
+- **Default:** `true`
+
+### prompt_logger.log_dir
+
+- **Type:** `string`
+- **Default:** `vim.fn.stdpath("cache")`
+
+### prompt_logger.max_entries
+
+- **Type:** `number`
+- **Default:** `100`
+
+### prompt_logger.next_prompt
+
+Keymaps for navigating prompts.
+
+- **Type:** `table`
+- **Default:** `{ normal = "<C-n>", insert = "<C-n>" }`
+
+### prompt_logger.prev_prompt
+
+- **Type:** `table`
+- **Default:** `{ normal = "<C-p>", insert = "<C-p>" }`
+
+**Source:** lua/avante/config.lua:573-585
+
+---
+
+## History Configuration
+
+### history.max_tokens
+
+- **Type:** `number`
+- **Default:** `4096`
+
+### history.carried_entry_count
+
+- **Type:** `number | nil`
+- **Default:** `nil`
+
+### history.storage_path
+
+- **Type:** `string`
+- **Default:** `vim.fn.stdpath("state") .. "/avante"`
+
+### history.paste
+
+Paste image configuration.
+
+- **Type:** `table`
+- **Fields:**
+  - `extension` (string) - Default: `"png"`
+  - `filename` (string) - Default: `"pasted-%Y-%m-%d-%H-%M-%S"`
+
+**Source:** lua/avante/config.lua:586-594
+
+---
+
+## Highlights Configuration
+
+### highlights.diff.current
+
+Highlight group for current version.
+
+- **Type:** `string | nil`
+- **Default:** `nil`
+
+### highlights.diff.incoming
+
+Highlight group for incoming changes.
+
+- **Type:** `string | nil`
+- **Default:** `nil`
+
+**Source:** lua/avante/config.lua:595-600
+
+---
+
+## Image Paste Configuration
+
+### img_paste.url_encode_path
+
+- **Type:** `boolean`
+- **Default:** `true`
+
+### img_paste.template
+
+Markdown template for pasted images.
+
+- **Type:** `string`
+- **Default:** `"\nimage: $FILE_PATH\n"`
+
+**Source:** lua/avante/config.lua:601-604
+
+---
+
+## Mappings Configuration
+
+See [Keymaps](/api/keymaps) for complete keymap documentation.
+
+**Source:** lua/avante/config.lua:605-681
+
+---
+
+## Windows Configuration
+
+### windows.position
+
+Sidebar position.
+
+- **Type:** `"right" | "left" | "top" | "bottom" | "smart"`
+- **Default:** `"right"`
+
+### windows.fillchars
+
+- **Type:** `string`
+- **Default:** `"eob: "`
+
+### windows.wrap
+
+- **Type:** `boolean`
+- **Default:** `true`
+
+### windows.width
+
+Sidebar width percentage.
+
+- **Type:** `number`
+- **Default:** `30`
+
+### windows.height
+
+Sidebar height percentage.
+
+- **Type:** `number`
+- **Default:** `30`
+
+### windows.sidebar_header
+
+Sidebar header configuration.
+
+- **Type:** `table`
+- **Fields:**
+  - `enabled` (boolean) - Default: `true`
+  - `align` ("left"|"center"|"right") - Default: `"center"`
+  - `rounded` (boolean) - Default: `true`
+  - `include_model` (boolean) - Default: `false`
+
+### windows.spinner
+
+Spinner animations.
+
+- **Type:** `table`
+- **Fields:**
+  - `editing` (string[]) - Editing spinner characters
+  - `generating` (string[]) - Generating spinner characters  
+  - `thinking` (string[]) - Thinking spinner characters
+
+### windows.input
+
+Input window configuration.
+
+- **Type:** `table`
+- **Fields:**
+  - `prefix` (string) - Default: `"> "`
+  - `height` (number) - Default: `8`
+
+### windows.selected_files
+
+- **Type:** `table`
+- **Fields:**
+  - `height` (number) - Default: `6`
+
+### windows.edit
+
+Edit window configuration.
+
+- **Type:** `table`
+- **Fields:**
+  - `border` (string[]) - Default: All spaces
+  - `start_insert` (boolean) - Default: `true`
+
+### windows.ask
+
+Ask window configuration.
+
+- **Type:** `table`
+- **Fields:**
+  - `floating` (boolean) - Default: `false`
+  - `border` (string[]) - Default: All spaces
+  - `start_insert` (boolean) - Default: `true`
+  - `focus_on_apply` ("ours"|"theirs") - Default: `"ours"`
+
+**Source:** lua/avante/config.lua:683-758
+
+---
+
+## Diff Configuration
+
+### diff.autojump
+
+Auto-jump to first conflict.
+
+- **Type:** `boolean`
+- **Default:** `true`
+
+### diff.override_timeoutlen
+
+Override timeoutlen when hovering over diff.
+
+- **Type:** `number`
+- **Default:** `500`
+
+**Source:** lua/avante/config.lua:760-766
+
+---
+
+## Selection Configuration
+
+### selection.enabled
+
+Enable selection mode.
+
+- **Type:** `boolean`
+- **Default:** `true`
+
+### selection.hint_display
+
+When to show hints.
+
+- **Type:** `"delayed" | "immediate" | "none"`
+- **Default:** `"delayed"`
+
+**Source:** lua/avante/config.lua:772-775
+
+---
+
+## Repo Map Configuration
+
+### repo_map.ignore_patterns
+
+Patterns to ignore.
+
+- **Type:** `string[]`
+- **Default:** `{ "%.git", "%.worktree", "__pycache__", "node_modules" }`
+
+### repo_map.negate_patterns
+
+Negate ignore patterns.
+
+- **Type:** `string[]`
+- **Default:** `{}`
+
+**Source:** lua/avante/config.lua:777-780
+
+---
+
+## File Selector Configuration
+
+### file_selector.provider
+
+File selector provider.
+
+- **Type:** `string | nil`
+- **Default:** `nil`
+
+### file_selector.provider_opts
+
+Provider-specific options.
+
+- **Type:** `table`
+- **Default:** `{}`
+
+**Source:** lua/avante/config.lua:782-786
+
+---
+
+## Selector Configuration
+
+### selector.provider
+
+UI selector provider.
+
+- **Type:** `"native" | "fzf_lua" | "mini_pick" | "snacks" | "telescope" | function`
+- **Default:** `"native"`
+
+### selector.provider_opts
+
+Provider-specific options.
+
+- **Type:** `table`
+- **Default:** `{}`
+
+### selector.exclude_auto_select
+
+Items to exclude from auto-selection.
+
+- **Type:** `string[]`
+- **Default:** `{}`
+
+**Source:** lua/avante/config.lua:787-793
+
+---
+
+## Input Configuration
+
+### input.provider
+
+Input provider.
+
+- **Type:** `"native" | "dressing" | "snacks" | function`
+- **Default:** `"native"`
+
+### input.provider_opts
+
+Provider-specific options.
+
+- **Type:** `table`
+- **Default:** `{}`
+
+**Source:** lua/avante/config.lua:794-797
+
+---
+
+## Suggestion Configuration
+
+### suggestion.debounce
+
+Debounce time in milliseconds.
+
+- **Type:** `number`
+- **Default:** `600`
+
+### suggestion.throttle
+
+Throttle time in milliseconds.
+
+- **Type:** `number`
+- **Default:** `600`
+
+**Source:** lua/avante/config.lua:798-801
+
+---
+
+## Custom Tools & Commands
+
+### disabled_tools
+
+List of disabled tools.
+
+- **Type:** `string[]`
+- **Default:** `{}`
+
+### custom_tools
+
+Custom LLM tools.
+
+- **Type:** `table[] | function`
+- **Default:** `{}`
+
+### slash_commands
+
+Custom slash commands.
+
+- **Type:** `table[]`
+- **Default:** `{}`
+
+### shortcuts
+
+Custom prompt shortcuts.
+
+- **Type:** `table[]`
+- **Default:** `{}`
+
+**Source:** lua/avante/config.lua:802-808
+
+---
+
+## Complete Example
+
+```lua
+require('avante').setup({
+  -- Core
+  debug = false,
+  mode = "agentic",
+  provider = "claude",
+  
+  -- Providers
+  providers = {
+    claude = {
+      endpoint = "https://api.anthropic.com",
+      model = "claude-sonnet-4-5-20250929",
+      timeout = 30000,
+      extra_request_body = {
+        temperature = 0.75,
+        max_tokens = 64000,
+      },
+    },
+  },
+  
+  -- Behaviour
+  behaviour = {
+    auto_suggestions = true,
+    auto_set_keymaps = true,
+    auto_apply_diff_after_generation = false,
+  },
+  
+  -- Windows
+  windows = {
+    position = "right",
+    width = 30,
+    sidebar_header = {
+      enabled = true,
+      align = "center",
+    },
+  },
+  
+  -- See full schema above for all options
+})
+```

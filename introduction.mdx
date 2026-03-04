@@ -1,0 +1,79 @@
+---
+title: Introduction
+description: AI-powered code assistance for Neovim, inspired by Cursor AI IDE
+---
+
+**avante.nvim** is a Neovim plugin designed to emulate the behaviour of the [Cursor](https://www.cursor.com) AI IDE. It provides users with AI-driven code suggestions and the ability to apply these recommendations directly to their source files with minimal effort.
+
+<Note>
+  This project is undergoing rapid iterations, and many exciting features will be added successively. Stay tuned!
+</Note>
+
+## What is Avante.nvim?
+
+Avante.nvim brings the power of AI-assisted coding directly into your Neovim workflow. Instead of switching between your editor and external AI tools, you can interact with AI models, get intelligent code suggestions, and apply changes seamlessly—all without leaving Neovim.
+
+Think of it as having an AI pair programmer that understands your codebase, can answer questions about your code, suggest improvements, and even apply those changes with a single command.
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="AI-Powered Code Assistance" icon="wand-magic-sparkles">
+    Interact with AI to ask questions about your current code file and receive intelligent suggestions for improvement or modification.
+  </Card>
+  
+  <Card title="One-Click Application" icon="check">
+    Quickly apply the AI's suggested changes to your source code with a single command, streamlining the editing process and saving time.
+  </Card>
+  
+  <Card title="Project-Specific Instructions" icon="file-code">
+    Customize AI behavior by adding a markdown file (`avante.md` by default) in the project root. This file is automatically referenced during workspace changes.
+  </Card>
+  
+  <Card title="Multiple AI Providers" icon="cloud">
+    Support for Claude, OpenAI, Azure, Gemini, Cohere, Copilot, Ollama, and many more providers.
+  </Card>
+</CardGroup>
+
+## Why Use Avante.nvim?
+
+### Stay in Your Flow
+Context switching is expensive. Avante.nvim keeps you in Neovim where you're most productive, leveraging your muscle memory and existing keybindings.
+
+### Leverage Terminal-Based Editor Advantages
+As noted in the Avante Zen Mode philosophy: Terminal-based editors have solved the UI/UX challenges that CLI applications face. Avante.nvim gives you all the power of modern Coding Agent CLIs while maintaining Vim's elegant action + text objects abstraction and access to thousands of mature Neovim plugins.
+
+### Flexible and Customizable
+- Configure AI behavior per project with `avante.md` instruction files
+- Choose from multiple AI providers
+- Customize keybindings, UI position, and behavior
+- Integrate with your existing Neovim setup
+
+## How It Works
+
+1. **Open your code** in Neovim
+2. **Ask the AI** using `:AvanteAsk` or toggle the sidebar
+3. **Review suggestions** in the AI-powered sidebar
+4. **Apply changes** with a single keypress or command
+
+## Demo
+
+See Avante.nvim in action:
+
+<video src="https://github.com/user-attachments/assets/510e6270-b6cf-459d-9a2f-15b397d1fe53" controls />
+
+<video src="https://github.com/user-attachments/assets/86140bfd-08b4-483d-a887-1b701d9e37dd" controls />
+
+## Requirements
+
+<Warning>
+  Avante.nvim requires **Neovim 0.10.1 or later**. Please ensure your Neovim version meets these requirements before proceeding.
+</Warning>
+
+For building from source:
+- **cargo** (Rust toolchain) - required if building from source
+- **curl** and **tar** - used to download prebuilt binaries from GitHub
+
+## Next Steps
+
+Ready to get started? Head over to the [Installation](/installation) guide to set up Avante.nvim, or jump to the [Quickstart](/quickstart) to go from zero to your first AI interaction in under 5 minutes.

@@ -1,0 +1,703 @@
+---
+title: Troubleshooting
+description: Common issues, solutions, and known problems with Avante.nvim
+icon: wrench
+---
+
+## Common Issues
+
+### Build and Installation
+
+<AccordionGroup>
+  <Accordion title="Build fails on installation">
+    **Symptoms**: Error messages during plugin installation/build process.
+    
+    **Solutions**:
+    
+    1. **Ensure build tools are installed**:
+       
+       <Tabs>
+         <Tab title="macOS">
+           ```bash
+           # Install Xcode Command Line Tools
+           xcode-select --install
+           
+           # Install Rust (if building from source)
+           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+           ```
+         </Tab>
+         
+         <Tab title="Linux">
+           ```bash
+           # Ubuntu/Debian
+           sudo apt-get install build-essential curl
+           
+           # Arch Linux
+           sudo pacman -S base-devel curl
+           
+           # Install Rust (if building from source)
+           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+           ```
+         </Tab>
+         
+         <Tab title="Windows">
+           ```powershell
+           # Ensure PowerShell execution policy allows scripts
+           Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+           
+           # Install Rust
+           # Download from https://rustup.rs/
+           ```
+         </Tab>
+       </Tabs>
+    
+    2. **Force rebuild**:
+       ```vim
+       :AvanteBuild
+       ```
+    
+    3. **Try prebuilt binaries** (don't build from source):
+       ```lua
+       build = "make BUILD_FROM_SOURCE=false"
+       ```
+    
+    4. **Check Neovim version**:
+       ```vim
+       :version
+       ```
+       Avante requires **Neovim 0.10.1+**.
+  </Accordion>
+  
+  <Accordion title="Cargo/Rust errors">
+    **Symptoms**: Errors mentioning `cargo`, `rustc`, or Rust compilation.
+    
+    **Solutions**:
+    
+    1. **Install Rust**:
+       ```bash
+       curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+       source $HOME/.cargo/env
+       ```
+    
+    2. **Update Rust**:
+       ```bash
+       rustup update
+       ```
+    
+    3. **Use prebuilt binaries instead**:
+       ```lua
+       build = vim.fn.has("win32") ~= 0
+           and "powershell -ExecutionPolicy Bypass -File Build.ps1 -BuildFromSource false"
+           or "make",
+       ```
+  </Accordion>
+  
+  <Accordion title="Permission denied errors">
+    **Symptoms**: Build fails with permission errors.
+    
+    **Solutions**:
+    
+    1. **Check file permissions**:
+       ```bash
+       ls -la ~/.local/share/nvim/lazy/avante.nvim/
+       ```
+    
+    2. **Fix permissions**:
+       ```bash
+       chmod -R u+w ~/.local/share/nvim/lazy/avante.nvim/
+       ```
+    
+    3. **Clean and reinstall**:
+       ```vim
+       :Lazy clean
+       :Lazy sync
+       ```
+  </Accordion>
+</AccordionGroup>
+
+### API Keys and Authentication
+
+<AccordionGroup>
+  <Accordion title="API key not recognized">
+    **Symptoms**: Avante prompts for API key every time, or shows "API key not set" errors.
+    
+    **Solutions**:
+    
+    1. **Set environment variables in shell profile**:
+       
+       ```bash
+       # Add to ~/.bashrc, ~/.zshrc, or ~/.config/fish/config.fish
+       
+       # For Claude
+       export ANTHROPIC_API_KEY=your-api-key
+       # OR use scoped key (recommended)
+       export AVANTE_ANTHROPIC_API_KEY=your-api-key
+       
+       # For OpenAI
+       export OPENAI_API_KEY=your-api-key
+       # OR
+       export AVANTE_OPENAI_API_KEY=your-api-key
+       ```
+    
+    2. **Reload shell configuration**:
+       ```bash
+       source ~/.bashrc  # or ~/.zshrc
+       ```
+    
+    3. **Verify environment variable is set**:
+       ```bash
+       echo $ANTHROPIC_API_KEY
+       ```
+    
+    4. **Restart Neovim** after setting environment variables.
+  </Accordion>
+  
+  <Accordion title="Claude Max/Pro authentication fails">
+    **Symptoms**: Browser authentication for Claude Max doesn't work.
+    
+    **Solutions**:
+    
+    1. **Ensure correct auth type**:
+       ```lua
+       providers = {
+         claude = {
+           auth_type = "max", -- or "pro"
+         },
+       }
+       ```
+    
+    2. **Switch provider to trigger auth**:
+       ```vim
+       :AvanteSwitchProvider claude
+       ```
+    
+    3. **Follow browser prompts**:
+       - A browser window should open
+       - Log in to Claude
+       - Authorize the application
+       - Copy the code shown
+       - Paste into Neovim prompt
+    
+    4. **Check for browser issues**:
+       - Ensure default browser is set
+       - Try manually opening the URL shown in Neovim
+  </Accordion>
+  
+  <Accordion title="Multiple API providers confusion">
+    **Symptoms**: Wrong API key being used.
+    
+    **Solution**: Use **scoped API keys** to isolate Avante:
+    
+    ```bash
+    # Scoped keys (Avante only)
+    export AVANTE_ANTHROPIC_API_KEY=sk-ant-avante-key
+    export AVANTE_OPENAI_API_KEY=sk-avante-openai-key
+    
+    # Global keys (other apps can use these)
+    export ANTHROPIC_API_KEY=sk-ant-global-key
+    export OPENAI_API_KEY=sk-global-key
+    ```
+    
+    Avante will prefer `AVANTE_*` keys if set.
+  </Accordion>
+</AccordionGroup>
+
+### UI and Display Issues
+
+<AccordionGroup>
+  <Accordion title="Sidebar not showing or flickering">
+    **Symptoms**: Avante sidebar doesn't appear, or flickers/disappears.
+    
+    **Solutions**:
+    
+    1. **Set global statusline**:
+       ```lua
+       vim.opt.laststatus = 3
+       ```
+    
+    2. **Refresh Avante**:
+       ```vim
+       :AvanteRefresh
+       ```
+    
+    3. **Check for plugin conflicts** (especially with other UI plugins).
+    
+    4. **Try toggling sidebar**:
+       ```vim
+       :AvanteToggle
+       ```
+  </Accordion>
+  
+  <Accordion title="Markdown rendering issues">
+    **Symptoms**: Code blocks or markdown not rendering correctly.
+    
+    **Solutions**:
+    
+    1. **Ensure render-markdown.nvim is installed**:
+       ```lua
+       {
+         'MeanderingProgrammer/render-markdown.nvim',
+         opts = {
+           file_types = { "markdown", "Avante" },
+         },
+         ft = { "markdown", "Avante" },
+       }
+       ```
+    
+    2. **Add Avante to file types**:
+       ```lua
+       file_types = { "markdown", "Avante" },
+       ```
+    
+    3. **Check treesitter parsers**:
+       ```vim
+       :TSInstall markdown markdown_inline
+       ```
+  </Accordion>
+  
+  <Accordion title="Diff highlights not showing">
+    **Symptoms**: Can't see conflict highlights when AI suggests changes.
+    
+    **Solutions**:
+    
+    1. **Enable auto highlight groups**:
+       ```lua
+       behaviour = {
+         auto_set_highlight_group = true,
+       }
+       ```
+    
+    2. **Check colorscheme compatibility**:
+       Some colorschemes don't define `DiffText`/`DiffAdd`. Set manually:
+       ```lua
+       highlights = {
+         diff = {
+           current = "DiffText",
+           incoming = "DiffAdd",
+         },
+       }
+       ```
+    
+    3. **Try different highlights**:
+       ```lua
+       highlights = {
+         diff = {
+           current = "Visual",
+           incoming = "Search",
+         },
+       }
+       ```
+  </Accordion>
+  
+  <Accordion title="Icons not displaying">
+    **Symptoms**: Missing or broken icons in UI.
+    
+    **Solutions**:
+    
+    1. **Install a Nerd Font**:
+       - Download from [nerdfonts.com](https://www.nerdfonts.com/)
+       - Install and set as terminal font
+    
+    2. **Install icon plugin**:
+       ```lua
+       dependencies = {
+         "nvim-tree/nvim-web-devicons",
+         -- OR
+         "echasnovski/mini.icons",
+       }
+       ```
+  </Accordion>
+</AccordionGroup>
+
+### Performance Issues
+
+<AccordionGroup>
+  <Accordion title="Slow responses from AI">
+    **Symptoms**: Long wait times for AI responses.
+    
+    **Solutions**:
+    
+    1. **Increase timeout**:
+       ```lua
+       providers = {
+         claude = {
+           timeout = 60000, -- 60 seconds
+         },
+       }
+       ```
+    
+    2. **Use faster models**:
+       ```lua
+       model = "claude-3-haiku-20240307", -- Faster than Sonnet
+       ```
+    
+    3. **Reduce context size**:
+       - Use `/compact` to compress history
+       - Avoid adding too many files with `@file`
+       - Clear history with `/clear`
+    
+    4. **Check internet connection**.
+  </Accordion>
+  
+  <Accordion title="High API costs">
+    **Symptoms**: Unexpected API bills.
+    
+    **Solutions**:
+    
+    1. **Disable auto-suggestions**:
+       ```lua
+       behaviour = {
+         auto_suggestions = false,
+       }
+       ```
+    
+    2. **Increase debounce/throttle**:
+       ```lua
+       suggestion = {
+         debounce = 1000,
+         throttle = 1000,
+       }
+       ```
+    
+    3. **Use cheaper models**:
+       ```lua
+       provider = "claude",
+       auto_suggestions_provider = "claude", -- Not copilot
+       providers = {
+         claude = {
+           model = "claude-3-haiku-20240307",
+         },
+       }
+       ```
+    
+    4. **Disable token counting**:
+       ```lua
+       behaviour = {
+         enable_token_counting = false,
+       }
+       ```
+  </Accordion>
+  
+  <Accordion title="Neovim freezing or lagging">
+    **Symptoms**: Neovim becomes unresponsive.
+    
+    **Solutions**:
+    
+    1. **Update Neovim** to latest version (0.10.1+).
+    
+    2. **Disable expensive features**:
+       ```lua
+       behaviour = {
+         auto_suggestions = false,
+         enable_token_counting = false,
+       }
+       ```
+    
+    3. **Check for plugin conflicts**:
+       ```vim
+       :Lazy profile
+       ```
+    
+    4. **Reduce spinner animation**:
+       ```lua
+       windows = {
+         spinner = {
+           editing = { "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏" },
+         },
+       }
+       ```
+  </Accordion>
+</AccordionGroup>
+
+### Feature-Specific Issues
+
+<AccordionGroup>
+  <Accordion title="RAG service not working">
+    **Symptoms**: `@codebase` doesn't work, RAG errors.
+    
+    **Solutions**:
+    
+    1. **Ensure Docker is running**:
+       ```bash
+       docker ps
+       ```
+    
+    2. **Check RAG configuration**:
+       ```lua
+       rag_service = {
+         enabled = true,
+         runner = "docker", -- or "nix"
+       }
+       ```
+    
+    3. **Verify API keys**:
+       ```bash
+       echo $OPENAI_API_KEY
+       ```
+    
+    4. **Remove and recreate container**:
+       ```bash
+       docker rm -fv avante-rag-service
+       ```
+    
+    5. **Check container logs**:
+       ```bash
+       docker logs avante-rag-service
+       ```
+  </Accordion>
+  
+  <Accordion title="Web search not working">
+    **Symptoms**: Web search tool fails or returns no results.
+    
+    **Solutions**:
+    
+    1. **Set API key**:
+       ```bash
+       export TAVILY_API_KEY=your-key
+       ```
+    
+    2. **Check provider configuration**:
+       ```lua
+       web_search_engine = {
+         provider = "tavily",
+       }
+       ```
+    
+    3. **Verify internet connectivity**.
+    
+    4. **Check API quota** (may be exceeded).
+    
+    5. **Try different provider**:
+       ```lua
+       provider = "serpapi", -- Instead of tavily
+       ```
+  </Accordion>
+  
+  <Accordion title="Completions not showing (nvim-cmp/blink.cmp)">
+    **Symptoms**: No slash commands, mentions, or shortcuts appear.
+    
+    **Solutions**:
+    
+    1. **Verify completion plugin is installed**:
+       ```lua
+       dependencies = {
+         "hrsh7th/nvim-cmp",
+         -- OR
+         "saghen/blink.cmp",
+       }
+       ```
+    
+    2. **For blink.cmp, configure sources**:
+       ```lua
+       sources = {
+         compat = {
+           "avante_commands",
+           "avante_mentions",
+           "avante_files",
+         },
+       }
+       ```
+    
+    3. **Ensure you're in Avante chat input**.
+    
+    4. **Check for source errors**:
+       ```vim
+       :messages
+       ```
+  </Accordion>
+  
+  <Accordion title="File selector (@file) not opening">
+    **Symptoms**: Typing `@file` doesn't open file picker.
+    
+    **Solutions**:
+    
+    1. **Configure selector provider**:
+       ```lua
+       selector = {
+         provider = "telescope", -- or fzf_lua, mini_pick, snacks
+       }
+       ```
+    
+    2. **Install required dependency**:
+       ```lua
+       dependencies = {
+         "nvim-telescope/telescope.nvim",
+       }
+       ```
+    
+    3. **Don't use "native" with blink.cmp** (known issue).
+  </Accordion>
+</AccordionGroup>
+
+## Compatibility Issues
+
+<AccordionGroup>
+  <Accordion title="Neovim version too old">
+    **Symptoms**: Errors about missing functions or features.
+    
+    **Solution**: Upgrade to **Neovim 0.10.1 or later**:
+    
+    <Tabs>
+      <Tab title="macOS">
+        ```bash
+        brew update
+        brew upgrade neovim
+        ```
+      </Tab>
+      
+      <Tab title="Linux (AppImage)">
+        ```bash
+        curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim.appimage
+        chmod u+x nvim.appimage
+        ./nvim.appimage --appimage-extract
+        sudo mv squashfs-root /usr/local/nvim
+        sudo ln -sf /usr/local/nvim/AppRun /usr/local/bin/nvim
+        ```
+      </Tab>
+      
+      <Tab title="Windows">
+        Download from [neovim.io](https://neovim.io/)
+      </Tab>
+    </Tabs>
+  </Accordion>
+  
+  <Accordion title="Plugin conflicts">
+    **Common conflicts**:
+    
+    - **Other AI plugins**: May conflict with keybindings or UI
+    - **Completion plugins**: Ensure only nvim-cmp OR blink.cmp is active
+    - **UI plugins**: May interfere with Avante's sidebar
+    
+    **Solution**: Use `lazy.nvim`'s `enabled = false` to disable conflicting plugins temporarily:
+    
+    ```lua
+    {
+      "other-ai-plugin",
+      enabled = false,
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Known Issues
+
+<Warning>
+  These are known issues with workarounds or pending fixes.
+</Warning>
+
+### blink.cmp Native Selector
+
+**Issue**: Using `selector.provider = "native"` with blink.cmp causes errors.
+
+**Workaround**: Use a different selector:
+```lua
+selector = {
+  provider = "telescope", -- Not "native"
+}
+```
+
+### Copilot as Auto-Suggestions Provider
+
+**Issue**: Using Copilot for `auto_suggestions_provider` can cause high API costs due to request frequency.
+
+**Workaround**: Use Claude or OpenAI instead:
+```lua
+auto_suggestions_provider = "claude", -- Not "copilot"
+```
+
+Or increase debounce/throttle if you must use Copilot:
+```lua
+suggestion = {
+  debounce = 2000,
+  throttle = 2000,
+}
+```
+
+### Fast Apply Token Limits
+
+**Issue**: Fast Apply is limited to 16k tokens for input/output.
+
+**Workaround**: Break large files into smaller edits or use traditional mode.
+
+## Getting Help
+
+<CardGroup cols={2}>
+  <Card title="GitHub Issues" icon="github" href="https://github.com/yetone/avante.nvim/issues">
+    Report bugs or request features
+  </Card>
+  
+  <Card title="Discord Community" icon="discord" href="https://discord.gg/QfnEFEdSjz">
+    Get help from the community
+  </Card>
+  
+  <Card title="Wiki" icon="book" href="https://github.com/yetone/avante.nvim/wiki">
+    Community recipes and tricks
+  </Card>
+  
+  <Card title="Discussions" icon="comments" href="https://github.com/yetone/avante.nvim/discussions">
+    Ask questions and share ideas
+  </Card>
+</CardGroup>
+
+## Debugging Tips
+
+<Steps>
+  <Step title="Check Messages">
+    ```vim
+    :messages
+    ```
+    Look for error messages or warnings.
+  </Step>
+  
+  <Step title="Enable Debug Mode">
+    ```vim
+    <Leader>ad
+    ```
+    Or:
+    ```vim
+    :AvanteToggleDebug
+    ```
+  </Step>
+  
+  <Step title="Check Logs">
+    Look at Avante's log files (location varies by OS):
+    ```vim
+    :echo stdpath('cache') .. '/avante_prompts'
+    ```
+  </Step>
+  
+  <Step title="Minimal Config Test">
+    Test with a minimal configuration to isolate the issue:
+    ```lua
+    -- minimal.lua
+    vim.opt.runtimepath:append("~/.local/share/nvim/lazy/avante.nvim")
+    require('avante').setup({
+      provider = "claude",
+    })
+    ```
+    
+    Run: `nvim -u minimal.lua`
+  </Step>
+  
+  <Step title="Report Issue">
+    If problem persists, report on GitHub with:
+    - Neovim version (`:version`)
+    - OS and architecture
+    - Error messages
+    - Minimal reproducible config
+  </Step>
+</Steps>
+
+## Related Documentation
+
+<CardGroup cols={2}>
+  <Card title="Installation" icon="download" href="/installation">
+    Installation guide
+  </Card>
+  <Card title="Configuration" icon="gear" href="/configuration/overview">
+    Configuration reference
+  </Card>
+  <Card title="GitHub Issues" icon="bug" href="https://github.com/yetone/avante.nvim/issues">
+    Report issues and get help
+  </Card>
+</CardGroup>

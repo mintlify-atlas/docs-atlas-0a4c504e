@@ -1,0 +1,431 @@
+---
+title: Input Providers
+description: Configure input UI with native, dressing.nvim, snacks.nvim, or custom providers
+icon: keyboard
+---
+
+## Overview
+
+Avante.nvim supports multiple input providers for user input dialogs (like API key entry). You can choose between the native vim input, enhanced UI libraries, or create your own custom provider.
+
+## Available Providers
+
+### Native (Default)
+
+Uses vim's built-in `vim.ui.input` for input dialogs.
+
+```lua
+require('avante').setup({
+  input = {
+    provider = "native",
+    provider_opts = {},
+  },
+})
+```
+
+**Pros**:
+- No additional dependencies
+- Simple and lightweight
+- Always available
+
+**Cons**:
+- Basic UI
+- Limited customization
+
+---
+
+### Dressing.nvim
+
+[stevearc/dressing.nvim](https://github.com/stevearc/dressing.nvim) provides enhanced input UI with better styling and features.
+
+<Steps>
+  <Step title="Install dressing.nvim">
+    ```lua
+    -- With lazy.nvim
+    {
+      "stevearc/dressing.nvim",
+      opts = {}, -- See dressing.nvim docs for options
+    }
+    ```
+  </Step>
+  
+  <Step title="Configure Avante">
+    ```lua
+    require('avante').setup({
+      input = {
+        provider = "dressing",
+        provider_opts = {},
+      },
+    })
+    ```
+  </Step>
+</Steps>
+
+**Pros**:
+- Better visual styling
+- More customization options
+- Works with other plugins using `vim.ui`
+
+**Configuration Example**:
+
+```lua
+-- Configure dressing.nvim
+require('dressing').setup({
+  input = {
+    enabled = true,
+    default_prompt = "Input:",
+    prompt_align = "left",
+    insert_only = true,
+    start_in_insert = true,
+    border = "rounded",
+    relative = "cursor",
+    prefer_width = 40,
+    width = nil,
+    max_width = { 140, 0.9 },
+    min_width = { 20, 0.2 },
+    win_options = {
+      winblend = 10,
+      wrap = false,
+    },
+  },
+})
+
+-- Use with Avante
+require('avante').setup({
+  input = {
+    provider = "dressing",
+  },
+})
+```
+
+---
+
+### Snacks.nvim (Recommended)
+
+[folke/snacks.nvim](https://github.com/folke/snacks.nvim) provides a modern, feature-rich input UI.
+
+<Steps>
+  <Step title="Install snacks.nvim">
+    ```lua
+    -- With lazy.nvim
+    {
+      "folke/snacks.nvim",
+      opts = {
+        input = { enabled = true },
+      },
+    }
+    ```
+  </Step>
+  
+  <Step title="Configure Avante">
+    ```lua
+    require('avante').setup({
+      input = {
+        provider = "snacks",
+        provider_opts = {
+          title = "Avante Input",
+          icon = " ",
+          placeholder = "Enter your input...",
+        },
+      },
+    })
+    ```
+  </Step>
+</Steps>
+
+**Pros**:
+- Modern, polished UI
+- Rich customization
+- Consistent with other snacks.nvim features
+- Great visual feedback
+
+**Full Configuration Example**:
+
+```lua
+require('avante').setup({
+  input = {
+    provider = "snacks",
+    provider_opts = {
+      -- Snacks.input options
+      title = "Avante Input",
+      icon = " ",
+      placeholder = "Enter your API key...",
+      width = 60,
+      border = "rounded",
+      title_pos = "center",
+      -- Styling
+      backdrop = true,
+      backdrop_blur = true,
+      -- Behavior
+      insert = true,
+      relative = "editor",
+      position = "50%",
+    },
+  },
+})
+```
+
+## Custom Input Provider
+
+Create a completely custom input provider by providing a function:
+
+```lua
+require('avante').setup({
+  input = {
+    ---@param input avante.ui.Input
+    provider = function(input)
+      local title = input.title ---@type string
+      local default = input.default ---@type string
+      local conceal = input.conceal ---@type boolean
+      local on_submit = input.on_submit ---@type fun(result: string|nil): nil
+
+      -- Your custom input logic here
+      -- Create your own UI, buffer, window, etc.
+      
+      -- Call on_submit when done
+      on_submit(user_input)
+    end,
+  },
+})
+```
+
+### Custom Provider Example
+
+```lua
+local function custom_input_provider(input)
+  local buf = vim.api.nvim_create_buf(false, true)
+  local width = 50
+  local height = 1
+  
+  local win = vim.api.nvim_open_win(buf, true, {
+    relative = "editor",
+    width = width,
+    height = height,
+    col = (vim.o.columns - width) / 2,
+    row = (vim.o.lines - height) / 2,
+    style = "minimal",
+    border = "rounded",
+    title = input.title,
+    title_pos = "center",
+  })
+  
+  -- Set default text
+  if input.default then
+    vim.api.nvim_buf_set_lines(buf, 0, -1, false, { input.default })
+  end
+  
+  -- Handle submission
+  vim.keymap.set("n", "<CR>", function()
+    local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+    local result = lines[1] or ""
+    vim.api.nvim_win_close(win, true)
+    input.on_submit(result)
+  end, { buffer = buf })
+  
+  -- Handle cancellation
+  vim.keymap.set("n", "<Esc>", function()
+    vim.api.nvim_win_close(win, true)
+    input.on_submit(nil)
+  end, { buffer = buf })
+  
+  -- Start in insert mode
+  vim.cmd("startinsert")
+end
+
+require('avante').setup({
+  input = {
+    provider = custom_input_provider,
+  },
+})
+```
+
+## Input Provider Parameters
+
+When creating a custom provider, you receive an `input` object with:
+
+<ParamField path="title" type="string">
+  The title/prompt for the input dialog
+  
+  **Example**: `"Enter API Key"`
+</ParamField>
+
+<ParamField path="default" type="string">
+  Default value to pre-fill in the input
+  
+  **Example**: `"sk-..."`
+</ParamField>
+
+<ParamField path="conceal" type="boolean">
+  Whether to conceal the input (for passwords/API keys)
+  
+  When `true`, display asterisks instead of actual characters
+</ParamField>
+
+<ParamField path="on_submit" type="function">
+  Callback function to call with the result
+  
+  **Signature**: `fun(result: string|nil): nil`
+  
+  - Pass the user's input as a string
+  - Pass `nil` if cancelled
+</ParamField>
+
+## Provider Comparison
+
+| Feature | Native | Dressing | Snacks | Custom |
+|---------|--------|----------|--------|--------|
+| Dependencies | None | dressing.nvim | snacks.nvim | None |
+| Visual Quality | Basic | Good | Excellent | Depends |
+| Customization | Limited | Good | Excellent | Full |
+| Complexity | Simple | Medium | Medium | High |
+| Recommended | Basic use | General | Best UX | Specific needs |
+
+## When to Use Each Provider
+
+<AccordionGroup>
+  <Accordion title="Native">
+    **Use when**:
+    - You want minimal dependencies
+    - You prefer simplicity over aesthetics
+    - You're running Neovim in limited environments
+    
+    **Example**: Remote servers, minimal configs
+  </Accordion>
+  
+  <Accordion title="Dressing">
+    **Use when**:
+    - You already use dressing.nvim
+    - You want consistent `vim.ui` behavior
+    - You need good customization without complexity
+    
+    **Example**: Standard Neovim setups with dressing already installed
+  </Accordion>
+  
+  <Accordion title="Snacks (Recommended)">
+    **Use when**:
+    - You want the best visual experience
+    - You use other snacks.nvim features
+    - You appreciate modern UI design
+    
+    **Example**: Modern Neovim configurations focused on aesthetics
+  </Accordion>
+  
+  <Accordion title="Custom">
+    **Use when**:
+    - You have very specific requirements
+    - You want complete control over behavior
+    - You're integrating with other custom UI
+    
+    **Example**: Unique workflows, special validation needs
+  </Accordion>
+</AccordionGroup>
+
+## Example Use Cases
+
+### API Key Entry with Snacks
+
+```lua
+input = {
+  provider = "snacks",
+  provider_opts = {
+    title = "API Key Required",
+    icon = " ",
+    placeholder = "sk-...",
+    backdrop = true,
+  },
+}
+```
+
+### Simple Input with Dressing
+
+```lua
+input = {
+  provider = "dressing",
+  provider_opts = {},
+}
+```
+
+### Custom Input with Validation
+
+```lua
+input = {
+  provider = function(input)
+    -- Custom UI with validation
+    local function validate(value)
+      if #value < 10 then
+        vim.notify("API key too short", vim.log.levels.ERROR)
+        return false
+      end
+      return true
+    end
+    
+    -- Show input, validate, then submit
+    vim.ui.input({
+      prompt = input.title,
+      default = input.default,
+    }, function(result)
+      if result and validate(result) then
+        input.on_submit(result)
+      else
+        input.on_submit(nil)
+      end
+    end)
+  end,
+}
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Input not appearing">
+    1. Verify the provider is installed (dressing/snacks)
+    2. Check provider configuration is correct
+    3. Look for errors in `:messages`
+    4. Try switching to `"native"` to test
+  </Accordion>
+  
+  <Accordion title="Custom provider not working">
+    1. Ensure you're calling `on_submit` with a result
+    2. Verify the function signature matches expectations
+    3. Check for errors in your custom logic
+    4. Test with a simple implementation first
+  </Accordion>
+  
+  <Accordion title="Styling issues">
+    1. Check `provider_opts` are correct for your provider
+    2. Verify colorscheme compatibility
+    3. Review provider's documentation for options
+    4. Try default options first, then customize
+  </Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Start Simple" icon="seedling">
+    Begin with native or dressing, then move to snacks or custom if needed.
+  </Card>
+  
+  <Card title="Consistent Experience" icon="equals">
+    Use the same provider across your config for consistency.
+  </Card>
+  
+  <Card title="Handle Cancellation" icon="xmark">
+    Always handle the case where users cancel input (nil result).
+  </Card>
+  
+  <Card title="Visual Feedback" icon="eye">
+    Use appropriate icons and titles to help users understand what's being requested.
+  </Card>
+</CardGroup>
+
+## Related Documentation
+
+<CardGroup cols={2}>
+  <Card title="Configuration" icon="gear" href="/configuration/overview">
+    General Avante configuration
+  </Card>
+  <Card title="Providers" icon="plug" href="/configuration/providers">
+    Configure AI providers and API keys
+  </Card>
+</CardGroup>

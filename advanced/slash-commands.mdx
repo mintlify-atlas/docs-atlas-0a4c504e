@@ -1,0 +1,345 @@
+---
+title: Slash Commands
+description: Built-in slash commands for common operations in Avante chat
+icon: slash
+---
+
+## Overview
+
+Slash commands provide quick access to common operations within the Avante chat interface. Type `/` to see available commands with auto-completion.
+
+<Info>
+  Slash commands are triggered by typing `/` followed by the command name in the Avante chat input.
+</Info>
+
+## Available Commands
+
+### /help
+
+Display help information about available commands and features.
+
+```
+/help
+```
+
+**Usage**: Get an overview of Avante's capabilities, keybindings, and available commands.
+
+**Example Output**:
+- List of available slash commands
+- Mention triggers (`@file`, `@codebase`, etc.)
+- Shortcut prefixes (`#refactor`, `#test`, etc.)
+- Common keybindings
+
+---
+
+### /init
+
+Initialize AGENTS.md based on the current project structure and context.
+
+```
+/init
+```
+
+**Usage**: Automatically generate a project instruction file (`AGENTS.md` or `avante.md`) that provides context to the AI about your project.
+
+**What it does**:
+1. Analyzes your project structure
+2. Detects technologies and frameworks
+3. Creates a markdown file with project context
+4. Sets up AI persona and mission
+
+**Output**: Creates a customized instruction file in your project root.
+
+<Tip>
+  Run `/init` when starting a new project to help the AI understand your codebase structure and conventions.
+</Tip>
+
+---
+
+### /clear
+
+Clear the chat history for the current session.
+
+```
+/clear
+```
+
+**Usage**: Remove all previous messages from the current chat, starting fresh while keeping the session active.
+
+**When to use**:
+- Context has become too large or confusing
+- You want to start a new topic without previous context
+- Chat is slowing down due to long history
+
+<Note>
+  This only clears the visible history. Use `/new` if you want to start a completely new session.
+</Note>
+
+See also: `:AvanteClear` command
+
+---
+
+### /new
+
+Start a new chat session.
+
+```
+/new
+```
+
+**Usage**: Create a completely new chat session. The previous session is saved and can be reopened later.
+
+**Difference from `/clear`**:
+- `/clear` - Removes messages but keeps the same session
+- `/new` - Creates a brand new session, saving the old one
+
+**Accessing old sessions**: Use `/history` or `:AvanteHistory` to reopen previous chats.
+
+See also: `:AvanteChatNew` command
+
+---
+
+### /compact
+
+Compact chat history to save tokens while preserving important context.
+
+```
+/compact
+```
+
+**Usage**: Reduce the size of your chat history by summarizing older messages, which helps:
+- Reduce API costs
+- Speed up AI responses
+- Stay within context limits
+- Maintain essential information
+
+**How it works**:
+1. Identifies older, less relevant messages
+2. Summarizes or removes redundant information
+3. Preserves key decisions and important context
+4. Updates the chat history with compacted version
+
+<Tip>
+  Use `/compact` during long coding sessions to keep context manageable without losing important information.
+</Tip>
+
+---
+
+### /lines
+
+Ask a question about specific line ranges in the current file.
+
+```
+/lines <start>-<end> <question>
+```
+
+**Parameters**:
+- `<start>` - Starting line number
+- `<end>` - Ending line number  
+- `<question>` - Your question about those lines
+
+**Examples**:
+
+```
+/lines 10-50 What does this function do?
+```
+
+```
+/lines 100-150 How can I optimize this code?
+```
+
+```
+/lines 75-90 Are there any bugs in this validation logic?
+```
+
+**Usage**: Focus the AI's attention on a specific portion of code without selecting it manually.
+
+---
+
+### /commit
+
+Generate a commit message for the current staged changes.
+
+```
+/commit
+```
+
+**Usage**: Automatically create a conventional commit message based on your git changes.
+
+**How it works**:
+1. Analyzes `git diff --staged`
+2. Understands the nature of changes
+3. Generates a descriptive commit message
+4. Follows conventional commit format (if configured)
+
+**Example Output**:
+```
+feat(auth): add JWT token refresh mechanism
+
+- Implement automatic token refresh before expiration
+- Add retry logic for failed refresh attempts
+- Update authentication service tests
+```
+
+<Note>
+  Ensure you have staged changes before using `/commit`. The AI analyzes only staged changes, not all modifications.
+</Note>
+
+See also: The `git_commit` tool in [LLM Tools](/advanced/tools)
+
+---
+
+### /history
+
+Open the chat session selector to view and reopen previous conversations.
+
+```
+/history
+```
+
+**Usage**: Browse and restore previous chat sessions.
+
+**What you can do**:
+- View list of past chat sessions
+- See session timestamps and first messages
+- Reopen any previous conversation
+- Continue from where you left off
+
+See also: `:AvanteHistory` command and `<Leader>ah` keybinding
+
+---
+
+## Usage in nvim-cmp / blink.cmp
+
+Slash commands appear automatically in completion menus when you type `/`:
+
+<Steps>
+  <Step title="Type Trigger">
+    Type `/` in the Avante chat input
+  </Step>
+  
+  <Step title="See Completions">
+    A completion menu appears showing available commands with descriptions
+  </Step>
+  
+  <Step title="Select Command">
+    Use arrow keys or `<C-n>`/`<C-p>` to navigate, then `<CR>` to select
+  </Step>
+  
+  <Step title="Add Parameters">
+    For commands like `/lines`, add the required parameters after the command
+  </Step>
+</Steps>
+
+## Command Aliases
+
+Some commands have equivalent vim commands:
+
+| Slash Command | Vim Command | Keybinding |
+|---------------|-------------|------------|
+| `/clear` | `:AvanteClear` | - |
+| `/new` | `:AvanteChatNew` | `<Leader>an` |
+| `/history` | `:AvanteHistory` | `<Leader>ah` |
+| `/commit` | (uses `git_commit` tool) | - |
+
+## Combining with Mentions and Shortcuts
+
+You can combine slash commands with mentions and shortcuts:
+
+```
+/lines 50-100 @diagnostics fix these errors
+```
+
+```
+/clear
+@codebase #refactor the authentication module
+```
+
+```
+/commit @file include these changes
+```
+
+## Creating Custom Commands
+
+While you can't add new slash commands directly, you can create similar functionality using:
+
+1. **Custom Shortcuts** (triggered with `#`):
+   ```lua
+   shortcuts = {
+     {
+       name = "review",
+       prompt = "Please review this code for bugs, performance issues, and best practices.",
+     },
+   }
+   ```
+
+2. **Custom Tools** for complex operations:
+   See [LLM Tools](/advanced/tools) for examples.
+
+3. **Vim Commands** for integration:
+   ```vim
+   command! AvanteReview lua require('avante.api').ask({prompt = "Review this code"})
+   ```
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Use /clear Wisely" icon="broom">
+    Clear history when context becomes muddled, but remember you lose all previous context.
+  </Card>
+  
+  <Card title="Session Management" icon="folder">
+    Use `/new` to organize work by feature or task, making it easier to return to specific conversations.
+  </Card>
+  
+  <Card title="Token Management" icon="coins">
+    Use `/compact` regularly during long sessions to control costs and improve performance.
+  </Card>
+  
+  <Card title="Precise Questions" icon="crosshairs">
+    Use `/lines` to focus the AI on specific code sections for more targeted responses.
+  </Card>
+</CardGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Slash commands not appearing">
+    1. Ensure nvim-cmp or blink.cmp is installed
+    2. Verify completion source is configured:
+       ```lua
+       sources = {
+         compat = { "avante_commands" }
+       }
+       ```
+    3. Check that you're in the Avante chat input
+  </Accordion>
+  
+  <Accordion title="/commit not working">
+    1. Ensure you have staged changes: `git add <files>`
+    2. Check git is installed and working
+    3. Verify you're in a git repository
+  </Accordion>
+  
+  <Accordion title="/lines gives wrong code">
+    Make sure the line numbers are correct and within the file's range. Line numbers are 1-indexed.
+  </Accordion>
+  
+  <Accordion title="/compact removes too much">
+    This is expected behavior. If you need more control, use `/clear` to fully reset or `/new` to start a fresh session.
+  </Accordion>
+</AccordionGroup>
+
+## Related Documentation
+
+<CardGroup cols={2}>
+  <Card title="Completion Sources" icon="terminal" href="/advanced/completion-sources">
+    Learn about mentions and shortcuts
+  </Card>
+  <Card title="Commands" icon="code" href="/api/commands">
+    All available vim commands
+  </Card>
+  <Card title="LLM Tools" icon="toolbox" href="/advanced/tools">
+    Explore available tools for the AI
+  </Card>
+</CardGroup>

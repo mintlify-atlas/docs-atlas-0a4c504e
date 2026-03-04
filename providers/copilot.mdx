@@ -1,0 +1,353 @@
+---
+title: Copilot Provider
+description: Configure GitHub Copilot integration in Avante.nvim
+---
+
+GitHub Copilot integration allows you to use your Copilot subscription with Avante.nvim. This provider leverages your existing Copilot authentication from copilot.lua or copilot.vim.
+
+## Prerequisites
+
+<Note>
+You must have either [copilot.lua](https://github.com/zbirenbaum/copilot.lua) or [copilot.vim](https://github.com/github/copilot.vim) installed and authenticated before using this provider.
+</Note>
+
+## Quick Start
+
+<Steps>
+  <Step title="Install Copilot plugin">
+    Choose one:
+    
+    **copilot.lua** (recommended):
+    ```lua
+    {
+      "zbirenbaum/copilot.lua",
+      config = function()
+        require("copilot").setup()
+      end,
+    }
+    ```
+    
+    **copilot.vim**:
+    ```vim
+    Plug 'github/copilot.vim'
+    ```
+  </Step>
+  
+  <Step title="Authenticate with GitHub Copilot">
+    Follow the authentication flow in your Copilot plugin (usually `:Copilot setup` or similar).
+  </Step>
+  
+  <Step title="Configure Avante">
+    ```lua
+    {
+      "yetone/avante.nvim",
+      dependencies = {
+        "zbirenbaum/copilot.lua",
+      },
+      opts = {
+        provider = "copilot",
+      },
+    }
+    ```
+  </Step>
+</Steps>
+
+## Configuration
+
+### Basic Configuration
+
+```lua
+providers = {
+  copilot = {
+    endpoint = "https://api.githubcopilot.com",
+    model = "gpt-4o-2024-11-20",
+    timeout = 30000,
+    context_window = 64000,
+    extra_request_body = {
+      max_tokens = 20480,
+    },
+  },
+}
+```
+
+### Available Models
+
+Copilot provides access to various models. You can list available models:
+
+```vim
+:lua print(vim.inspect(require('avante.providers').copilot:list_models()))
+```
+
+Common models:
+
+<CodeGroup>
+```lua GPT-4o (Default)
+providers = {
+  copilot = {
+    model = "gpt-4o-2024-11-20",
+  },
+}
+```
+
+```lua GPT-5 Codex
+providers = {
+  copilot = {
+    model = "gpt-5-codex",
+    -- Response API automatically enabled for Codex models
+  },
+}
+```
+</CodeGroup>
+
+## Authentication
+
+### OAuth Token Location
+
+Copilot authentication is stored in:
+
+- **copilot.lua**: `~/.config/github-copilot/hosts.json`
+- **copilot.vim**: `~/.config/github-copilot/apps.json`
+
+### Token Refresh
+
+Tokens are automatically refreshed:
+
+- Refreshed 2 minutes before expiration
+- Background refresh every 28 minutes
+- Stored in `~/.local/share/nvim/avante/github-copilot.json`
+
+### Manual Refresh
+
+If you need to re-authenticate:
+
+1. Re-authenticate with your Copilot plugin
+2. Restart Neovim
+3. Avante will automatically pick up the new token
+
+## Response API
+
+Copilot supports OpenAI's Response API for certain models:
+
+```lua
+providers = {
+  copilot = {
+    -- Automatically enabled for gpt-5-codex models
+    use_response_api = function(opts)
+      local model = opts.model
+      return model and model:match("gpt%-5%-codex") ~= nil
+    end,
+  },
+}
+```
+
+### Response API Features
+
+- **Encrypted reasoning**: Reasoning content is encrypted
+- **Function calling**: Enhanced tool use
+- **Full history**: Copilot doesn't support `previous_response_id`, always sends full conversation
+
+<Note>
+Unlike OpenAI's Response API, Copilot requires sending the full conversation history with each request.
+</Note>
+
+## Model Listing
+
+List available Copilot models:
+
+```lua
+local models = require('avante.providers').copilot:list_models()
+for _, model in ipairs(models) do
+  print(string.format("%s (%s)", model.display_name, model.id))
+end
+```
+
+Model information includes:
+- `id`: Model identifier
+- `display_name`: Human-readable name
+- `name`: Full model name with provider
+- `tokenizer`: Tokenizer used
+- `max_input_tokens`: Maximum input size
+- `max_output_tokens`: Maximum output size
+- `version`: Model version
+
+## Advanced Configuration
+
+### Custom Endpoint
+
+```lua
+providers = {
+  copilot = {
+    endpoint = "https://api.githubcopilot.com",
+  },
+}
+```
+
+### Proxy Configuration
+
+```lua
+providers = {
+  copilot = {
+    proxy = "http://proxy.example.com:8080",
+    allow_insecure = false,
+  },
+}
+```
+
+### Request Headers
+
+Copilot uses specific headers for authentication:
+
+```lua
+-- Automatically set by Avante:
+headers = {
+  ["Authorization"] = "Bearer <token>",
+  ["User-Agent"] = "GitHubCopilotChat/0.26.7",
+  ["Editor-Version"] = "vscode/1.105.1",
+  ["Editor-Plugin-Version"] = "copilot-chat/0.26.7",
+  ["Copilot-Integration-Id"] = "vscode-chat",
+  ["Openai-Intent"] = "conversation-edits",
+}
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Authentication Failed">
+    If Copilot authentication fails:
+    
+    1. Verify Copilot plugin is installed:
+       ```vim
+       :Copilot status
+       ```
+    
+    2. Re-authenticate with Copilot:
+       ```vim
+       :Copilot setup
+       ```
+    
+    3. Check OAuth token exists:
+       ```sh
+       cat ~/.config/github-copilot/hosts.json
+       ```
+  </Accordion>
+  
+  <Accordion title="Token Expired">
+    Tokens are auto-refreshed, but if you see expiration errors:
+    
+    1. Restart Neovim to trigger token refresh
+    2. Re-authenticate with Copilot if needed
+    3. Check token file: `~/.local/share/nvim/avante/github-copilot.json`
+  </Accordion>
+  
+  <Accordion title="Model Not Found">
+    If a model isn't available:
+    
+    1. List available models:
+       ```lua
+       :lua print(vim.inspect(require('avante.providers').copilot:list_models()))
+       ```
+    
+    2. Ensure you're using a valid model ID
+    3. Check your Copilot subscription includes the model
+  </Accordion>
+  
+  <Accordion title="Copilot Plugin Not Detected">
+    Error: "You must setup copilot with either copilot.lua or copilot.vim"
+    
+    1. Install copilot.lua or copilot.vim
+    2. Authenticate with the plugin first
+    3. Restart Neovim
+  </Accordion>
+</AccordionGroup>
+
+## Limitations
+
+<Warning>
+- **Cost**: While included with Copilot subscription, be mindful of usage
+- **Rate limits**: Subject to Copilot's rate limits
+- **Auto-suggestions**: Not recommended as `auto_suggestions_provider` due to high frequency ([#1048](https://github.com/yetone/avante.nvim/issues/1048))
+</Warning>
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Subscription" icon="credit-card">
+    - Requires active Copilot subscription
+    - Individual or Business plans supported
+    - Check limits in GitHub settings
+  </Card>
+  
+  <Card title="Model Selection" icon="brain">
+    - Default models work well
+    - Codex models for code-focused tasks
+    - List models to see what's available
+  </Card>
+  
+  <Card title="Token Management" icon="key">
+    - Tokens auto-refresh every 28 min
+    - Check `vim.g.avante_login` for status
+    - Re-auth if problems persist
+  </Card>
+  
+  <Card title="Integration" icon="plug">
+    - Works alongside Copilot plugin
+    - Shares authentication
+    - Independent model selection
+  </Card>
+</CardGroup>
+
+## Example Configurations
+
+<CodeGroup>
+```lua Standard Setup
+{
+  provider = "copilot",
+  dependencies = {
+    "zbirenbaum/copilot.lua",
+  },
+  providers = {
+    copilot = {
+      model = "gpt-4o-2024-11-20",
+      timeout = 30000,
+      extra_request_body = {
+        max_tokens = 20480,
+      },
+    },
+  },
+}
+```
+
+```lua With Codex Model
+{
+  provider = "copilot",
+  providers = {
+    copilot = {
+      model = "gpt-5-codex",
+      timeout = 45000,
+      extra_request_body = {
+        max_tokens = 32768,
+      },
+    },
+  },
+}
+```
+
+```lua With copilot.vim
+{
+  provider = "copilot",
+  -- No dependencies needed if using copilot.vim
+  providers = {
+    copilot = {
+      model = "gpt-4o-2024-11-20",
+    },
+  },
+}
+```
+</CodeGroup>
+
+## Related Resources
+
+- [GitHub Copilot Documentation](https://docs.github.com/copilot)
+- [copilot.lua Repository](https://github.com/zbirenbaum/copilot.lua)
+- [copilot.vim Repository](https://github.com/github/copilot.vim)
+- [Provider Overview](/providers/overview)

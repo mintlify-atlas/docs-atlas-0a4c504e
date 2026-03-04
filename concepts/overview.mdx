@@ -1,0 +1,205 @@
+---
+title: Architecture Overview
+description: Understanding Avante.nvim's design philosophy and core architecture
+---
+
+Avante.nvim is a Neovim plugin designed to emulate the behavior of AI-powered coding assistants like Cursor, bringing sophisticated AI-driven code suggestions and autonomous code editing directly into your Neovim environment.
+
+## Design Philosophy
+
+Avante.nvim is built on three core principles:
+
+1. **Native Neovim Integration**: Deep integration with Neovim's architecture, leveraging its buffer system, UI components, and plugin ecosystem
+2. **Flexibility**: Support for multiple AI providers and interaction modes to suit different workflows
+3. **Transparency**: Clear visibility into AI operations with tool execution logs, permission controls, and prompt logging
+
+## Core Components
+
+Avante.nvim's architecture consists of several key components working together:
+
+### Sidebar System
+
+The sidebar (`lua/avante/sidebar.lua`) is the primary interface for interacting with Avante. It manages:
+
+- **Result display**: Shows AI responses and code suggestions
+- **Input handling**: Captures user prompts and commands
+- **File selection**: Manages context files for AI conversations
+- **History management**: Maintains conversation history across sessions
+
+### LLM Engine
+
+The LLM engine (`lua/avante/llm.lua`) handles all AI provider interactions:
+
+- Manages streaming responses from AI providers
+- Coordinates tool execution and autonomous workflows
+- Handles conversation history and memory management
+- Supports both traditional chat and agentic modes
+
+```lua
+-- Example: Basic LLM configuration
+{
+  provider = "claude",
+  mode = "agentic",  -- or "legacy"
+  providers = {
+    claude = {
+      model = "claude-sonnet-4-5-20250929",
+      timeout = 30000,
+      extra_request_body = {
+        temperature = 0.75,
+        max_tokens = 64000,
+      },
+    },
+  },
+}
+```
+
+### Provider System
+
+The provider system (`lua/avante/providers/`) abstracts different AI services:
+
+- **Supported providers**: Claude, OpenAI, Gemini, Copilot, Azure, and many more
+- **Custom providers**: Extensible architecture for adding new AI services
+- **ACP providers**: Special providers using the Agent Client Protocol for enhanced capabilities
+
+See [Providers](/concepts/providers) for detailed information.
+
+### Tool System
+
+The tool system (`lua/avante/llm_tools/`) enables autonomous code editing:
+
+- File operations (read, write, edit, create)
+- Code search and navigation (grep, glob, diagnostics)
+- Shell command execution (bash)
+- Task management (write_todos, read_todos)
+- Version control (undo_edit)
+
+See [Agentic Workflow](/concepts/agentic-workflow) for more details on tools.
+
+## Interaction Modes
+
+Avante supports two primary interaction modes:
+
+<Tabs>
+  <Tab title="Agentic Mode">
+    The modern, autonomous approach where the AI can:
+    - Execute tools to read and modify files
+    - Search through your codebase
+    - Run shell commands
+    - Autonomously implement changes
+    
+    Best for: Complex refactoring, feature implementation, multi-file changes
+  </Tab>
+  <Tab title="Legacy Mode">
+    Traditional chat-based approach where:
+    - AI provides suggestions in chat format
+    - You manually review and apply changes
+    - More controlled, explicit workflow
+    
+    Best for: Code review, explanations, simple edits
+  </Tab>
+</Tabs>
+
+```lua
+-- Switch between modes in config
+{
+  mode = "agentic",  -- Default: autonomous tools
+  -- or
+  mode = "legacy",   -- Traditional chat-based
+}
+```
+
+Learn more about modes in [Modes](/concepts/modes).
+
+## Key Features
+
+### Project Context
+
+Avante can understand your project through:
+
+- **File selection**: Explicitly add files to conversation context
+- **Repo mapping**: Automatic codebase structure analysis
+- **Diagnostics**: Integration with LSP diagnostics
+- **RAG service**: Optional semantic search over your codebase
+
+### Permission System
+
+Control what AI can do in your project:
+
+```lua
+{
+  behaviour = {
+    -- Auto-approve all tools (fastest)
+    auto_approve_tool_permissions = true,
+    
+    -- Prompt for every tool (most controlled)
+    -- auto_approve_tool_permissions = false,
+    
+    -- Auto-approve specific tools only
+    -- auto_approve_tool_permissions = {"bash", "str_replace"},
+  },
+}
+```
+
+### History & Memory
+
+Avante maintains conversation context across sessions:
+
+- Chat history stored per-project
+- Automatic memory summarization for long conversations
+- History selector to resume previous conversations
+- Token counting to manage context limits
+
+## Configuration Structure
+
+Avante's configuration follows a hierarchical structure:
+
+```lua
+require('avante').setup({
+  -- Core settings
+  provider = "claude",
+  mode = "agentic",
+  
+  -- Provider configurations
+  providers = {
+    -- Each provider has its own config
+  },
+  
+  -- Behavior settings
+  behaviour = {
+    auto_suggestions = false,
+    auto_apply_diff_after_generation = false,
+    -- ... more options
+  },
+  
+  -- UI settings
+  windows = {
+    position = "right",
+    width = 30,
+    -- ... more options
+  },
+  
+  -- Key mappings
+  mappings = {
+    -- Customizable keybindings
+  },
+})
+```
+
+For complete configuration options, see the [Configuration Reference](/configuration/overview).
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Modes" icon="toggle-on" href="/concepts/modes">
+    Learn about agentic vs legacy modes
+  </Card>
+  <Card title="Providers" icon="plug" href="/concepts/providers">
+    Understand AI provider architecture
+  </Card>
+  <Card title="Agentic Workflow" icon="robot" href="/concepts/agentic-workflow">
+    Deep dive into autonomous tools
+  </Card>
+  <Card title="Zen Mode" icon="spa" href="/concepts/zen-mode">
+    CLI-like experience in Neovim
+  </Card>
+</CardGroup>

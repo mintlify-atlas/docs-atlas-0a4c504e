@@ -1,122 +1,127 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
-  "name": "Mint Starter Kit",
+  "name": "Avante.nvim",
+  "theme": "aspen",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#0577cc",
+    "light": "#044c9c",
+    "dark": "#5ea439"
   },
-  "favicon": "/favicon.svg",
+  "favicon": "https://media.brand.dev/679ba98d-6e4f-431b-bc63-cf02f2d21543.png",
+  "logo": {
+    "light": "https://media.brand.dev/db8e3c7a-2311-4c43-b332-c5f472272d16.svg",
+    "dark": "https://media.brand.dev/db8e3c7a-2311-4c43-b332-c5f472272d16.svg"
+  },
+  "navbar": {
+    "primary": {
+      "type": "github",
+      "href": "https://github.com/yetone/avante.nvim"
+    }
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/yetone/avante.nvim",
+      "discord": "https://discord.gg/QfnEFEdSjz"
+    }
+  },
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "Documentation",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "Get Started",
             "pages": [
-              "index",
-              "quickstart",
-              "development"
+              "introduction",
+              "installation",
+              "quickstart"
             ]
           },
           {
-            "group": "Customization",
+            "group": "Core Concepts",
             "pages": [
-              "essentials/settings",
-              "essentials/navigation"
+              "concepts/overview",
+              "concepts/modes",
+              "concepts/providers",
+              "concepts/agentic-workflow",
+              "concepts/zen-mode"
             ]
           },
           {
-            "group": "Writing content",
+            "group": "Configuration",
             "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
+              "configuration/overview",
+              "configuration/providers",
+              "configuration/keybindings",
+              "configuration/windows",
+              "configuration/behavior",
+              "configuration/project-instructions"
             ]
           },
           {
-            "group": "AI tools",
+            "group": "Features",
             "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
+              "features/ai-assistance",
+              "features/fast-apply",
+              "features/acp-support",
+              "features/rag-service",
+              "features/suggestions",
+              "features/diff-management"
+            ]
+          },
+          {
+            "group": "Providers",
+            "pages": [
+              "providers/overview",
+              "providers/claude",
+              "providers/openai",
+              "providers/gemini",
+              "providers/copilot",
+              "providers/ollama",
+              "providers/custom-providers"
+            ]
+          },
+          {
+            "group": "Advanced",
+            "pages": [
+              "advanced/tools",
+              "advanced/completion-sources",
+              "advanced/slash-commands",
+              "advanced/web-search",
+              "advanced/input-providers"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/usage",
+              "guides/neotree-integration",
+              "guides/blink-cmp",
+              "guides/troubleshooting"
             ]
           }
         ]
       },
       {
-        "tab": "API reference",
+        "tab": "API Reference",
         "groups": [
           {
-            "group": "API documentation",
+            "group": "API",
             "pages": [
-              "api-reference/introduction"
+              "api/commands",
+              "api/lua-api",
+              "api/keymaps",
+              "api/highlights"
             ]
           },
           {
-            "group": "Endpoint examples",
+            "group": "Configuration Schema",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "api/config-schema"
             ]
           }
         ]
       }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
-        }
-      ]
-    }
-  },
-  "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
-  },
-  "navbar": {
-    "links": [
-      {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
-      }
-    ],
-    "primary": {
-      "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
-    }
-  },
-  "contextual": {
-    "options": [
-     "copy",
-     "view",
-     "chatgpt",
-     "claude",
-     "perplexity",
-     "mcp",
-     "cursor",
-     "vscode"
-   ]
-  },
-  "footer": {
-    "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
-    }
+    ]
   }
 }

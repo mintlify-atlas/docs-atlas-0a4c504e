@@ -1,0 +1,373 @@
+---
+title: Claude Provider
+description: Configure Anthropic's Claude models in Avante.nvim
+---
+
+Claude is Anthropic's family of AI models, known for their advanced reasoning capabilities and extended thinking modes. Avante.nvim supports both API key authentication and Claude Pro/Max subscription authentication.
+
+## Quick Start
+
+### API Key Authentication
+
+<Steps>
+  <Step title="Get your API key">
+    Sign up at [Anthropic Console](https://console.anthropic.com/) and create an API key.
+  </Step>
+  
+  <Step title="Set environment variable">
+    Add to your shell configuration:
+    ```sh
+    # Scoped (recommended)
+    export AVANTE_ANTHROPIC_API_KEY=your-api-key
+    
+    # Or global
+    export ANTHROPIC_API_KEY=your-api-key
+    ```
+  </Step>
+  
+  <Step title="Configure provider">
+    ```lua
+    {
+      "yetone/avante.nvim",
+      opts = {
+        provider = "claude",
+      },
+    }
+    ```
+  </Step>
+</Steps>
+
+### Claude Pro/Max Subscription
+
+If you have a Claude Pro or Max subscription, you can authenticate using OAuth:
+
+<Steps>
+  <Step title="Enable OAuth authentication">
+    ```lua
+    {
+      "yetone/avante.nvim",
+      opts = {
+        provider = "claude",
+        providers = {
+          claude = {
+            auth_type = "max", -- Use "max" for subscription auth
+          },
+        },
+      },
+    }
+    ```
+  </Step>
+  
+  <Step title="Authenticate in browser">
+    When you open Neovim, the authentication process will start in your browser.
+  </Step>
+  
+  <Step title="Enter authorization code">
+    Copy the code shown in your browser and paste it into the Neovim prompt.
+  </Step>
+</Steps>
+
+<Note>
+If you previously had a different provider selected, run `:AvanteSwitchProvider claude` to initiate authentication.
+</Note>
+
+## Configuration
+
+### Basic Configuration
+
+```lua
+providers = {
+  claude = {
+    endpoint = "https://api.anthropic.com",
+    model = "claude-sonnet-4-5-20250929",
+    timeout = 30000,
+    context_window = 200000,
+    extra_request_body = {
+      temperature = 0.75,
+      max_tokens = 64000,
+    },
+  },
+}
+```
+
+### Available Models
+
+<CodeGroup>
+```lua Claude Sonnet 4.5 (Latest)
+providers = {
+  claude = {
+    model = "claude-sonnet-4-5-20250929",
+    extra_request_body = {
+      max_tokens = 64000,
+    },
+  },
+}
+```
+
+```lua Claude Opus 4
+providers = {
+  claude = {
+    model = "claude-3-opus-20240229",
+    extra_request_body = {
+      max_tokens = 20480,
+    },
+  },
+}
+```
+
+```lua Claude Haiku 3.5
+providers = {
+  ["claude-haiku"] = {
+    __inherited_from = "claude",
+    model = "claude-3-5-haiku-20241022",
+    extra_request_body = {
+      max_tokens = 8192,
+    },
+  },
+}
+```
+</CodeGroup>
+
+### Authentication Types
+
+<CodeGroup>
+```lua API Key (Default)
+providers = {
+  claude = {
+    auth_type = "api",
+  },
+}
+```
+
+```lua Claude Pro/Max Subscription
+providers = {
+  claude = {
+    auth_type = "max",
+  },
+}
+```
+</CodeGroup>
+
+## Environment Variables
+
+Claude uses the following environment variables:
+
+| Variable | Scoped Version | Purpose |
+|----------|----------------|----------|
+| `ANTHROPIC_API_KEY` | `AVANTE_ANTHROPIC_API_KEY` | API authentication |
+
+<Note>
+When using `auth_type = "max"`, API keys are not required as OAuth is used instead.
+</Note>
+
+## Advanced Features
+
+### Prompt Caching
+
+Claude supports prompt caching to reduce costs and latency for repeated prompts:
+
+```lua
+providers = {
+  claude = {
+    -- Prompt caching is enabled by default
+    support_prompt_caching = true,
+  },
+}
+```
+
+Avante automatically applies caching to:
+- System prompts
+- Tool definitions
+- The last text message in history
+
+### Extended Thinking
+
+Claude models support extended thinking for complex reasoning tasks. This is automatically enabled when the model returns thinking content.
+
+```lua
+-- Thinking is displayed with <think> tags in the output
+-- Example:
+-- <think>
+-- Let me analyze this code structure...
+-- </think>
+-- 
+-- Here's the solution:
+```
+
+### Custom Endpoint
+
+For self-hosted or proxy setups:
+
+```lua
+providers = {
+  claude = {
+    endpoint = "https://your-custom-endpoint.com",
+  },
+}
+```
+
+### Proxy Configuration
+
+```lua
+providers = {
+  claude = {
+    proxy = "http://proxy.example.com:8080",
+    allow_insecure = false,
+  },
+}
+```
+
+## Rate Limiting
+
+Claude automatically handles rate limiting by:
+
+1. Detecting rate limit headers
+2. Calculating sleep time based on reset timestamps
+3. Pausing requests until limits reset
+
+You can monitor rate limits in the response headers:
+
+- `anthropic-ratelimit-tokens-remaining`
+- `anthropic-ratelimit-tokens-reset`
+- `anthropic-ratelimit-requests-reset`
+
+## Troubleshooting
+
+### Authentication Failed
+
+<AccordionGroup>
+  <Accordion title="API Key Not Found">
+    Ensure your API key is set in your environment:
+    
+    ```sh
+    echo $ANTHROPIC_API_KEY
+    # or
+    echo $AVANTE_ANTHROPIC_API_KEY
+    ```
+    
+    Restart Neovim after setting the variable.
+  </Accordion>
+  
+  <Accordion title="OAuth Code Invalid">
+    If the OAuth code doesn't work:
+    
+    1. Ensure you copied the entire code from the browser
+    2. Try the authentication flow again
+    3. Check that `auth_type = "max"` is set correctly
+  </Accordion>
+  
+  <Accordion title="Token Expired">
+    OAuth tokens are automatically refreshed. If you see expiration errors:
+    
+    1. Wait a moment for auto-refresh
+    2. Restart Neovim to trigger re-authentication
+  </Accordion>
+</AccordionGroup>
+
+### Quota Exceeded
+
+If you see quota errors:
+
+```
+insufficient_quota: You don't have any credits or have exceeded your quota
+```
+
+Check your usage at [Anthropic Console](https://console.anthropic.com/) and add credits or upgrade your plan.
+
+### Temperature Errors
+
+Claude requires temperature between 0 and 1:
+
+```lua
+extra_request_body = {
+  temperature = 0.75, -- Must be 0.0 to 1.0
+}
+```
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Model Selection" icon="brain">
+    - **Sonnet 4.5**: Best balance of speed and capability
+    - **Opus 4**: Maximum capability for complex tasks
+    - **Haiku 3.5**: Fastest, best for simple tasks
+  </Card>
+  
+  <Card title="Token Management" icon="gauge">
+    - Use prompt caching for repeated contexts
+    - Set appropriate `max_tokens` limits
+    - Monitor usage in Anthropic Console
+  </Card>
+  
+  <Card title="Temperature Settings" icon="temperature-half">
+    - `0.0-0.3`: Focused, deterministic responses
+    - `0.4-0.7`: Balanced creativity and consistency
+    - `0.8-1.0`: More creative and varied responses
+  </Card>
+  
+  <Card title="OAuth vs API Key" icon="key">
+    - **OAuth**: For Claude Pro/Max subscribers
+    - **API Key**: For pay-per-use developers
+    - Both work with same models
+  </Card>
+</CardGroup>
+
+## Example Configurations
+
+<CodeGroup>
+```lua Development Setup
+{
+  provider = "claude",
+  providers = {
+    claude = {
+      model = "claude-sonnet-4-5-20250929",
+      timeout = 30000,
+      extra_request_body = {
+        temperature = 0.7,
+        max_tokens = 32000,
+      },
+    },
+  },
+}
+```
+
+```lua Fast Responses
+{
+  provider = "claude",
+  providers = {
+    ["claude-haiku"] = {
+      __inherited_from = "claude",
+      model = "claude-3-5-haiku-20241022",
+      timeout = 15000,
+      extra_request_body = {
+        temperature = 0.5,
+        max_tokens = 8192,
+      },
+    },
+  },
+}
+```
+
+```lua With Subscription
+{
+  provider = "claude",
+  providers = {
+    claude = {
+      auth_type = "max",
+      model = "claude-sonnet-4-5-20250929",
+      extra_request_body = {
+        temperature = 0.75,
+        max_tokens = 64000,
+      },
+    },
+  },
+}
+```
+</CodeGroup>
+
+## Related Resources
+
+- [Anthropic API Documentation](https://docs.anthropic.com/)
+- [Model Pricing](https://www.anthropic.com/pricing)
+- [Provider Overview](/providers/overview)
+- [Custom Providers](/providers/custom-providers)

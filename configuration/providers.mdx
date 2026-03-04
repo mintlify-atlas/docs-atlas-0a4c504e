@@ -1,0 +1,522 @@
+---
+title: Provider Configuration
+description: Detailed configuration guide for all AI providers supported by Avante.nvim
+---
+
+Avante.nvim supports multiple AI providers including Claude, OpenAI, Gemini, Azure, Copilot, and many more. This guide covers how to configure each provider.
+
+## Provider Configuration Structure
+
+<ParamField path="provider" type="string" default="claude">
+  The default provider to use. Available options:
+  
+  - `claude` - Anthropic Claude (default)
+  - `openai` - OpenAI GPT models
+  - `azure` - Azure OpenAI
+  - `gemini` - Google Gemini
+  - `vertex` - Google Vertex AI
+  - `copilot` - GitHub Copilot
+  - `cohere` - Cohere
+  - `bedrock` - Amazon Bedrock
+  - `ollama` - Ollama (local models)
+  - Custom provider names
+</ParamField>
+
+<ParamField path="providers" type="table">
+  Table containing provider-specific configurations. Each provider has its own configuration structure.
+</ParamField>
+
+## Claude (Anthropic)
+
+### API Authentication
+
+```lua
+providers = {
+  claude = {
+    endpoint = "https://api.anthropic.com",
+    auth_type = "api", -- Use API key authentication
+    model = "claude-sonnet-4-5-20250929",
+    timeout = 30000,
+    context_window = 200000,
+    extra_request_body = {
+      temperature = 0.75,
+      max_tokens = 64000,
+    },
+  },
+}
+```
+
+**Environment variable**: `ANTHROPIC_API_KEY` or `AVANTE_ANTHROPIC_API_KEY`
+
+### Claude Pro/Max Subscription
+
+To use your Claude Pro/Max subscription:
+
+```lua
+providers = {
+  claude = {
+    endpoint = "https://api.anthropic.com",
+    auth_type = "max", -- Use subscription authentication
+    model = "claude-sonnet-4-5-20250929",
+    timeout = 30000,
+    extra_request_body = {
+      temperature = 0.75,
+      max_tokens = 64000,
+    },
+  },
+}
+```
+
+After setting `auth_type = "max"`, re-open Neovim and the authentication process will start in your browser. Copy the provided code into the Neovim prompt.
+
+### Claude Model Variants
+
+```lua
+providers = {
+  -- Claude Sonnet (default)
+  claude = {
+    model = "claude-sonnet-4-5-20250929",
+  },
+  
+  -- Claude Haiku (faster, cheaper)
+  ["claude-haiku"] = {
+    __inherited_from = "claude",
+    model = "claude-3-5-haiku-20241022",
+    extra_request_body = {
+      temperature = 0.75,
+      max_tokens = 8192,
+    },
+  },
+  
+  -- Claude Opus (more capable)
+  ["claude-opus"] = {
+    __inherited_from = "claude",
+    model = "claude-3-opus-20240229",
+    extra_request_body = {
+      temperature = 0.75,
+      max_tokens = 20480,
+    },
+  },
+}
+```
+
+## OpenAI
+
+```lua
+providers = {
+  openai = {
+    endpoint = "https://api.openai.com/v1",
+    model = "gpt-4o",
+    timeout = 30000,
+    context_window = 128000,
+    use_response_api = false,
+    support_previous_response_id = true,
+    extra_request_body = {
+      temperature = 0.75,
+      max_completion_tokens = 16384,
+      reasoning_effort = "medium", -- For reasoning models: low|medium|high
+    },
+  },
+}
+```
+
+**Environment variable**: `OPENAI_API_KEY` or `AVANTE_OPENAI_API_KEY`
+
+### OpenAI Reasoning Models
+
+For reasoning models (o1, o3), increase timeout and max tokens:
+
+```lua
+providers = {
+  openai = {
+    model = "o1-preview",
+    timeout = 60000, -- 60 seconds for reasoning
+    extra_request_body = {
+      max_completion_tokens = 32768, -- Include reasoning tokens
+      reasoning_effort = "high",
+    },
+  },
+}
+```
+
+### GPT-4o Mini
+
+```lua
+providers = {
+  ["openai-gpt-4o-mini"] = {
+    __inherited_from = "openai",
+    model = "gpt-4o-mini",
+  },
+}
+```
+
+## Azure OpenAI
+
+```lua
+providers = {
+  azure = {
+    endpoint = "https://<your-resource-name>.openai.azure.com",
+    deployment = "gpt-4o", -- Your deployment name
+    api_version = "2024-12-01-preview",
+    timeout = 30000,
+    extra_request_body = {
+      temperature = 0.75,
+      max_completion_tokens = 16384,
+      reasoning_effort = "medium",
+    },
+  },
+}
+```
+
+**Environment variable**: `AZURE_OPENAI_API_KEY` or `AVANTE_AZURE_OPENAI_API_KEY`
+
+## Google Gemini
+
+```lua
+providers = {
+  gemini = {
+    endpoint = "https://generativelanguage.googleapis.com/v1beta/models",
+    model = "gemini-2.0-flash",
+    timeout = 30000,
+    context_window = 1048576,
+    use_ReAct_prompt = true,
+    extra_request_body = {
+      generationConfig = {
+        temperature = 0.75,
+      },
+    },
+  },
+}
+```
+
+**Environment variable**: `GEMINI_API_KEY` or `AVANTE_GEMINI_API_KEY`
+
+## Google Vertex AI
+
+```lua
+providers = {
+  vertex = {
+    endpoint = "https://aiplatform.googleapis.com/v1/projects/PROJECT_ID/locations/LOCATION/publishers/google/models",
+    model = "gemini-1.5-flash-002",
+    timeout = 30000,
+    context_window = 1048576,
+    use_ReAct_prompt = true,
+    extra_request_body = {
+      generationConfig = {
+        temperature = 0.75,
+      },
+    },
+  },
+}
+```
+
+## GitHub Copilot
+
+```lua
+providers = {
+  copilot = {
+    endpoint = "https://api.githubcopilot.com",
+    model = "gpt-4o-2024-11-20",
+    proxy = nil,
+    allow_insecure = false,
+    timeout = 30000,
+    context_window = 64000,
+    use_response_api = false,
+    support_previous_response_id = false,
+    extra_request_body = {
+      max_tokens = 20480,
+    },
+  },
+}
+```
+
+<Note>
+  Copilot requires `copilot.lua` plugin to be installed and authenticated.
+</Note>
+
+## Amazon Bedrock
+
+```lua
+providers = {
+  bedrock = {
+    model = "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
+    model_names = {
+      "anthropic.claude-3-5-sonnet-20241022-v2:0",
+      "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
+      "us.anthropic.claude-opus-4-20250514-v1:0",
+    },
+    timeout = 30000,
+    extra_request_body = {
+      temperature = 0.75,
+      max_tokens = 20480,
+    },
+    aws_region = "us-east-1",
+    aws_profile = "", -- Optional: use specific AWS profile
+  },
+}
+```
+
+### Bedrock Credentials
+
+**Option 1**: Environment variable
+
+```bash
+# Format: access_key,secret_key,region[,session_token]
+export BEDROCK_KEYS=aws_access_key_id,aws_secret_access_key,us-east-1
+```
+
+**Option 2**: AWS credentials chain (AWS CLI, ~/.aws/profile, AWS SSO)
+
+```lua
+providers = {
+  bedrock = {
+    aws_profile = "bedrock",
+    aws_region = "us-east-1",
+  },
+}
+```
+
+<Warning>
+  Bedrock requires the AWS CLI to be installed on your system.
+</Warning>
+
+## Ollama (Local Models)
+
+```lua
+provider = "ollama",
+providers = {
+  ollama = {
+    endpoint = "http://127.0.0.1:11434",
+    model = "qwq:32b",
+    timeout = 30000,
+    use_ReAct_prompt = true,
+    is_env_set = require("avante.providers.ollama").check_endpoint_alive,
+    extra_request_body = {
+      options = {
+        temperature = 0.75,
+        num_ctx = 20480,
+        keep_alive = "5m",
+      },
+    },
+  },
+}
+```
+
+<Note>
+  Ollama is disabled by default. You must provide an implementation for `is_env_set` to enable it.
+</Note>
+
+## Cohere
+
+```lua
+providers = {
+  cohere = {
+    endpoint = "https://api.cohere.com/v2",
+    model = "command-r-plus-08-2024",
+    timeout = 30000,
+    extra_request_body = {
+      temperature = 0.75,
+      max_tokens = 20480,
+    },
+  },
+}
+```
+
+**Environment variable**: `CO_API_KEY` or `AVANTE_CO_API_KEY`
+
+## Alternative Providers
+
+### AIHub Mix
+
+```lua
+providers = {
+  aihubmix = {
+    __inherited_from = "openai",
+    endpoint = "https://aihubmix.com/v1",
+    model = "gpt-4o-2024-11-20",
+    api_key_name = "AIHUBMIX_API_KEY",
+  },
+  ["aihubmix-claude"] = {
+    __inherited_from = "claude",
+    endpoint = "https://aihubmix.com",
+    model = "claude-3-7-sonnet-20250219",
+    api_key_name = "AIHUBMIX_API_KEY",
+  },
+}
+```
+
+### Moonshot (Kimi)
+
+```lua
+providers = {
+  moonshot = {
+    __inherited_from = "openai",
+    endpoint = "https://api.moonshot.ai/v1",
+    model = "kimi-k2-0711-preview",
+    api_key_name = "MOONSHOT_API_KEY",
+  },
+}
+```
+
+### xAI (Grok)
+
+```lua
+providers = {
+  xai = {
+    __inherited_from = "openai",
+    endpoint = "https://api.x.ai/v1",
+    model = "grok-code-fast-1",
+    api_key_name = "XAI_API_KEY",
+  },
+}
+```
+
+### Mistral
+
+```lua
+providers = {
+  mistral = {
+    __inherited_from = "openai",
+    endpoint = "https://api.mistral.ai/v1",
+    model = "mistral-large-latest",
+    api_key_name = "MISTRAL_API_KEY",
+    extra_request_body = {
+      max_tokens = 4096,
+    },
+  },
+}
+```
+
+### Qwen
+
+```lua
+providers = {
+  qwen = {
+    __inherited_from = "openai",
+    endpoint = "https://dashscope.aliyuncs.com/compatible-mode/v1",
+    model = "qwen3-coder-plus",
+    api_key_name = "DASHSCOPE_API_KEY",
+  },
+}
+```
+
+## Provider Inheritance
+
+Use `__inherited_from` to reuse configuration from another provider:
+
+```lua
+providers = {
+  -- Base provider
+  openai = {
+    endpoint = "https://api.openai.com/v1",
+    model = "gpt-4o",
+    -- ... other settings
+  },
+  
+  -- Inherit from openai, only change model
+  ["gpt-4o-mini"] = {
+    __inherited_from = "openai",
+    model = "gpt-4o-mini",
+  },
+}
+```
+
+## Common Provider Options
+
+<ParamField path="endpoint" type="string">
+  API endpoint URL for the provider
+</ParamField>
+
+<ParamField path="model" type="string">
+  Model name to use
+</ParamField>
+
+<ParamField path="timeout" type="number" default="30000">
+  Request timeout in milliseconds. Increase for reasoning models.
+</ParamField>
+
+<ParamField path="context_window" type="number">
+  Number of tokens to send for context
+</ParamField>
+
+<ParamField path="extra_request_body" type="table">
+  Additional parameters sent in the request body (temperature, max_tokens, etc.)
+</ParamField>
+
+<ParamField path="api_key_name" type="string">
+  Environment variable name for the API key
+</ParamField>
+
+<ParamField path="disable_tools" type="boolean" default="false">
+  Disable tool usage for this provider
+</ParamField>
+
+## Switching Providers
+
+Switch providers at runtime:
+
+```vim
+:AvanteSwitchProvider openai
+:AvanteSwitchProvider claude
+:AvanteSwitchProvider gemini
+```
+
+Or use the keybinding (default `<leader>a?`):
+
+```vim
+<leader>a?
+```
+
+## Auto-Suggestions Provider
+
+<ParamField path="auto_suggestions_provider" type="string | nil" default="nil">
+  Separate provider for auto-suggestions. If `nil`, uses the main provider.
+</ParamField>
+
+```lua
+{
+  provider = "claude",
+  auto_suggestions_provider = "gpt-4o-mini", -- Use faster/cheaper model
+}
+```
+
+<Warning>
+  Auto-suggestions are high-frequency operations. Avoid using expensive providers like Copilot for auto-suggestions.
+</Warning>
+
+## Disabling Tools
+
+Some models don't support tools. Disable them per provider:
+
+```lua
+providers = {
+  claude = {
+    disable_tools = true,
+  },
+}
+```
+
+Or disable specific tools globally:
+
+```lua
+{
+  disabled_tools = { "python", "bash" },
+}
+```
+
+## Custom Providers
+
+Create custom providers by following the OpenAI-compatible API format:
+
+```lua
+providers = {
+  ["my-custom-provider"] = {
+    __inherited_from = "openai",
+    endpoint = "https://my-api.example.com/v1",
+    model = "my-model",
+    api_key_name = "MY_CUSTOM_API_KEY",
+  },
+}
+```
+
+For more advanced custom providers, see the [Custom Providers Wiki](https://github.com/yetone/avante.nvim/wiki/Custom-providers).

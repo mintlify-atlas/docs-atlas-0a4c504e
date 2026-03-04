@@ -1,0 +1,268 @@
+---
+title: "Fast Apply"
+description: "Instant code edits with specialized models achieving 96-98% accuracy at 2500-4500+ tokens/second"
+---
+
+## What is Fast Apply?
+
+Fast Apply is a feature that enables instant code edits with high accuracy by leveraging specialized "apply models" from Morph. It replicates Cursor AI's instant apply functionality, allowing for seamless code modifications without the typical delays of traditional code generation.
+
+<Note>
+  Fast Apply uses the specialized Morph API for instant code merging. This is separate from your main AI provider.
+</Note>
+
+## Why Fast Apply?
+
+Traditional AI code generation has noticeable latency:
+
+1. **Slow application**: Full language models take time to generate and apply changes
+2. **Merge errors**: Generic models struggle with accurate code merging
+3. **Context overhead**: Large context windows slow down simple edits
+
+**Fast Apply solves this**:
+
+- ✅ **Instant application**: Code changes applied immediately without delays
+- ✅ **High accuracy**: 96-98% accuracy for code edits
+- ✅ **Blazing speed**: 2500-4500+ tokens per second
+- ✅ **Large context**: Handles up to 16k tokens for input and output
+
+## How It Works
+
+Instead of using a general-purpose LLM to both generate and apply code:
+
+1. Your main AI provider (Claude, GPT, etc.) generates the **edit instructions**
+2. The specialized **Morph apply model** merges changes instantly
+3. Changes appear in your editor without noticeable delay
+
+```mermaid
+graph LR
+    A[AI generates edit] --> B[Morph apply model]
+    B --> C[Instant code merge]
+    C --> D[Applied to editor]
+```
+
+## Setup
+
+<Steps>
+  <Step title="Get a Morph API key">
+    Visit [morphllm.com](https://morphllm.com/api-keys) and create an account.
+    
+    Generate an API key from the dashboard.
+  </Step>
+  
+  <Step title="Set the API key">
+    Add to your shell configuration:
+    
+    ```bash
+    export MORPH_API_KEY="your-api-key"
+    ```
+    
+    Then reload:
+    
+    ```bash
+    source ~/.bashrc  # or ~/.zshrc
+    ```
+  </Step>
+  
+  <Step title="Enable Fast Apply">
+    Configure Avante to use Fast Apply:
+    
+    ```lua
+    require('avante').setup({
+      behaviour = {
+        enable_fastapply = true,  -- Enable Fast Apply
+      },
+    })
+    ```
+  </Step>
+  
+  <Step title="Choose your model (optional)">
+    Select which Morph model to use:
+    
+    ```lua
+    require('avante').setup({
+      behaviour = {
+        enable_fastapply = true,
+      },
+      providers = {
+        morph = {
+          model = "morph-v3-large",  -- or "morph-v3-fast" or "auto"
+        },
+      },
+    })
+    ```
+  </Step>
+</Steps>
+
+## Model Options
+
+Morph provides different models optimized for different use cases:
+
+| Model | Speed | Accuracy | Context | Best For |
+|-------|-------|----------|---------|----------|
+| `morph-v3-fast` | 4500+ tok/sec | 96% | 16k tokens | Quick edits, simple changes |
+| `morph-v3-large` | 2500+ tok/sec | 98% | 16k tokens | Complex refactoring, critical code |
+| `auto` | 2500-4500 tok/sec | 98% | 16k tokens | Automatic model selection |
+
+### Choosing a Model
+
+```lua
+providers = {
+  morph = {
+    model = "morph-v3-fast",  -- For speed
+    -- OR
+    model = "morph-v3-large", -- For accuracy
+    -- OR
+    model = "auto",           -- Let Morph decide
+  },
+}
+```
+
+<Tip>
+  Use `morph-v3-fast` for most edits. Reserve `morph-v3-large` for complex refactoring or production-critical code.
+</Tip>
+
+## Usage
+
+Once configured, Fast Apply works automatically:
+
+### Automatic Application
+
+When Fast Apply is enabled, the `edit_file` tool is used instead of traditional tools:
+
+```vim
+" Select code in visual mode
+V5j
+
+" Request an edit
+:AvanteEdit Add type hints to function parameters
+```
+
+The AI:
+1. Analyzes your code
+2. Generates edit instructions
+3. Sends to Morph apply model
+4. Applies changes **instantly**
+
+### Prompt Format
+
+Fast Apply uses a specialized prompt format internally:
+
+```xml
+<instructions>
+Add type hints to function parameters
+</instructions>
+
+<code>
+function process_data(items, callback)
+  for i, item in ipairs(items) do
+    callback(item)
+  end
+end
+</code>
+
+<update>
+function process_data(items: table, callback: function): nil
+  for i, item in ipairs(items) do
+    callback(item)
+  end
+end
+</update>
+```
+
+The Morph model merges the update instantly and accurately.
+
+## Performance Comparison
+
+| Approach | Average Latency | Accuracy | Cost |
+|----------|----------------|----------|------|
+| **Traditional LLM** | 3-10 seconds | 92-95% | High |
+| **Fast Apply (fast)** | &lt;1 second | 96% | Medium |
+| **Fast Apply (large)** | &lt;1 second | 98% | Medium |
+
+## Configuration
+
+Full Fast Apply configuration:
+
+```lua
+require('avante').setup({
+  behaviour = {
+    enable_fastapply = true,
+  },
+  providers = {
+    morph = {
+      endpoint = "https://api.morph.so/v1",  -- Default endpoint
+      model = "auto",  -- "morph-v3-fast", "morph-v3-large", or "auto"
+      api_key_name = "MORPH_API_KEY",  -- Environment variable name
+      timeout = 30000,  -- Request timeout in milliseconds
+    },
+  },
+})
+```
+
+## Limitations
+
+<Warning>
+  Fast Apply requires a Morph API key. It's a paid service (though affordable for most users).
+</Warning>
+
+<Warning>
+  Context limit is 16k tokens (input + output combined). Very large files may need to be split.
+</Warning>
+
+<Note>
+  Fast Apply is optimized for code edits, not full code generation. Use your main AI provider for generating new files.
+</Note>
+
+## Troubleshooting
+
+### API Key Issues
+
+```bash
+# Verify your API key is set
+echo $MORPH_API_KEY
+
+# If empty, add to shell config
+export MORPH_API_KEY="your-key"
+```
+
+### Model Selection
+
+If you're getting inconsistent results, try explicitly setting the model:
+
+```lua
+providers = {
+  morph = {
+    model = "morph-v3-large",  -- Force highest accuracy
+  },
+}
+```
+
+### Timeout Errors
+
+Increase the timeout for large files:
+
+```lua
+providers = {
+  morph = {
+    timeout = 60000,  -- 60 seconds
+  },
+}
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="AI Assistance" icon="wand-magic-sparkles" href="/features/ai-assistance">
+    Learn core AI features
+  </Card>
+  <Card title="Diff Management" icon="code-compare" href="/features/diff-management">
+    Master code conflict resolution
+  </Card>
+  <Card title="Provider Configuration" icon="gear" href="/configuration/providers">
+    Configure AI providers
+  </Card>
+  <Card title="Morph API" icon="link" href="https://morphllm.com">
+    Get your Morph API key
+  </Card>
+</CardGroup>

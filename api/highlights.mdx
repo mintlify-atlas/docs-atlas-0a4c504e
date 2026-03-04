@@ -1,0 +1,290 @@
+---
+title: Highlight Groups
+description: Complete highlight groups reference for Avante.nvim
+---
+
+Avante.nvim defines custom highlight groups for UI elements. All highlights can be customized using `nvim_set_hl()`.
+
+## Title Highlights
+
+Highlight groups for various title elements.
+
+| Group | Description | Default |
+|-------|-------------|----------|
+| `AvanteTitle` | Main title bar | `fg=#1e222a bg=#98c379` |
+| `AvanteReversedTitle` | Reversed title (for borders) | `fg=#98c379 bg=NormalFloat` |
+| `AvanteSubtitle` | Subtitle (selected code title) | `fg=#1e222a bg=#56b6c2` |
+| `AvanteReversedSubtitle` | Reversed subtitle | `fg=#56b6c2 bg=NormalFloat` |
+| `AvanteThirdTitle` | Prompt title | `fg=#ABB2BF bg=#353B45` |
+| `AvanteReversedThirdTitle` | Reversed third title | `fg=#353B45 bg=NormalFloat` |
+| `AvanteConfirmTitle` | Confirm dialog title | `fg=#1e222a bg=#e06c75` |
+
+**Source:** lua/avante/highlights.lua:9-14, 21
+
+---
+
+## Conflict & Diff Highlights
+
+Highlight groups for code conflicts and diffs.
+
+| Group | Description | Default | Config Override |
+|-------|-------------|---------|----------------|
+| `AvanteConflictCurrent` | Current version highlight | `bg=#562C30 bold` | `highlights.diff.current` |
+| `AvanteConflictCurrentLabel` | Current version label | Shaded version of current | - |
+| `AvanteConflictIncoming` | Incoming changes highlight | `bg=#314753 bold` | `highlights.diff.incoming` |
+| `AvanteConflictIncomingLabel` | Incoming changes label | Shaded version of incoming | - |
+
+**Default Configuration:**
+```lua
+highlights = {
+  diff = {
+    current = "DiffText",  -- or nil to use defaults
+    incoming = "DiffAdd",  -- or nil to use defaults
+  },
+}
+```
+
+**Example Customization:**
+```lua
+-- Use custom highlight groups
+vim.api.nvim_set_hl(0, 'AvanteConflictCurrent', { bg = '#3d2a2e', bold = true })
+vim.api.nvim_set_hl(0, 'AvanteConflictIncoming', { bg = '#2a3d3d', bold = true })
+
+-- Or override via config
+require('avante').setup({
+  highlights = {
+    diff = {
+      current = "DiffDelete",
+      incoming = "DiffChange",
+    },
+  },
+})
+```
+
+**Source:** lua/avante/highlights.lua:71-76, lua/avante/config.lua:595-600
+
+---
+
+## UI Element Highlights
+
+Highlight groups for UI elements.
+
+| Group | Description | Default |
+|-------|-------------|----------|
+| `AvantePopupHint` | Usage hints in popup menus | `link=NormalFloat` |
+| `AvanteInlineHint` | End-of-line hint in visual mode | `link=Keyword` |
+| `AvanteSuggestion` | Suggestion text | `link=Comment` |
+| `AvanteAnnotation` | Annotation text | `link=Comment` |
+| `AvanteToBeDeleted` | Code marked for deletion | `bg=#ffcccc strikethrough` |
+| `AvanteToBeDeletedWOStrikethrough` | Deletion without strikethrough | `bg=#562C30` |
+
+**Source:** lua/avante/highlights.lua:15-20
+
+---
+
+## Button Highlights
+
+Highlight groups for button elements.
+
+| Group | Description | Default |
+|-------|-------------|----------|
+| `AvanteButtonDefault` | Default button | `fg=#1e222a bg=#ABB2BF` |
+| `AvanteButtonDefaultHover` | Default button hover | `fg=#1e222a bg=#a9cf8a` |
+| `AvanteButtonPrimary` | Primary button | `fg=#1e222a bg=#ABB2BF` |
+| `AvanteButtonPrimaryHover` | Primary button hover | `fg=#1e222a bg=#56b6c2` |
+| `AvanteButtonDanger` | Danger button | `fg=#1e222a bg=#ABB2BF` |
+| `AvanteButtonDangerHover` | Danger button hover | `fg=#1e222a bg=#e06c75` |
+
+**Source:** lua/avante/highlights.lua:22-27
+
+---
+
+## Input & Border Highlights
+
+Highlight groups for input elements.
+
+| Group | Description | Default |
+|-------|-------------|----------|
+| `AvantePromptInput` | Prompt input body | No defaults |
+| `AvantePromptInputBorder` | Prompt input border | `link=NormalFloat` |
+
+**Source:** lua/avante/highlights.lua:28-29
+
+---
+
+## Sidebar Highlights
+
+Highlight groups for sidebar windows.
+
+| Group | Description | Default |
+|-------|-------------|----------|
+| `AvanteSidebarWinSeparator` | Vertical separator | `fg=NormalFloat.bg bg=NormalFloat` |
+| `AvanteSidebarWinHorizontalSeparator` | Horizontal separator | `fg=WinSeparator bg=NormalFloat` |
+| `AvanteSidebarNormal` | Sidebar background | `link=NormalFloat` |
+
+**Source:** lua/avante/highlights.lua:30-39
+
+---
+
+## State & Spinner Highlights
+
+Highlight groups for spinner states.
+
+| Group | Description | Default |
+|-------|-------------|----------|
+| `AvanteStateSpinnerGenerating` | Generating state | `fg=#1e222a bg=#ab9df2` |
+| `AvanteStateSpinnerToolCalling` | Tool calling state | `fg=#1e222a bg=#56b6c2` |
+| `AvanteStateSpinnerFailed` | Failed state | `fg=#1e222a bg=#e06c75` |
+| `AvanteStateSpinnerSucceeded` | Success state | `fg=#1e222a bg=#98c379` |
+| `AvanteStateSpinnerSearching` | Searching state | `fg=#1e222a bg=#c678dd` |
+| `AvanteStateSpinnerThinking` | Thinking state | `fg=#1e222a bg=#c678dd` |
+| `AvanteStateSpinnerCompacting` | Compacting state | `fg=#1e222a bg=#c678dd` |
+
+**Source:** lua/avante/highlights.lua:43-49
+
+---
+
+## Task Highlights
+
+Highlight groups for task states.
+
+| Group | Description | Default |
+|-------|-------------|----------|
+| `AvanteTaskRunning` | Running task | `fg=#c678dd bg=Normal` |
+| `AvanteTaskCompleted` | Completed task | `fg=#98c379 bg=Normal` |
+| `AvanteTaskFailed` | Failed task | `fg=#e06c75 bg=Normal` |
+| `AvanteThinking` | Thinking indicator | `fg=#c678dd bg=Normal` |
+
+**Source:** lua/avante/highlights.lua:50-53
+
+---
+
+## Logo Highlights
+
+Gradient highlight groups for the Avante logo (14 levels).
+
+| Group | Default Color |
+|-------|---------------|
+| `AvanteLogoLine1` | `fg=#f5f5f5` |
+| `AvanteLogoLine2` | `fg=#e8e8e8` |
+| `AvanteLogoLine3` | `fg=#dbdbdb` |
+| `AvanteLogoLine4` | `fg=#cfcfcf` |
+| `AvanteLogoLine5` | `fg=#c2c2c2` |
+| `AvanteLogoLine6` | `fg=#b5b5b5` |
+| `AvanteLogoLine7` | `fg=#a8a8a8` |
+| `AvanteLogoLine8` | `fg=#9b9b9b` |
+| `AvanteLogoLine9` | `fg=#8e8e8e` |
+| `AvanteLogoLine10` | `fg=#818181` |
+| `AvanteLogoLine11` | `fg=#747474` |
+| `AvanteLogoLine12` | `fg=#676767` |
+| `AvanteLogoLine13` | `fg=#5a5a5a` |
+| `AvanteLogoLine14` | `fg=#4d4d4d` |
+
+**Source:** lua/avante/highlights.lua:54-68
+
+---
+
+## Additional Highlights
+
+| Group | Description | Default |
+|-------|-------------|----------|
+| `AvanteCommentFg` | Comment foreground | `fg=Comment.fg` |
+| `AvanteReversedNormal` | Reversed normal colors | `fg=Normal.bg bg=Normal.fg` |
+
+**Source:** lua/avante/highlights.lua:41-42
+
+---
+
+## Auto-Setup Behavior
+
+By default, Avante automatically sets highlight groups if they haven't been customized:
+
+```lua
+behaviour = {
+  auto_set_highlight_group = true, -- default
+}
+```
+
+If you've already customized a highlight group before Avante loads, your customization will be preserved.
+
+**Source:** lua/avante/highlights.lua:88-122
+
+---
+
+## Customization Examples
+
+### Example 1: Custom Conflict Colors
+
+```lua
+-- Set before loading avante
+vim.api.nvim_set_hl(0, 'AvanteConflictCurrent', {
+  bg = '#4a2c2e',
+  bold = true,
+})
+
+vim.api.nvim_set_hl(0, 'AvanteConflictIncoming', {
+  bg = '#2c3d3d',
+  bold = true,
+})
+```
+
+### Example 2: Using Existing Highlight Groups
+
+```lua
+require('avante').setup({
+  highlights = {
+    diff = {
+      current = "DiffText",
+      incoming = "DiffAdd",
+    },
+  },
+})
+```
+
+### Example 3: Custom Titles
+
+```lua
+vim.api.nvim_set_hl(0, 'AvanteTitle', {
+  fg = '#ffffff',
+  bg = '#5c6370',
+  bold = true,
+})
+
+vim.api.nvim_set_hl(0, 'AvanteSubtitle', {
+  fg = '#ffffff',
+  bg = '#61afef',
+})
+```
+
+### Example 4: Disable Auto-Setup
+
+```lua
+require('avante').setup({
+  behaviour = {
+    auto_set_highlight_group = false,
+  },
+})
+
+-- Then manually set all highlights
+vim.api.nvim_set_hl(0, 'AvanteTitle', { ... })
+vim.api.nvim_set_hl(0, 'AvanteSubtitle', { ... })
+-- etc.
+```
+
+---
+
+## Summary Table
+
+| Category | Highlight Groups |
+|----------|------------------|
+| Titles | 7 groups |
+| Conflicts | 4 groups |
+| UI Elements | 6 groups |
+| Buttons | 6 groups |
+| Input | 2 groups |
+| Sidebar | 3 groups |
+| Spinners | 7 groups |
+| Tasks | 4 groups |
+| Logo | 14 groups |
+| Other | 2 groups |
+| **Total** | **55 groups** |

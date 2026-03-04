@@ -1,0 +1,567 @@
+---
+title: Custom Providers
+description: Create your own AI provider integrations in Avante.nvim
+---
+
+Avante.nvim's flexible provider system allows you to integrate any AI service that offers a REST API. This guide shows you how to create custom providers.
+
+## Provider Interface
+
+A provider must implement specific functions to work with Avante:
+
+### Required Functions
+
+1. **`parse_curl_args(prompt_opts)`**: Generate API request parameters
+2. **`parse_response(ctx, data_stream, event_state, opts)`**: Parse streaming responses
+3. **`is_env_set()`**: Check if provider is properly configured
+
+### Optional Functions
+
+- **`setup()`**: Initialize provider (authentication, tokenizer, etc.)
+- **`parse_api_key()`**: Extract API key from environment
+- **`on_error(result)`**: Handle API errors
+- **`list_models()`**: List available models
+
+## Creating a Custom Provider
+
+### Method 1: Inherit from Existing Provider
+
+The easiest way is to inherit from an OpenAI-compatible provider:
+
+```lua
+providers = {
+  my_provider = {
+    __inherited_from = "openai",
+    endpoint = "https://api.myprovider.com/v1",
+    model = "my-model-name",
+    api_key_name = "MY_PROVIDER_API_KEY",
+    extra_request_body = {
+      temperature = 0.7,
+      max_tokens = 4096,
+    },
+  },
+}
+```
+
+### Method 2: Custom Implementation
+
+For non-OpenAI-compatible APIs, create a custom module:
+
+```lua
+-- ~/.config/nvim/lua/custom/my_provider.lua
+
+local Utils = require("avante.utils")
+local Providers = require("avante.providers")
+
+---@class AvanteProviderFunctor
+local M = {}
+
+M.api_key_name = "MY_PROVIDER_API_KEY"
+
+M.role_map = {
+  user = "user",
+  assistant = "assistant",
+}
+
+function M:is_disable_stream()
+  return false
+end
+
+function M:parse_messages(opts)
+  local messages = {}
+  
+  -- Convert Avante message format to your provider's format
+  for _, msg in ipairs(opts.messages) do
+    table.insert(messages, {
+      role = self.role_map[msg.role],
+      content = msg.content,
+    })
+  end
+  
+  return messages
+end
+
+function M:parse_curl_args(prompt_opts)
+  local provider_conf, request_body = Providers.parse_config(self)
+  
+  -- Get API key
+  local api_key = self.parse_api_key()
+  if not api_key then
+    Utils.error("API key not found")
+    return nil
+  end
+  
+  return {
+    url = provider_conf.endpoint .. "/chat/completions",
+    headers = {
+      ["Content-Type"] = "application/json",
+      ["Authorization"] = "Bearer " .. api_key,
+    },
+    body = vim.tbl_deep_extend("force", {
+      model = provider_conf.model,
+      messages = self:parse_messages(prompt_opts),
+      stream = true,
+    }, request_body),
+  }
+end
+
+function M:parse_response(ctx, data_stream, event_state, opts)
+  local ok, json = pcall(vim.json.decode, data_stream)
+  if not ok then return end
+  
+  -- Parse your provider's response format
+  if json.choices and json.choices[1] then
+    local delta = json.choices[1].delta
+    if delta and delta.content then
+      if opts.on_chunk then
+        opts.on_chunk(delta.content)
+      end
+    end
+    
+    if json.choices[1].finish_reason then
+      opts.on_stop({ reason = "complete" })
+    end
+  end
+end
+
+return M
+```
+
+Then configure it:
+
+```lua
+providers = {
+  my_provider = {
+    __inherited_from = nil,
+    endpoint = "https://api.myprovider.com",
+    model = "my-model",
+    parse_curl_args = require("custom.my_provider").parse_curl_args,
+    parse_response = require("custom.my_provider").parse_response,
+  },
+}
+```
+
+## Real-World Examples
+
+### OpenRouter
+
+OpenRouter provides access to multiple models:
+
+```lua
+providers = {
+  openrouter = {
+    __inherited_from = "openai",
+    endpoint = "https://openrouter.ai/api/v1",
+    model = "anthropic/claude-3-opus",
+    api_key_name = "OPENROUTER_API_KEY",
+    extra_request_body = {
+      -- OpenRouter-specific parameters
+      route = "fallback",
+    },
+  },
+}
+```
+
+### Mistral AI
+
+```lua
+providers = {
+  mistral = {
+    __inherited_from = "openai",
+    endpoint = "https://api.mistral.ai/v1",
+    model = "mistral-large-latest",
+    api_key_name = "MISTRAL_API_KEY",
+    extra_request_body = {
+      max_tokens = 4096,
+    },
+  },
+}
+```
+
+### Together AI
+
+```lua
+providers = {
+  together = {
+    __inherited_from = "openai",
+    endpoint = "https://api.together.xyz/v1",
+    model = "meta-llama/Llama-3-70b-chat-hf",
+    api_key_name = "TOGETHER_API_KEY",
+  },
+}
+```
+
+### Groq
+
+```lua
+providers = {
+  groq = {
+    __inherited_from = "openai",
+    endpoint = "https://api.groq.com/openai/v1",
+    model = "llama-3.1-70b-versatile",
+    api_key_name = "GROQ_API_KEY",
+  },
+}
+```
+
+## Message Format
+
+Avante uses a standardized message format:
+
+```lua
+{
+  role = "user" | "assistant",
+  content = "string" | {
+    { type = "text", text = "content" },
+    { type = "image", source = { ... } },
+    { type = "tool_use", name = "...", input = { ... } },
+    { type = "tool_result", content = "..." },
+  }
+}
+```
+
+Your provider must convert this to your API's format.
+
+## Tool Support
+
+To support function calling:
+
+```lua
+function M:transform_tool(tool)
+  -- Convert Avante tool format to your provider's format
+  local input_schema_properties, required = 
+    Utils.llm_tool_param_fields_to_json_schema(tool.param.fields)
+  
+  return {
+    name = tool.name,
+    description = tool.description,
+    parameters = {
+      type = "object",
+      properties = input_schema_properties,
+      required = required,
+    },
+  }
+end
+
+function M:parse_curl_args(prompt_opts)
+  -- ... existing code ...
+  
+  local tools = nil
+  if prompt_opts.tools then
+    tools = {}
+    for _, tool in ipairs(prompt_opts.tools) do
+      table.insert(tools, self:transform_tool(tool))
+    end
+  end
+  
+  return {
+    -- ... existing code ...
+    body = {
+      -- ... existing code ...
+      tools = tools,
+    },
+  }
+end
+```
+
+## Authentication Methods
+
+### API Key from Environment
+
+```lua
+M.api_key_name = "MY_API_KEY"
+
+function M.parse_api_key()
+  return os.getenv("AVANTE_" .. M.api_key_name) or os.getenv(M.api_key_name)
+end
+```
+
+### API Key from Command
+
+```lua
+M.api_key_name = "cmd:pass show my-service/api-key"
+```
+
+### OAuth
+
+See the Claude provider implementation for OAuth example:
+
+```lua
+-- Store OAuth token
+local token = {
+  access_token = "...",
+  refresh_token = "...",
+  expires_at = os.time() + 3600,
+}
+
+-- Use in headers
+headers["Authorization"] = "Bearer " .. token.access_token
+```
+
+## Streaming Responses
+
+### Server-Sent Events (SSE)
+
+Most providers use SSE:
+
+```lua
+function M:parse_response(ctx, data_stream, event_state, opts)
+  -- SSE format: data: {json}
+  local json_str = data_stream:match("^data: (.+)$")
+  if not json_str or json_str == "[DONE]" then
+    opts.on_stop({ reason = "complete" })
+    return
+  end
+  
+  local ok, json = pcall(vim.json.decode, json_str)
+  if ok and json.choices then
+    local delta = json.choices[1].delta
+    if delta and delta.content then
+      opts.on_chunk(delta.content)
+    end
+  end
+end
+```
+
+### Newline-Delimited JSON
+
+```lua
+function M:parse_response(ctx, data_stream, event_state, opts)
+  local ok, json = pcall(vim.json.decode, data_stream)
+  if not ok then return end
+  
+  -- Handle your JSON format
+end
+```
+
+## Error Handling
+
+```lua
+function M.on_error(result)
+  if result.status == 429 then
+    -- Rate limit handling
+    return
+  end
+  
+  local ok, body = pcall(vim.json.decode, result.body)
+  if ok and body.error then
+    Utils.error(body.error.message, { title = "My Provider" })
+  else
+    Utils.error("Request failed: " .. result.status)
+  end
+end
+```
+
+## Testing Your Provider
+
+<Steps>
+  <Step title="Set API key">
+    ```sh
+    export AVANTE_MY_PROVIDER_API_KEY=your-key
+    ```
+  </Step>
+  
+  <Step title="Configure provider">
+    ```lua
+    provider = "my_provider"
+    ```
+  </Step>
+  
+  <Step title="Test in Neovim">
+    ```vim
+    :AvanteAsk Hello, world!
+    ```
+  </Step>
+  
+  <Step title="Debug if needed">
+    ```lua
+    -- Enable debug mode
+    debug = true
+    ```
+  </Step>
+</Steps>
+
+## Advanced Features
+
+### Prompt Caching
+
+```lua
+M.support_prompt_caching = true
+
+function M:parse_curl_args(prompt_opts)
+  -- Mark content for caching
+  local messages = self:parse_messages(prompt_opts)
+  if self.support_prompt_caching then
+    messages[#messages].cache_control = { type = "ephemeral" }
+  end
+  
+  return { body = { messages = messages } }
+end
+```
+
+### Model Listing
+
+```lua
+function M:list_models()
+  local curl = require("plenary.curl")
+  local response = curl.get(provider_conf.endpoint .. "/models", {
+    headers = {
+      ["Authorization"] = "Bearer " .. self.parse_api_key(),
+    },
+  })
+  
+  if response.status == 200 then
+    local data = vim.json.decode(response.body)
+    return vim.tbl_map(function(model)
+      return {
+        id = model.id,
+        name = model.name,
+        provider_name = "my_provider",
+      }
+    end, data.models)
+  end
+  
+  return {}
+end
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Provider Not Found">
+    Error: "Failed to find provider: my_provider"
+    
+    Ensure the provider is defined in `providers` table.
+  </Accordion>
+  
+  <Accordion title="Missing parse_curl_args">
+    Error: "missing the `__inherited_from` attribute or a custom `parse_curl_args` function"
+    
+    Either:
+    1. Set `__inherited_from = "openai"`
+    2. Or implement `parse_curl_args` function
+  </Accordion>
+  
+  <Accordion title="API Key Not Set">
+    Ensure environment variable is set:
+    ```sh
+    echo $AVANTE_MY_PROVIDER_API_KEY
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Inherit When Possible" icon="sitemap">
+    Use `__inherited_from` for OpenAI-compatible APIs to reduce code.
+  </Card>
+  
+  <Card title="Handle Errors" icon="triangle-exclamation">
+    Implement proper error handling and user-friendly messages.
+  </Card>
+  
+  <Card title="Support Streaming" icon="water">
+    Implement streaming for better UX and responsiveness.
+  </Card>
+  
+  <Card title="Document Your Provider" icon="book">
+    Add comments explaining API-specific quirks and requirements.
+  </Card>
+</CardGroup>
+
+## Complete Example
+
+Here's a complete custom provider:
+
+```lua
+-- ~/.config/nvim/lua/custom/my_provider.lua
+
+local Utils = require("avante.utils")
+local Providers = require("avante.providers")
+
+---@class AvanteProviderFunctor
+local M = {}
+
+M.api_key_name = "MY_PROVIDER_API_KEY"
+M.role_map = { user = "user", assistant = "assistant" }
+
+function M:is_disable_stream() return false end
+
+function M:parse_messages(opts)
+  local messages = {{ role = "system", content = opts.system_prompt }}
+  for _, msg in ipairs(opts.messages) do
+    table.insert(messages, {
+      role = self.role_map[msg.role],
+      content = type(msg.content) == "string" and msg.content or "",
+    })
+  end
+  return messages
+end
+
+function M:parse_curl_args(prompt_opts)
+  local provider_conf, request_body = Providers.parse_config(self)
+  local api_key = self.parse_api_key()
+  
+  if not api_key then
+    Utils.error("API key not set")
+    return nil
+  end
+  
+  return {
+    url = provider_conf.endpoint .. "/chat/completions",
+    headers = {
+      ["Content-Type"] = "application/json",
+      ["Authorization"] = "Bearer " .. api_key,
+    },
+    body = vim.tbl_deep_extend("force", {
+      model = provider_conf.model,
+      messages = self:parse_messages(prompt_opts),
+      stream = true,
+    }, request_body),
+  }
+end
+
+function M:parse_response(ctx, data_stream, event_state, opts)
+  if data_stream == "[DONE]" then
+    opts.on_stop({ reason = "complete" })
+    return
+  end
+  
+  local ok, json = pcall(vim.json.decode, data_stream)
+  if ok and json.choices and json.choices[1] then
+    local delta = json.choices[1].delta
+    if delta and delta.content then
+      if opts.on_chunk then opts.on_chunk(delta.content) end
+    end
+    if json.choices[1].finish_reason then
+      opts.on_stop({ reason = "complete" })
+    end
+  end
+end
+
+return M
+```
+
+Configuration:
+
+```lua
+providers = {
+  my_provider = {
+    endpoint = "https://api.example.com",
+    model = "my-model-v1",
+    parse_curl_args = require("custom.my_provider").parse_curl_args,
+    parse_response = require("custom.my_provider").parse_response,
+    extra_request_body = {
+      temperature = 0.7,
+      max_tokens = 4096,
+    },
+  },
+}
+```
+
+## Related Resources
+
+- [Custom Providers Wiki](https://github.com/yetone/avante.nvim/wiki/Custom-providers)
+- [Provider Overview](/providers/overview)
+- [Avante Configuration](/configuration/providers)

@@ -1,0 +1,312 @@
+---
+title: Neo-tree Integration
+description: Add files to Avante from neo-tree sidebar with keyboard shortcuts
+icon: folder-tree
+---
+
+## Overview
+
+You can integrate Avante.nvim with [neo-tree](https://github.com/nvim-neo-tree/neo-tree.nvim) to quickly add files or folders to the Avante chat context directly from the neo-tree sidebar.
+
+<Info>
+  This integration allows you to select files in neo-tree and add them to Avante's selected files list without leaving the file explorer.
+</Info>
+
+## Installation & Configuration
+
+Add the following configuration to your neo-tree setup:
+
+```lua
+return {
+  {
+    'nvim-neo-tree/neo-tree.nvim',
+    config = function()
+      require('neo-tree').setup({
+        filesystem = {
+          commands = {
+            avante_add_files = function(state)
+              local node = state.tree:get_node()
+              local filepath = node:get_id()
+              local relative_path = require('avante.utils').relative_path(filepath)
+
+              local sidebar = require('avante').get()
+
+              local open = sidebar:is_open()
+              -- ensure avante sidebar is open
+              if not open then
+                require('avante.api').ask()
+                sidebar = require('avante').get()
+              end
+
+              sidebar.file_selector:add_selected_file(relative_path)
+
+              -- remove neo tree buffer
+              if not open then
+                sidebar.file_selector:remove_selected_file('neo-tree filesystem [1]')
+              end
+            end,
+          },
+          window = {
+            mappings = {
+              ['oa'] = 'avante_add_files',
+            },
+          },
+        },
+      })
+    end,
+  },
+}
+```
+
+## How It Works
+
+<Steps>
+  <Step title="Define Custom Command">
+    The `avante_add_files` command is defined in neo-tree's `filesystem.commands` section.
+  </Step>
+  
+  <Step title="Get File Path">
+    When triggered, it gets the node under the cursor and extracts the file path.
+  </Step>
+  
+  <Step title="Convert to Relative Path">
+    Uses `require('avante.utils').relative_path()` to convert the absolute path to a project-relative path.
+  </Step>
+  
+  <Step title="Ensure Avante Sidebar is Open">
+    Checks if the Avante sidebar is open; if not, opens it with `require('avante.api').ask()`.
+  </Step>
+  
+  <Step title="Add File to Selection">
+    Adds the file to Avante's selected files list using `sidebar.file_selector:add_selected_file()`.
+  </Step>
+  
+  <Step title="Clean Up">
+    Removes the neo-tree buffer from the selection if the sidebar wasn't already open.
+  </Step>
+</Steps>
+
+## Usage
+
+### Adding Files
+
+1. Open neo-tree sidebar (`:Neotree` or your configured keybinding)
+2. Navigate to the file or folder you want to add
+3. Press `oa` (or your configured key) to add it to Avante's context
+4. The file appears in Avante's "Selected Files" list
+
+### Customizing the Keybinding
+
+You can change `'oa'` to any keybinding you prefer:
+
+```lua
+window = {
+  mappings = {
+    ['<leader>aa'] = 'avante_add_files',  -- Use <leader>aa instead
+    -- or
+    ['ga'] = 'avante_add_files',          -- Use ga instead
+  },
+},
+```
+
+## Complete Example Configuration
+
+Here's a complete example with both Avante and neo-tree configured:
+
+```lua
+return {
+  -- Avante.nvim
+  {
+    "yetone/avante.nvim",
+    event = "VeryLazy",
+    opts = {
+      -- Your Avante configuration
+      selector = {
+        exclude_auto_select = { "neo-tree" }, -- Don't auto-select neo-tree buffer
+      },
+    },
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "MunifTanjim/nui.nvim",
+      -- ... other dependencies
+    },
+  },
+  
+  -- Neo-tree with Avante integration
+  {
+    'nvim-neo-tree/neo-tree.nvim',
+    branch = "v3.x",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "nvim-tree/nvim-web-devicons",
+      "MunifTanjim/nui.nvim",
+    },
+    config = function()
+      require('neo-tree').setup({
+        filesystem = {
+          commands = {
+            avante_add_files = function(state)
+              local node = state.tree:get_node()
+              local filepath = node:get_id()
+              local relative_path = require('avante.utils').relative_path(filepath)
+
+              local sidebar = require('avante').get()
+              local open = sidebar:is_open()
+              
+              if not open then
+                require('avante.api').ask()
+                sidebar = require('avante').get()
+              end
+
+              sidebar.file_selector:add_selected_file(relative_path)
+
+              if not open then
+                sidebar.file_selector:remove_selected_file('neo-tree filesystem [1]')
+              end
+            end,
+          },
+          window = {
+            mappings = {
+              ['oa'] = 'avante_add_files',
+            },
+          },
+        },
+      })
+    end,
+  },
+}
+```
+
+## Advanced: Remove Files
+
+You can also add a command to remove files from Avante's selection:
+
+```lua
+commands = {
+  avante_add_files = function(state)
+    -- ... (as shown above)
+  end,
+  
+  avante_remove_files = function(state)
+    local node = state.tree:get_node()
+    local filepath = node:get_id()
+    local relative_path = require('avante.utils').relative_path(filepath)
+    
+    local sidebar = require('avante').get()
+    if sidebar:is_open() then
+      sidebar.file_selector:remove_selected_file(relative_path)
+    end
+  end,
+},
+
+window = {
+  mappings = {
+    ['oa'] = 'avante_add_files',
+    ['od'] = 'avante_remove_files',  -- Remove file
+  },
+},
+```
+
+## Tips & Tricks
+
+<CardGroup cols={2}>
+  <Card title="Add Multiple Files" icon="files">
+    Navigate and press `oa` on multiple files to add them all to the context.
+  </Card>
+  
+  <Card title="Add Folders" icon="folder">
+    You can add entire folders by pressing `oa` on a directory node.
+  </Card>
+  
+  <Card title="Visual Feedback" icon="eye">
+    Check Avante's sidebar to see the list of selected files after adding.
+  </Card>
+  
+  <Card title="Exclude Neo-tree" icon="filter">
+    Use `exclude_auto_select` to prevent neo-tree buffers from being auto-selected.
+  </Card>
+</CardGroup>
+
+## Alternative: nvim-tree Integration
+
+For [nvim-tree](https://github.com/nvim-tree/nvim-tree.lua) users, you can create a similar integration:
+
+```lua
+require('nvim-tree').setup({
+  on_attach = function(bufnr)
+    local api = require('nvim-tree.api')
+    
+    local function add_to_avante()
+      local node = api.tree.get_node_under_cursor()
+      if node then
+        local relative_path = require('avante.utils').relative_path(node.absolute_path)
+        local sidebar = require('avante').get()
+        
+        if not sidebar:is_open() then
+          require('avante.api').ask()
+          sidebar = require('avante').get()
+        end
+        
+        sidebar.file_selector:add_selected_file(relative_path)
+      end
+    end
+    
+    vim.keymap.set('n', 'oa', add_to_avante, {
+      buffer = bufnr,
+      desc = "Add file to Avante",
+    })
+  end,
+})
+```
+
+## Exclude Auto-Select
+
+To prevent file explorer buffers from being automatically selected by Avante:
+
+```lua
+require('avante').setup({
+  selector = {
+    exclude_auto_select = { "NvimTree", "neo-tree" },
+  },
+})
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Keybinding not working">
+    1. Verify the mapping is in the correct section (`filesystem.window.mappings`)
+    2. Check for conflicts with other neo-tree mappings
+    3. Ensure neo-tree is loaded before using the mapping
+  </Accordion>
+  
+  <Accordion title="File not appearing in Avante">
+    1. Check if Avante sidebar is open after pressing `oa`
+    2. Verify the file path is correct
+    3. Look for errors in `:messages`
+    4. Ensure `avante.utils.relative_path()` is working correctly
+  </Accordion>
+  
+  <Accordion title="Neo-tree buffer showing in Avante">
+    Add neo-tree to `exclude_auto_select`:
+    ```lua
+    selector = {
+      exclude_auto_select = { "neo-tree" },
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Related Documentation
+
+<CardGroup cols={2}>
+  <Card title="Completion Sources" icon="terminal" href="/advanced/completion-sources">
+    Other ways to add files to context
+  </Card>
+  <Card title="Keybindings" icon="keyboard" href="/configuration/keybindings">
+    All Avante keybindings
+  </Card>
+  <Card title="File Selector" icon="folder" href="/advanced/completion-sources#file-selector-configuration">
+    Configure file picker providers
+  </Card>
+</CardGroup>

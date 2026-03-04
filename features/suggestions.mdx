@@ -1,0 +1,262 @@
+---
+title: Auto-Suggestions
+description: Inline AI code completions and suggestions
+icon: wand-magic-sparkles
+---
+
+## Overview
+
+Avante.nvim provides auto-suggestions (also known as inline completions) that give you AI-powered code suggestions as you type, similar to GitHub Copilot. This feature is currently in experimental stage.
+
+<Warning>
+  Auto-suggestions are a high-frequency operation and can be expensive. Be mindful of your API usage, especially with providers like Copilot.
+</Warning>
+
+## Enabling Auto-Suggestions
+
+Auto-suggestions are disabled by default. Enable them in your configuration:
+
+```lua
+require('avante').setup({
+  behaviour = {
+    auto_suggestions = true, -- Enable auto-suggestions
+  },
+  auto_suggestions_provider = "claude", -- Provider to use
+})
+```
+
+### Provider Selection
+
+<Warning>
+  Designating `copilot` as the auto-suggestions provider can be dangerous due to high-frequency requests. See [issue #1048](https://github.com/yetone/avante.nvim/issues/1048) for details.
+</Warning>
+
+Recommended providers for auto-suggestions:
+- `"claude"` - Claude models (recommended)
+- `"openai"` - OpenAI models
+- `"gemini"` - Google Gemini
+
+Avoid using `"copilot"` unless you understand the implications.
+
+## Configuration
+
+### Debounce and Throttle Settings
+
+To control the frequency of suggestion requests, configure debounce and throttle:
+
+```lua
+require('avante').setup({
+  suggestion = {
+    debounce = 600,  -- Wait 600ms after typing stops
+    throttle = 600,  -- Maximum one request per 600ms
+  },
+})
+```
+
+<ParamField path="debounce" type="number" default="600">
+  Time in milliseconds to wait after typing stops before requesting a suggestion
+</ParamField>
+
+<ParamField path="throttle" type="number" default="600">
+  Minimum time in milliseconds between suggestion requests
+</ParamField>
+
+<Tip>
+  If you're using the Copilot provider or experiencing too many API calls, increase these values to reduce request frequency:
+  
+  ```lua
+  suggestion = {
+    debounce = 1000,
+    throttle = 1000,
+  }
+  ```
+</Tip>
+
+## Keybindings
+
+Default keybindings for working with suggestions:
+
+| Key Binding | Mode | Description |
+|-------------|------|-------------|
+| `<M-l>` | Insert | Accept current suggestion |
+| `<M-]>` | Insert | Show next suggestion |
+| `<M-[>` | Insert | Show previous suggestion |
+| `<C-]>` | Insert | Dismiss current suggestion |
+
+<Info>
+  `<M-l>` means Alt+l on Linux/Windows or Option+l on macOS.
+</Info>
+
+### Customizing Keybindings
+
+You can customize the suggestion keybindings in your configuration:
+
+```lua
+require('avante').setup({
+  mappings = {
+    suggestion = {
+      accept = "<M-l>",      -- Accept suggestion
+      next = "<M-]>",        -- Next suggestion
+      prev = "<M-[>",        -- Previous suggestion
+      dismiss = "<C-]>",     -- Dismiss suggestion
+    },
+  },
+})
+```
+
+### Custom Keybinding Example
+
+```lua
+-- Use Tab to accept, Ctrl+n/p for navigation
+require('avante').setup({
+  mappings = {
+    suggestion = {
+      accept = "<Tab>",
+      next = "<C-n>",
+      prev = "<C-p>",
+      dismiss = "<Esc>",
+    },
+  },
+})
+```
+
+## Toggle Suggestions
+
+You can toggle the suggestion display on and off:
+
+```vim
+:AvanteToggleSuggestion
+```
+
+Or use the default keybinding:
+
+```vim
+<Leader>as
+```
+
+## Provider Configuration
+
+Configure your auto-suggestions provider with appropriate settings:
+
+```lua
+require('avante').setup({
+  auto_suggestions_provider = "claude",
+  providers = {
+    claude = {
+      endpoint = "https://api.anthropic.com",
+      model = "claude-3-5-sonnet-20241022",
+      timeout = 30000,
+      extra_request_body = {
+        temperature = 0.5, -- Lower temperature for more focused suggestions
+        max_tokens = 2048,
+      },
+    },
+  },
+})
+```
+
+## How Auto-Suggestions Work
+
+<Steps>
+  <Step title="Typing Detection">
+    As you type, Avante monitors your input and waits for the debounce period.
+  </Step>
+  
+  <Step title="Context Gathering">
+    When the debounce period expires, Avante gathers context from:
+    - Current file content
+    - Cursor position
+    - Recent changes
+    - Project context (if RAG is enabled)
+  </Step>
+  
+  <Step title="Request Generation">
+    A suggestion request is sent to the configured provider (respecting throttle limits).
+  </Step>
+  
+  <Step title="Inline Display">
+    The suggestion is displayed inline as ghost text, which you can accept, cycle through, or dismiss.
+  </Step>
+</Steps>
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Choose the Right Provider" icon="plug">
+    Use providers with good latency and reasonable pricing for auto-suggestions. Claude is generally recommended.
+  </Card>
+  
+  <Card title="Adjust Timing" icon="clock">
+    Fine-tune `debounce` and `throttle` to balance responsiveness with API costs.
+  </Card>
+  
+  <Card title="Monitor Usage" icon="chart-line">
+    Keep an eye on your API usage, especially during heavy coding sessions.
+  </Card>
+  
+  <Card title="Use with RAG" icon="database">
+    Enable the RAG service for better context-aware suggestions.
+  </Card>
+</CardGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Suggestions are too slow">
+    1. Reduce `debounce` value (but this increases API calls)
+    2. Use a faster provider (e.g., Claude Haiku instead of Sonnet)
+    3. Check your internet connection
+    4. Ensure your provider endpoint is responsive
+  </Accordion>
+  
+  <Accordion title="Too many API calls">
+    1. Increase `debounce` value (e.g., to 1000ms)
+    2. Increase `throttle` value
+    3. Consider disabling auto-suggestions for certain file types
+  </Accordion>
+  
+  <Accordion title="Suggestions aren't appearing">
+    1. Verify `behaviour.auto_suggestions = true`
+    2. Check that your provider is configured correctly
+    3. Ensure API keys are set
+    4. Look for errors in `:messages`
+  </Accordion>
+  
+  <Accordion title="Suggestions are low quality">
+    1. Enable the RAG service for better context
+    2. Adjust provider temperature (lower for more focused)
+    3. Ensure you're using a capable model
+    4. Add project instructions via `avante.md`
+  </Accordion>
+</AccordionGroup>
+
+## Disabling Auto-Suggestions
+
+If you want to disable auto-suggestions:
+
+```lua
+require('avante').setup({
+  behaviour = {
+    auto_suggestions = false,
+  },
+})
+```
+
+Or toggle them temporarily with `<Leader>as` or `:AvanteToggleSuggestion`.
+
+## Related Documentation
+
+<CardGroup cols={2}>
+  <Card title="Providers" icon="plug" href="/configuration/providers">
+    Configure AI providers
+  </Card>
+  <Card title="Keybindings" icon="keyboard" href="/configuration/keybindings">
+    Customize all keybindings
+  </Card>
+  <Card title="RAG Service" icon="database" href="/features/rag-service">
+    Enable RAG for better suggestions
+  </Card>
+  <Card title="Project Instructions" icon="file" href="/configuration/project-instructions">
+    Guide AI with project-specific context
+  </Card>
+</CardGroup>

@@ -1,0 +1,437 @@
+---
+title: Completion Sources
+description: nvim-cmp and blink.cmp integration with mentions, slash commands, and shortcuts
+icon: terminal
+---
+
+## Overview
+
+Avante.nvim integrates with both [nvim-cmp](https://github.com/hrsh7th/nvim-cmp) and [blink.cmp](https://github.com/Saghen/blink.cmp) to provide intelligent completions for mentions, slash commands, and shortcuts within the Avante chat interface.
+
+## nvim-cmp Integration
+
+Avante works with nvim-cmp out of the box. Simply ensure nvim-cmp is installed as a dependency:
+
+```lua
+{
+  "yetone/avante.nvim",
+  dependencies = {
+    "hrsh7th/nvim-cmp", -- autocompletion for avante commands and mentions
+    -- ... other dependencies
+  },
+}
+```
+
+## blink.cmp Integration
+
+For users of blink.cmp (a faster nvim-cmp alternative), Avante provides compatibility through `blink.compat`.
+
+<Warning>
+  When using blink.cmp, choose a selector other than `native` as it currently has known issues.
+</Warning>
+
+### LazyVim Users
+
+If you're using LazyVim, copy the full blink.cmp config from the website or extend the options:
+
+```lua
+{
+  "saghen/blink.cmp",
+  opts = {
+    sources = {
+      compat = {
+        "avante_commands",
+        "avante_mentions",
+        "avante_files",
+      },
+    },
+  },
+}
+```
+
+### Manual Configuration
+
+For other setups, add custom providers:
+
+```lua
+{
+  "saghen/blink.cmp",
+  opts = {
+    sources = {
+      default = {
+        -- ... other sources
+        "avante_commands",
+        "avante_mentions",
+        "avante_shortcuts",
+        "avante_files",
+      },
+      providers = {
+        avante_commands = {
+          name = "avante_commands",
+          module = "blink.compat.source",
+          score_offset = 90, -- show at a higher priority than lsp
+          opts = {},
+        },
+        avante_files = {
+          name = "avante_files",
+          module = "blink.compat.source",
+          score_offset = 100,
+          opts = {},
+        },
+        avante_mentions = {
+          name = "avante_mentions",
+          module = "blink.compat.source",
+          score_offset = 1000, -- highest priority
+          opts = {},
+        },
+        avante_shortcuts = {
+          name = "avante_shortcuts",
+          module = "blink.compat.source",
+          score_offset = 1000,
+          opts = {},
+        },
+      },
+    },
+  },
+}
+```
+
+### Alternative: blink-cmp-avante
+
+You can also use the dedicated [Kaiser-Yang/blink-cmp-avante](https://github.com/Kaiser-Yang/blink-cmp-avante) plugin.
+
+## Completion Sources
+
+### Mentions (`@` trigger)
+
+Mentions allow you to quickly reference features or add context to your chat:
+
+<ParamField path="@codebase" type="mention">
+  Enable project context and repository mapping via RAG service
+  
+  **Usage**: Ask questions about your entire codebase
+  
+  **Example**: `@codebase How does authentication work in this project?`
+  
+  **Requires**: RAG service to be enabled
+</ParamField>
+
+<ParamField path="@diagnostics" type="mention">
+  Enable diagnostics information from LSP
+  
+  **Usage**: Include current errors/warnings in the context
+  
+  **Example**: `@diagnostics Help me fix these type errors`
+</ParamField>
+
+<ParamField path="@file" type="mention">
+  Open file selector to add files to chat context
+  
+  **Usage**: Add specific files for the AI to reference
+  
+  **Example**: `@file` (then select files from the picker)
+</ParamField>
+
+<ParamField path="@quickfix" type="mention">
+  Add files from quickfix list to chat context
+  
+  **Usage**: Include files with errors or search results
+  
+  **Example**: `@quickfix Review these failing tests`
+</ParamField>
+
+<ParamField path="@buffers" type="mention">
+  Add all open buffers to chat context
+  
+  **Usage**: Give the AI context about all currently open files
+  
+  **Example**: `@buffers Refactor these related components`
+</ParamField>
+
+### Slash Commands (`/` trigger)
+
+Built-in commands for common operations:
+
+<ParamField path="/help" type="command">
+  Show help message with available commands
+  
+  **Usage**: Get information about Avante features and commands
+</ParamField>
+
+<ParamField path="/init" type="command">
+  Initialize AGENTS.md based on current project
+  
+  **Usage**: Set up project-specific AI instructions
+</ParamField>
+
+<ParamField path="/clear" type="command">
+  Clear chat history for the current session
+  
+  **Usage**: Start fresh without previous context
+</ParamField>
+
+<ParamField path="/new" type="command">
+  Start a new chat session
+  
+  **Usage**: Begin a separate conversation thread
+</ParamField>
+
+<ParamField path="/compact" type="command">
+  Compact history messages to save tokens
+  
+  **Usage**: Reduce context size while preserving important information
+</ParamField>
+
+<ParamField path="/lines" type="command">
+  Ask about specific line ranges
+  
+  **Syntax**: `/lines <start>-<end> <question>`
+  
+  **Example**: `/lines 10-50 What does this function do?`
+</ParamField>
+
+<ParamField path="/commit" type="command">
+  Generate commit message for staged changes
+  
+  **Usage**: Create conventional commit messages automatically
+</ParamField>
+
+### Shortcuts (`#` trigger)
+
+Shortcuts provide quick access to predefined prompt templates:
+
+```lua
+require('avante').setup({
+  shortcuts = {
+    {
+      name = "refactor",
+      description = "Refactor code with best practices",
+      details = "Automatically refactor code to improve readability, maintainability, and follow best practices while preserving functionality",
+      prompt = "Please refactor this code following best practices, improving readability and maintainability while preserving functionality.",
+    },
+    {
+      name = "test",
+      description = "Generate unit tests",
+      details = "Create comprehensive unit tests covering edge cases, error scenarios, and various input conditions",
+      prompt = "Please generate comprehensive unit tests for this code, covering edge cases and error scenarios.",
+    },
+    {
+      name = "explain",
+      description = "Explain code functionality",
+      prompt = "Please explain what this code does in detail, including its purpose, logic, and any important patterns or considerations.",
+    },
+    {
+      name = "optimize",
+      description = "Optimize code performance",
+      prompt = "Please analyze this code for performance improvements and suggest optimizations while maintaining functionality.",
+    },
+    {
+      name = "document",
+      description = "Add documentation",
+      prompt = "Please add comprehensive documentation to this code, including docstrings, comments, and usage examples.",
+    },
+  },
+})
+```
+
+#### Using Shortcuts
+
+Type `#` in the chat input to see available shortcuts:
+
+- `#refactor` → Expands to the refactor prompt
+- `#test` → Expands to the test generation prompt
+- `#explain` → Expands to the explanation prompt
+
+#### Custom Shortcuts
+
+Create project-specific shortcuts:
+
+```lua
+shortcuts = {
+  {
+    name = "api",
+    description = "Generate API endpoint",
+    prompt = "Create a RESTful API endpoint following our project conventions with proper error handling, validation, and documentation.",
+  },
+  {
+    name = "component",
+    description = "Generate React component",  
+    prompt = "Create a React component using TypeScript, hooks, and our component pattern with proper props typing and documentation.",
+  },
+}
+```
+
+## File Selector Configuration
+
+Configure which file picker to use with `@file`:
+
+```lua
+require('avante').setup({
+  selector = {
+    provider = "telescope", -- "native" | "fzf_lua" | "mini_pick" | "snacks" | "telescope"
+    provider_opts = {}, -- Options for the picker
+  },
+})
+```
+
+### Available Selectors
+
+<Tabs>
+  <Tab title="Telescope">
+    ```lua
+    selector = {
+      provider = "telescope",
+    }
+    ```
+    
+    Requires: `nvim-telescope/telescope.nvim`
+  </Tab>
+  
+  <Tab title="fzf-lua">
+    ```lua
+    selector = {
+      provider = "fzf_lua",
+    }
+    ```
+    
+    Requires: `ibhagwan/fzf-lua`
+  </Tab>
+  
+  <Tab title="mini.pick">
+    ```lua
+    selector = {
+      provider = "mini_pick",
+    }
+    ```
+    
+    Requires: `nvim-mini/mini.pick`
+  </Tab>
+  
+  <Tab title="snacks">
+    ```lua
+    selector = {
+      provider = "snacks",
+    }
+    ```
+    
+    Requires: `folke/snacks.nvim`
+  </Tab>
+  
+  <Tab title="Native">
+    ```lua
+    selector = {
+      provider = "native", -- Built-in selector
+    }
+    ```
+    
+    No additional dependencies required.
+  </Tab>
+</Tabs>
+
+### Custom Selector Provider
+
+Create a custom file selector:
+
+```lua
+selector = {
+  ---@param selector avante.ui.Selector
+  provider = function(selector)
+    local items = selector.items ---@type avante.ui.SelectorItem[]
+    local title = selector.title ---@type string
+    local on_select = selector.on_select ---@type fun(selected_item_ids: string[]|nil): nil
+
+    -- Your custom picker logic here
+    -- Call on_select(selected_ids) when done
+  end,
+}
+```
+
+## Switching Selector Provider
+
+You can switch the selector provider at runtime:
+
+```vim
+:AvanteSwitchSelectorProvider telescope
+```
+
+Available options: `native`, `telescope`, `fzf_lua`, `mini_pick`, `snacks`
+
+## Exclude Auto-Select
+
+Prevent certain buffer types from being auto-selected:
+
+```lua
+require('avante').setup({
+  selector = {
+    exclude_auto_select = { "NvimTree", "neo-tree" },
+  },
+})
+```
+
+## Complete Example
+
+Here's a complete configuration with all completion sources:
+
+```lua
+require('avante').setup({
+  -- File selector
+  selector = {
+    provider = "telescope",
+    exclude_auto_select = { "NvimTree" },
+  },
+  
+  -- Shortcuts
+  shortcuts = {
+    {
+      name = "refactor",
+      description = "Refactor code with best practices",
+      prompt = "Please refactor this code following best practices.",
+    },
+    {
+      name = "test",
+      description = "Generate unit tests",
+      prompt = "Please generate comprehensive unit tests for this code.",
+    },
+  },
+  
+  -- Enable RAG for @codebase
+  rag_service = {
+    enabled = true,
+    -- ... RAG configuration
+  },
+})
+```
+
+## Tips and Tricks
+
+<CardGroup cols={2}>
+  <Card title="Quick File Adding" icon="plus">
+    Use `@file` to quickly add specific files to context without leaving the chat.
+  </Card>
+  
+  <Card title="Codebase Queries" icon="database">
+    Enable RAG and use `@codebase` for intelligent whole-project queries.
+  </Card>
+  
+  <Card title="Custom Shortcuts" icon="bolt">
+    Create shortcuts for common project-specific prompts to save typing.
+  </Card>
+  
+  <Card title="Diagnostics Context" icon="bug">
+    Use `@diagnostics` when asking the AI to fix errors or warnings.
+  </Card>
+</CardGroup>
+
+## Related Documentation
+
+<CardGroup cols={2}>
+  <Card title="RAG Service" icon="database" href="/features/rag-service">
+    Enable semantic codebase search
+  </Card>
+  <Card title="Slash Commands" icon="slash" href="/advanced/slash-commands">
+    Complete slash command reference
+  </Card>
+  <Card title="blink.cmp Guide" icon="zap" href="/guides/blink-cmp">
+    Detailed blink.cmp setup
+  </Card>
+</CardGroup>

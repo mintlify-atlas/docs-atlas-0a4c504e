@@ -1,0 +1,341 @@
+---
+title: Agentic vs Legacy Modes
+description: Understanding the two interaction modes in Avante.nvim and when to use each
+---
+
+Avante.nvim offers two distinct modes of operation: **Agentic Mode** and **Legacy Mode**. Each mode provides a different approach to AI-assisted coding, optimized for different use cases and workflows.
+
+## Mode Overview
+
+<Tabs>
+  <Tab title="Agentic Mode">
+    **Autonomous AI agent that can independently execute actions**
+    
+    In agentic mode, the AI functions as an autonomous coding agent with access to a suite of tools. It can:
+    
+    - Read and analyze files in your codebase
+    - Make direct edits using sophisticated tools
+    - Search for code patterns and symbols
+    - Execute shell commands
+    - Manage multi-file changes autonomously
+    
+    This mode is inspired by modern AI coding assistants like Cursor's Agent mode and provides the most powerful and autonomous workflow.
+  </Tab>
+  <Tab title="Legacy Mode">
+    **Traditional chat-based code assistance**
+    
+    In legacy mode, Avante works like a traditional AI chat assistant:
+    
+    - AI provides code suggestions in the chat interface
+    - You manually review suggestions
+    - You explicitly apply changes when ready
+    - More predictable, step-by-step workflow
+    
+    This mode offers more control and transparency, making it ideal when you want to carefully review each suggestion before applying it.
+  </Tab>
+</Tabs>
+
+## Configuring Modes
+
+Set your preferred mode in your Avante configuration:
+
+```lua lua/avante/config.lua:31
+require('avante').setup({
+  ---@type "agentic" | "legacy"
+  mode = "agentic",  -- Default mode
+  
+  -- ... other configuration
+})
+```
+
+<Note>
+  The default mode is `"agentic"`. This provides the most powerful autonomous workflow but requires you to trust the AI with file operations.
+</Note>
+
+## Agentic Mode Deep Dive
+
+### When to Use Agentic Mode
+
+Agentic mode excels at:
+
+- **Complex refactoring**: Multi-file changes with automatic file reading and editing
+- **Feature implementation**: Building complete features that span multiple files
+- **Code exploration**: AI can autonomously search and analyze your codebase
+- **Debugging**: AI can read error logs, check diagnostics, and propose fixes
+- **Rapid prototyping**: Quick iterations with autonomous file creation and modification
+
+### How Agentic Mode Works
+
+When you make a request in agentic mode:
+
+1. **Planning**: AI analyzes your request and plans necessary actions
+2. **Tool execution**: AI calls tools like `view`, `str_replace`, `bash`, etc.
+3. **Iteration**: AI can chain multiple tool calls to complete complex tasks
+4. **Completion**: AI signals completion with `attempt_completion` tool
+
+```lua
+-- Example: Available tools in agentic mode
+tools = {
+  "view",              -- Read file contents
+  "str_replace",       -- Edit files with string replacement
+  "create",            -- Create new files
+  "insert",            -- Insert code at specific lines
+  "bash",              -- Execute shell commands
+  "grep",              -- Search for patterns
+  "glob",              -- Find files by pattern
+  "get_diagnostics",   -- Get LSP diagnostics
+  "attempt_completion", -- Signal task completion
+  -- ... and more
+}
+```
+
+### Tool Permissions
+
+Control AI's autonomy with permission settings:
+
+<Tabs>
+  <Tab title="Auto-approve All (Fastest)">
+    ```lua
+    {
+      behaviour = {
+        auto_approve_tool_permissions = true,  -- Default
+      },
+    }
+    ```
+    
+    AI can execute all tools without prompting. Best for trusted workflows and rapid iteration.
+  </Tab>
+  <Tab title="Prompt for All (Most Controlled)">
+    ```lua
+    {
+      behaviour = {
+        auto_approve_tool_permissions = false,
+      },
+    }
+    ```
+    
+    You'll be prompted before each tool execution. Best when learning or working on sensitive code.
+  </Tab>
+  <Tab title="Selective Auto-approve">
+    ```lua
+    {
+      behaviour = {
+        auto_approve_tool_permissions = {"bash", "str_replace"},
+      },
+    }
+    ```
+    
+    Auto-approve only specific tools. Balanced approach for selective automation.
+  </Tab>
+</Tabs>
+
+### Fast Apply Mode
+
+Avante supports Fast Apply mode in agentic mode for near-instant code application:
+
+```lua
+{
+  behaviour = {
+    enable_fastapply = true,  -- Enable Fast Apply
+  },
+  providers = {
+    morph = {
+      model = "morph-v3-large",  -- Specialized apply model
+    },
+  },
+}
+```
+
+With Fast Apply:
+- Code changes apply at 2500-4500+ tokens/second
+- 96-98% accuracy with specialized apply models
+- Seamless workflow without noticeable delays
+
+See the [Fast Apply documentation](https://github.com/yetone/avante.nvim#fast-apply) for setup details.
+
+## Legacy Mode Deep Dive
+
+### When to Use Legacy Mode
+
+Legacy mode is preferred for:
+
+- **Code review**: When you want to carefully examine each suggestion
+- **Learning**: Understanding AI's reasoning before applying changes
+- **Simple edits**: Quick, focused changes that don't require autonomy
+- **Sensitive code**: When working on critical systems requiring manual approval
+- **Explanations**: Getting detailed code explanations without automatic changes
+
+### How Legacy Mode Works
+
+In legacy mode, the workflow is more traditional:
+
+1. **Ask**: You ask a question or request changes
+2. **Response**: AI provides suggestions in the chat sidebar
+3. **Review**: You review the suggested code in the diff view
+4. **Apply**: You manually apply changes using keybindings
+
+```lua
+-- Key bindings for legacy mode
+-- In sidebar:
+-- A - Apply all suggestions
+-- a - Apply suggestion at cursor
+-- co - Choose ours (keep current code)
+-- ct - Choose theirs (apply suggested code)
+```
+
+### Diff Application
+
+Legacy mode uses Neovim's diff system for change visualization:
+
+- **Visual diff**: Side-by-side comparison of current vs suggested code
+- **Conflict markers**: Git-style conflict markers for manual resolution
+- **Selective application**: Choose specific changes to apply
+
+```lua
+{
+  behaviour = {
+    auto_apply_diff_after_generation = false,  -- Default in legacy
+  },
+  diff = {
+    autojump = true,
+    override_timeoutlen = 500,
+  },
+}
+```
+
+## Comparing the Modes
+
+<Tabs>
+  <Tab title="Feature Comparison">
+    | Feature | Agentic Mode | Legacy Mode |
+    |---------|-------------|-------------|
+    | Tool execution | ✅ Automatic | ❌ Not available |
+    | File reading | ✅ Autonomous | ⚠️ Manual context |
+    | Multi-file edits | ✅ Automatic | ⚠️ One at a time |
+    | Shell commands | ✅ Available | ❌ Not available |
+    | Change preview | ⚠️ Via logs | ✅ Full diff view |
+    | Manual control | ⚠️ Permission system | ✅ Complete control |
+    | Speed | ⚡ Fastest | 🐌 Slower |
+    | Complexity | 🎯 Handles complex tasks | 📝 Best for simple tasks |
+  </Tab>
+  <Tab title="Workflow Comparison">
+    **Agentic Mode Workflow:**
+    ```
+    User Request → AI Planning → Tool Execution → More Tools → Completion
+                      ↓              ↓               ↓            ↓
+                   Analysis    Read/Edit Files   Validation   Done
+    ```
+    
+    **Legacy Mode Workflow:**
+    ```
+    User Request → AI Response → User Reviews → User Applies
+                      ↓               ↓              ↓
+                  Suggestion    Diff View      Manual Apply
+    ```
+  </Tab>
+  <Tab title="Code Example">
+    **Agentic Mode Example:**
+    ```lua
+    -- You: "Refactor the authentication module to use JWT"
+    
+    -- AI autonomously:
+    -- 1. Reads auth.lua to understand current implementation
+    -- 2. Creates jwt_handler.lua with new JWT logic
+    -- 3. Edits auth.lua to use new JWT handler
+    -- 4. Updates config.lua to include JWT settings
+    -- 5. Runs tests to verify changes
+    -- 6. Reports completion
+    ```
+    
+    **Legacy Mode Example:**
+    ```lua
+    -- You: "Refactor this function to use async/await"
+    
+    -- AI responds with:
+    -- "Here's the refactored version using async/await:"
+    -- [Shows code diff]
+    
+    -- You:
+    -- - Review the diff
+    -- - Press 'A' to apply all changes
+    -- - Or manually select specific changes
+    ```
+  </Tab>
+</Tabs>
+
+## Mode-Specific Tools
+
+Certain tools are only available in specific modes:
+
+### Agentic Mode Only
+
+```lua lua/avante/llm_tools/str_replace.lua:12
+-- Tools enabled only in agentic mode:
+- str_replace    -- String-based file editing
+- create         -- Create new files
+- insert         -- Insert code at lines
+- write_to_file  -- Write entire files
+- undo_edit      -- Undo previous edits
+- edit_file      -- Fast Apply editing (if enabled)
+```
+
+### Available in Both Modes
+
+```lua
+-- Tools available in all modes:
+- view           -- Read file contents
+- bash           -- Execute commands (with permissions)
+- grep           -- Search patterns
+- glob           -- Find files
+- get_diagnostics -- LSP diagnostics
+```
+
+## Switching Modes
+
+You can change modes at any time by updating your configuration:
+
+```lua
+-- Runtime mode switching
+require('avante.config').override({
+  mode = "legacy",  -- or "agentic"
+})
+```
+
+<Tip>
+  Consider starting with legacy mode if you're new to Avante, then switch to agentic mode once you're comfortable with the tool's behavior.
+</Tip>
+
+## Best Practices
+
+### For Agentic Mode
+
+1. **Start with auto-approval off**: Learn what tools do before auto-approving
+2. **Use with version control**: Always have uncommitted work backed up
+3. **Review tool logs**: Check what the AI actually did
+4. **Set appropriate permissions**: Balance speed with control
+5. **Use prompt logging**: Enable `prompt_logger.enabled = true` for debugging
+
+### For Legacy Mode
+
+1. **Provide explicit context**: Add relevant files manually with `@file`
+2. **Review diffs carefully**: Check all changes before applying
+3. **Use conflict markers**: Take advantage of Git-style conflict resolution
+4. **Apply incrementally**: Test changes one at a time for safer iterations
+5. **Leverage chat history**: Build up context over multiple exchanges
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Agentic Workflow" icon="robot" href="/concepts/agentic-workflow">
+    Deep dive into tools and autonomous execution
+  </Card>
+  <Card title="Providers" icon="plug" href="/concepts/providers">
+    Configure AI providers for each mode
+  </Card>
+  <Card title="Configuration" icon="gear" href="/configuration/overview">
+    Complete configuration reference
+  </Card>
+  <Card title="Keybindings" icon="keyboard" href="/configuration/keybindings">
+    Customize mode-specific keybindings
+  </Card>
+</CardGroup>

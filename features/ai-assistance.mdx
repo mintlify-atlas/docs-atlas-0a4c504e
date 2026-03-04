@@ -1,0 +1,301 @@
+---
+title: "AI-Powered Code Assistance"
+description: "Core AI features for intelligent code suggestions, improvements, and modifications"
+---
+
+## Overview
+
+Avante.nvim provides AI-powered code assistance that integrates seamlessly into your Neovim workflow. Ask questions about your code, get intelligent suggestions, and apply AI-generated changes with a single command.
+
+## Core Features
+
+<CardGroup cols={2}>
+  <Card title="Ask Questions" icon="message-question">
+    Get intelligent answers about your code, architecture, or implementation details
+  </Card>
+  <Card title="Code Editing" icon="pen-to-square">
+    AI suggests and applies targeted code improvements and refactoring
+  </Card>
+  <Card title="Chat Sessions" icon="comments">
+    Maintain context across multiple interactions with persistent chat history
+  </Card>
+  <Card title="Visual Mode Editing" icon="highlighter">
+    Select code visually and ask AI to refactor, improve, or explain it
+  </Card>
+</CardGroup>
+
+## Asking Questions
+
+Ask the AI questions about your current code file:
+
+### From Command Mode
+
+```vim
+:AvanteAsk How can I improve the performance of this function?
+```
+
+The AI will analyze your code and provide specific suggestions.
+
+### With Keybindings
+
+Press `<Leader>aa` (default) to open the sidebar and start asking:
+
+1. Sidebar opens on the right
+2. Type your question in the input area
+3. Press `<CR>` to submit
+4. AI responds with analysis and suggestions
+
+### Positioning the Sidebar
+
+Control where the sidebar appears:
+
+```vim
+:AvanteAsk position=left Explain this code
+:AvanteAsk position=top What does this function do?
+:AvanteAsk position=bottom How can I test this?
+```
+
+## Editing Code
+
+Let AI refactor and improve your code:
+
+### Visual Selection
+
+<Steps>
+  <Step title="Select code in visual mode">
+    ```vim
+    " Visual line mode
+    V5j
+    
+    " Or visual block mode
+    <C-v>
+    ```
+  </Step>
+  
+  <Step title="Trigger AvanteEdit">
+    ```vim
+    :AvanteEdit Refactor this to use async/await
+    ```
+    
+    Or use the keybinding: `<Leader>ae` (default)
+  </Step>
+  
+  <Step title="Review suggestions">
+    The AI generates improved code. Review the diff in the sidebar.
+  </Step>
+  
+  <Step title="Apply changes">
+    - Press `a` to apply at cursor
+    - Press `A` to apply all suggestions
+    - Press `co` / `ct` to choose ours/theirs in conflicts
+  </Step>
+</Steps>
+
+### Example Editing Workflow
+
+```lua
+-- Original code
+function fetch_user(id)
+  local result = api.call('/users/' .. id)
+  return result
+end
+```
+
+Select the function and run:
+
+```vim
+:AvanteEdit Add error handling and logging
+```
+
+AI suggests:
+
+```lua
+-- AI-improved code
+function fetch_user(id)
+  vim.notify(string.format('Fetching user: %s', id), vim.log.levels.DEBUG)
+  
+  local ok, result = pcall(api.call, '/users/' .. id)
+  if not ok then
+    vim.notify(string.format('Failed to fetch user %s: %s', id, result), vim.log.levels.ERROR)
+    return nil
+  end
+  
+  return result
+end
+```
+
+## Chat Sessions
+
+Maintain context across multiple interactions:
+
+### Starting a Chat
+
+```vim
+:AvanteChat
+```
+
+This opens the sidebar without immediately asking a question (as opposed to `:AvanteAsk` which prompts immediately).
+
+### Creating New Chats
+
+```vim
+:AvanteChatNew
+```
+
+Start a fresh conversation with no previous context.
+
+### Managing History
+
+Avante automatically saves your chat history:
+
+```vim
+" View previous chats
+:AvanteHistory
+
+" Clear current session
+:AvanteClear history
+
+" Clear all cached data
+:AvanteClear cache
+```
+
+Or use keybindings:
+- `<Leader>ah` - Select from history
+- `<Leader>an` - New chat session
+
+## Adding Context
+
+Help the AI understand your project better:
+
+### Adding Files
+
+Add files to the conversation context:
+
+```vim
+" From sidebar
+@  " Press @ to open file selector
+
+" From command
+<Leader>ac  " Add current buffer
+<Leader>aB  " Add all open buffers
+```
+
+### Using Mentions
+
+Reference specific context in your prompts:
+
+```
+@file src/auth.lua - Check if this module handles session expiration
+@codebase - Find all database query functions
+@diagnostics - Show me all errors in the project
+```
+
+See [Completion Sources](/advanced/completion-sources) for details.
+
+### Project Instructions
+
+Create an `avante.md` file in your project root:
+
+```markdown
+## Your Role
+
+You are an expert Lua developer specializing in Neovim plugins.
+
+## Coding Standards
+
+- Use snake_case for function names
+- Add type annotations with ---@type
+- Include luadoc comments for public functions
+```
+
+The AI will reference this file automatically.
+
+## One-Click Application
+
+Quickly apply AI suggestions to your code:
+
+### Apply at Cursor
+
+Press `a` in the sidebar to apply the suggestion under your cursor.
+
+### Apply All
+
+Press `A` to apply all AI-suggested changes at once.
+
+### Diff Navigation
+
+Navigate and resolve conflicts:
+
+| Keybinding | Action |
+|------------|--------|
+| `]x` | Next conflict |
+| `[x` | Previous conflict |
+| `co` | Choose ours |
+| `ct` | Choose theirs |
+| `cb` | Choose both |
+| `ca` | Choose all theirs |
+| `cc` | Choose cursor |
+
+## Sidebar Navigation
+
+Move between sidebar and code:
+
+| Keybinding | Action |
+|------------|--------|
+| `<Tab>` | Switch windows forward |
+| `<S-Tab>` | Switch windows backward |
+| `<Leader>af` | Focus sidebar |
+| `q` or `<Esc>` | Close sidebar |
+
+## Configuration
+
+Customize AI assistance behavior:
+
+```lua
+require('avante').setup({
+  provider = "claude",  -- AI provider
+  behaviour = {
+    auto_set_keymaps = true,  -- Automatically set keybindings
+    auto_apply_diff_after_generation = false,  -- Manual review
+  },
+  windows = {
+    position = "right",  -- Sidebar position
+    width = 30,  -- Sidebar width percentage
+  },
+})
+```
+
+## Tips for Better Results
+
+<Tip>
+  **Be specific**: Instead of "improve this", say "refactor this to reduce cyclomatic complexity and improve readability".
+</Tip>
+
+<Tip>
+  **Provide context**: Use @mentions to reference related files and @diagnostics to include error information.
+</Tip>
+
+<Tip>
+  **Iterate**: Don't expect perfection on the first try. Use the edit feature (`e`) to refine your request.
+</Tip>
+
+<Tip>
+  **Review before applying**: Always review AI suggestions before applying, especially for critical code.
+</Tip>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Quick Start" icon="rocket" href="/quickstart">
+    Get started with Avante in minutes
+  </Card>
+  <Card title="Completion Sources" icon="list-check" href="/advanced/completion-sources">
+    Use mentions, slash commands, and shortcuts
+  </Card>
+  <Card title="Diff Management" icon="code-compare" href="/features/diff-management">
+    Master conflict resolution
+  </Card>
+  <Card title="Project Instructions" icon="file-lines" href="/configuration/project-instructions">
+    Guide AI with project context
+  </Card>
+</CardGroup>

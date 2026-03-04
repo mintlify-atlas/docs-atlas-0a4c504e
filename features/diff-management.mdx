@@ -1,0 +1,289 @@
+---
+title: Diff & Conflict Resolution
+description: Manage code diffs and resolve conflicts with powerful keybindings
+icon: code-compare
+---
+
+## Overview
+
+Avante.nvim provides powerful diff management capabilities inspired by [git-conflict.nvim](https://github.com/akinsho/git-conflict.nvim). When the AI suggests code changes, you can review and selectively apply them using intuitive keybindings.
+
+## Diff Conflict Keybindings
+
+When viewing AI-suggested changes, you'll see conflicts between your current code ("ours") and the AI's suggestions ("theirs"). Use these keybindings to resolve conflicts:
+
+### Primary Actions
+
+| Key Binding | Description |
+|-------------|-------------|
+| `co` | **Choose Ours** - Keep your current code |
+| `ct` | **Choose Theirs** - Accept AI's suggestion |
+| `cb` | **Choose Both** - Keep both versions |
+| `ca` | **Choose All Theirs** - Accept all AI suggestions |
+| `cc` | **Choose Cursor** - Use version under cursor |
+
+### Navigation
+
+| Key Binding | Description |
+|-------------|-------------|
+| `]x` | **Next Conflict** - Jump to next conflict |
+| `[x` | **Previous Conflict** - Jump to previous conflict |
+
+<Info>
+  These keybindings are inspired by vim-fugitive's merge conflict resolution patterns, making them familiar to vim users.
+</Info>
+
+## Customizing Diff Keybindings
+
+You can customize all diff-related keybindings in your configuration:
+
+```lua
+require('avante').setup({
+  mappings = {
+    diff = {
+      ours = "co",        -- Choose current code
+      theirs = "ct",      -- Choose AI suggestion
+      all_theirs = "ca",  -- Accept all suggestions
+      both = "cb",        -- Keep both
+      cursor = "cc",      -- Use cursor version
+      next = "]x",        -- Next conflict
+      prev = "[x",        -- Previous conflict
+    },
+  },
+})
+```
+
+### Custom Keybinding Example
+
+```lua
+-- Use different keybindings
+require('avante').setup({
+  mappings = {
+    diff = {
+      ours = "<leader>do",
+      theirs = "<leader>dt",
+      both = "<leader>db",
+      next = "<C-j>",
+      prev = "<C-k>",
+    },
+  },
+})
+```
+
+## Auto-Jump Feature
+
+Avante can automatically jump to the first conflict when applying diffs:
+
+```lua
+require('avante').setup({
+  diff = {
+    autojump = true, -- Automatically jump to first conflict
+  },
+})
+```
+
+<ParamField path="autojump" type="boolean" default="true">
+  When enabled, automatically jumps to the first conflict after a diff is applied
+</ParamField>
+
+## Timeout Configuration
+
+To avoid conflicts with vim's operator-pending mode, Avante can override the `timeoutlen` setting while hovering over a diff:
+
+```lua
+require('avante').setup({
+  diff = {
+    override_timeoutlen = 500, -- Override timeoutlen (in ms)
+  },
+})
+```
+
+<ParamField path="override_timeoutlen" type="number" default="500">
+  Override the `timeoutlen` setting while hovering over a diff to avoid entering operator-pending mode. Set to `-1` to disable.
+</ParamField>
+
+<Info>
+  This helps prevent accidentally triggering vim's operator-pending mode when using diff mappings that start with `c`.
+</Info>
+
+## Diff Highlights
+
+Customize how diffs are highlighted:
+
+```lua
+require('avante').setup({
+  highlights = {
+    diff = {
+      current = "DiffText",   -- Highlight for "ours" (current code)
+      incoming = "DiffAdd",    -- Highlight for "theirs" (AI suggestions)
+    },
+  },
+})
+```
+
+### Available Highlight Groups
+
+| Highlight Group | Description | Default |
+|----------------|-------------|----------|
+| `AvanteConflictCurrent` | Current code highlight | `DiffText` |
+| `AvanteConflictIncoming` | AI suggestion highlight | `DiffAdd` |
+| `AvanteConflictCurrentLabel` | Current code label | Shade of `AvanteConflictCurrent` |
+| `AvanteConflictIncomingLabel` | AI suggestion label | Shade of `AvanteConflictIncoming` |
+
+## List Opener
+
+Configure how the conflict list is opened:
+
+```lua
+require('avante').setup({
+  diff = {
+    list_opener = "copen", -- Command to open conflict list
+  },
+})
+```
+
+You can also use a function:
+
+```lua
+require('avante').setup({
+  diff = {
+    list_opener = function()
+      vim.cmd("botright copen")
+    end,
+  },
+})
+```
+
+## Focus After Apply
+
+Control which diff to focus after applying changes:
+
+```lua
+require('avante').setup({
+  windows = {
+    ask = {
+      focus_on_apply = "ours", -- "ours" or "theirs"
+    },
+  },
+})
+```
+
+<ParamField path="focus_on_apply" type="string" default="ours">
+  Which diff to focus after applying. Options:
+  - `"ours"` - Focus on your current code
+  - `"theirs"` - Focus on AI's suggestion
+</ParamField>
+
+## Minimize Diff
+
+Remove unchanged lines when applying code blocks:
+
+```lua
+require('avante').setup({
+  behaviour = {
+    minimize_diff = true, -- Remove unchanged lines
+  },
+})
+```
+
+<Tip>
+  Enabling `minimize_diff` makes it easier to focus on actual changes by hiding unchanged code.
+</Tip>
+
+## Workflow Example
+
+<Steps>
+  <Step title="Request AI Changes">
+    Ask the AI to modify your code using `:AvanteAsk` or `:AvanteEdit`.
+  </Step>
+  
+  <Step title="Review Conflicts">
+    The AI's suggestions appear as conflicts. Review the differences between "ours" (current) and "theirs" (AI).
+  </Step>
+  
+  <Step title="Navigate Conflicts">
+    Use `]x` and `[x` to jump between conflicts.
+  </Step>
+  
+  <Step title="Resolve Conflicts">
+    For each conflict, choose:
+    - `co` - Keep your version
+    - `ct` - Accept AI's version  
+    - `cb` - Keep both
+    - `cc` - Use version under cursor
+  </Step>
+  
+  <Step title="Apply All (Optional)">
+    Use `ca` to accept all AI suggestions at once, or `A` in the sidebar to apply all changes.
+  </Step>
+</Steps>
+
+## Auto-Apply Mode
+
+For faster workflows, enable auto-apply to skip conflict resolution:
+
+```lua
+require('avante').setup({
+  behaviour = {
+    auto_apply_diff_after_generation = true, -- Auto-apply diffs
+  },
+})
+```
+
+<Warning>
+  Auto-apply mode will automatically apply all AI suggestions without review. Use with caution.
+</Warning>
+
+## Tips and Tricks
+
+<CardGroup cols={2}>
+  <Card title="Quick Accept" icon="bolt">
+    Use `ca` to quickly accept all AI suggestions if you trust the changes.
+  </Card>
+  
+  <Card title="Selective Review" icon="eye">
+    Navigate with `]x`/`[x` to review each conflict individually before deciding.
+  </Card>
+  
+  <Card title="Hybrid Approach" icon="shuffle">
+    Use `cb` to keep both versions when you want to merge ideas manually.
+  </Card>
+  
+  <Card title="Cursor Control" icon="hand-pointer">
+    Position your cursor on the preferred version and use `cc` for quick resolution.
+  </Card>
+</CardGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Keybindings not working">
+    1. Ensure `behaviour.auto_set_keymaps = true` in your config
+    2. Check for keybinding conflicts with other plugins
+    3. Verify you're in the diff buffer when pressing keys
+  </Accordion>
+  
+  <Accordion title="Cannot see conflicts">
+    1. Ensure `behaviour.auto_set_highlight_group = true`
+    2. Check your colorscheme supports diff highlights
+    3. Try customizing `highlights.diff` settings
+  </Accordion>
+  
+  <Accordion title="Autojump not working">
+    Verify `diff.autojump = true` in your configuration.
+  </Accordion>
+</AccordionGroup>
+
+## Related Documentation
+
+<CardGroup cols={2}>
+  <Card title="Keybindings" icon="keyboard" href="/configuration/keybindings">
+    View all available keybindings
+  </Card>
+  <Card title="Usage Guide" icon="book" href="/guides/usage">
+    Learn basic Avante workflows
+  </Card>
+  <Card title="Highlights" icon="palette" href="/api/highlights">
+    Customize visual appearance
+  </Card>
+</CardGroup>

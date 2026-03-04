@@ -1,0 +1,408 @@
+---
+title: Commands
+description: Complete reference for all Avante.nvim commands
+---
+
+Avante.nvim provides a comprehensive set of commands for AI-powered code assistance. All commands are prefixed with `:Avante`.
+
+## Core Commands
+
+### AvanteAsk
+
+Ask AI about your code and receive intelligent suggestions.
+
+**Usage:**
+```vim
+:AvanteAsk [question] [position=<position>] [project_root=<path>]
+```
+
+**Parameters:**
+- `question` (optional) - The question to ask the AI
+- `position` (optional) - Window position: `left`, `right`, `top`, `bottom`
+- `project_root` (optional) - Override project root path
+
+**Examples:**
+```vim
+" Open sidebar in ask mode
+:AvanteAsk
+
+" Ask a specific question
+:AvanteAsk How can I optimize this function?
+
+" Ask with custom position
+:AvanteAsk position=left Refactor this code
+
+" Ask with custom project root
+:AvanteAsk project_root=/path/to/project Explain this implementation
+```
+
+**Completion:**
+The command provides auto-completion for:
+- `position=left|right|top|bottom`
+- `project_root=<available_project_roots>`
+
+**Source:** plugin/avante.lua:70-90
+
+---
+
+### AvanteChat
+
+Start a chat session with AI about your codebase. Similar to `AvanteAsk` but with `ask=false` by default.
+
+**Usage:**
+```vim
+:AvanteChat [position=<position>] [project_root=<path>]
+```
+
+**Parameters:**
+- Same parameters as `AvanteAsk`
+- Defaults to chat mode (`ask=false`)
+
+**Examples:**
+```vim
+" Start a chat session
+:AvanteChat
+
+" Chat with custom window position
+:AvanteChat position=right
+```
+
+**Source:** plugin/avante.lua:91-100
+
+---
+
+### AvanteChatNew
+
+Create a new chat session. The current chat can be re-opened with the chat session selector.
+
+**Usage:**
+```vim
+:AvanteChatNew
+```
+
+**Examples:**
+```vim
+" Start a fresh chat session
+:AvanteChatNew
+```
+
+**Source:** plugin/avante.lua:101-106
+
+---
+
+### AvanteToggle
+
+Toggle the Avante AI panel visibility.
+
+**Usage:**
+```vim
+:AvanteToggle
+```
+
+**Examples:**
+```vim
+" Toggle sidebar visibility
+:AvanteToggle
+```
+
+**Source:** plugin/avante.lua:107
+
+---
+
+### AvanteBuild
+
+Build dependencies for Avante.nvim.
+
+**Usage:**
+```vim
+:AvanteBuild [source=<true|false>]
+```
+
+**Parameters:**
+- `source` (optional) - Build from source (default: `false`)
+
+**Examples:**
+```vim
+" Build using pre-built binaries
+:AvanteBuild
+
+" Build from source (requires cargo)
+:AvanteBuild source=true
+```
+
+**Completion:**
+- `source=true`
+- `source=false`
+
+**Source:** plugin/avante.lua:108-118
+
+---
+
+### AvanteEdit
+
+Edit the selected code block with AI assistance.
+
+**Usage:**
+```vim
+:[range]AvanteEdit [instruction]
+```
+
+**Parameters:**
+- `range` - Visual selection range (line1-line2)
+- `instruction` (optional) - Editing instruction for the AI
+
+**Examples:**
+```vim
+" Edit visual selection with prompt
+:'<,'>AvanteEdit Add error handling
+
+" Edit with multi-word instruction
+:'<,'>AvanteEdit Refactor to use async/await
+```
+
+**Source:** plugin/avante.lua:119-123
+
+---
+
+### AvanteRefresh
+
+Refresh all Avante windows to sync with the current buffer.
+
+**Usage:**
+```vim
+:AvanteRefresh
+```
+
+**Examples:**
+```vim
+" Refresh windows
+:AvanteRefresh
+```
+
+**Source:** plugin/avante.lua:124
+
+---
+
+### AvanteFocus
+
+Switch focus between the sidebar and code window.
+
+**Usage:**
+```vim
+:AvanteFocus
+```
+
+**Examples:**
+```vim
+" Toggle focus between windows
+:AvanteFocus
+```
+
+**Source:** plugin/avante.lua:125
+
+---
+
+### AvanteSwitchProvider
+
+Switch the AI provider (e.g., Claude, OpenAI, Gemini).
+
+**Usage:**
+```vim
+:AvanteSwitchProvider
+```
+
+**Description:**
+Opens an interactive selector to choose from available providers.
+
+**Examples:**
+```vim
+" Open provider selector
+:AvanteSwitchProvider
+```
+
+**Source:** plugin/avante.lua:126-135
+
+---
+
+### AvanteSwitchSelectorProvider
+
+Switch the selector provider (e.g., telescope, fzf_lua, mini_pick, snacks).
+
+**Usage:**
+```vim
+:AvanteSwitchSelectorProvider <provider>
+```
+
+**Parameters:**
+- `provider` (required) - Name of the selector provider
+
+**Examples:**
+```vim
+" Switch to telescope
+:AvanteSwitchSelectorProvider telescope
+
+" Switch to fzf_lua
+:AvanteSwitchSelectorProvider fzf_lua
+```
+
+**Source:** plugin/avante.lua:136-143
+
+---
+
+### AvanteSwitchInputProvider
+
+Switch the input provider for user prompts.
+
+**Usage:**
+```vim
+:AvanteSwitchInputProvider <provider>
+```
+
+**Parameters:**
+- `provider` (required) - `native`, `dressing`, or `snacks`
+
+**Completion:**
+- `native`
+- `dressing`
+- `snacks`
+
+**Examples:**
+```vim
+" Switch to native input
+:AvanteSwitchInputProvider native
+
+" Switch to snacks for modern UI
+:AvanteSwitchInputProvider snacks
+```
+
+**Source:** plugin/avante.lua:144-152
+
+---
+
+### AvanteClear
+
+Clear chat history or cache.
+
+**Usage:**
+```vim
+:AvanteClear [history|cache]
+```
+
+**Parameters:**
+- `history` (default) - Clear current chat history
+- `cache` - Clear all cached data (requires confirmation)
+
+**Completion:**
+- `history`
+- `cache`
+
+**Examples:**
+```vim
+" Clear current chat history
+:AvanteClear
+:AvanteClear history
+
+" Clear all cache (prompts for confirmation)
+:AvanteClear cache
+```
+
+**Source:** plugin/avante.lua:153-176
+
+---
+
+### AvanteShowRepoMap
+
+Display the repository map showing project structure.
+
+**Usage:**
+```vim
+:AvanteShowRepoMap
+```
+
+**Examples:**
+```vim
+" Show repository structure
+:AvanteShowRepoMap
+```
+
+**Source:** plugin/avante.lua:177
+
+---
+
+### AvanteModels
+
+Open the model selector to view and switch between available models.
+
+**Usage:**
+```vim
+:AvanteModels
+```
+
+**Examples:**
+```vim
+" Show available models
+:AvanteModels
+```
+
+**Source:** plugin/avante.lua:178
+
+---
+
+### AvanteHistory
+
+Open the history selector to browse and restore previous chat sessions.
+
+**Usage:**
+```vim
+:AvanteHistory
+```
+
+**Examples:**
+```vim
+" Browse chat history
+:AvanteHistory
+```
+
+**Source:** plugin/avante.lua:179
+
+---
+
+### AvanteStop
+
+Stop the current AI request/generation.
+
+**Usage:**
+```vim
+:AvanteStop
+```
+
+**Examples:**
+```vim
+" Cancel ongoing AI request
+:AvanteStop
+```
+
+**Source:** plugin/avante.lua:180
+
+---
+
+## Summary Table
+
+| Command | Description | Range Support |
+|---------|-------------|---------------|
+| `AvanteAsk` | Ask AI about code | No |
+| `AvanteChat` | Start chat session | No |
+| `AvanteChatNew` | Create new chat | No |
+| `AvanteToggle` | Toggle sidebar | No |
+| `AvanteBuild` | Build dependencies | No |
+| `AvanteEdit` | Edit selected code | Yes |
+| `AvanteRefresh` | Refresh windows | No |
+| `AvanteFocus` | Switch focus | No |
+| `AvanteSwitchProvider` | Switch AI provider | No |
+| `AvanteSwitchSelectorProvider` | Switch selector | No |
+| `AvanteSwitchInputProvider` | Switch input UI | No |
+| `AvanteClear` | Clear history/cache | No |
+| `AvanteShowRepoMap` | Show repo structure | No |
+| `AvanteModels` | Show model selector | No |
+| `AvanteHistory` | Browse chat history | No |
+| `AvanteStop` | Stop AI request | No |

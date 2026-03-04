@@ -1,0 +1,419 @@
+---
+title: OpenAI Provider
+description: Configure OpenAI models including GPT-4o and reasoning models in Avante.nvim
+---
+
+OpenAI provides powerful language models including GPT-4o and advanced reasoning models like o1 and o3-mini. Avante.nvim supports both the Chat Completions API and the newer Response API.
+
+## Quick Start
+
+<Steps>
+  <Step title="Get your API key">
+    Sign up at [OpenAI Platform](https://platform.openai.com/) and create an API key.
+  </Step>
+  
+  <Step title="Set environment variable">
+    Add to your shell configuration:
+    ```sh
+    # Scoped (recommended)
+    export AVANTE_OPENAI_API_KEY=your-api-key
+    
+    # Or global
+    export OPENAI_API_KEY=your-api-key
+    ```
+  </Step>
+  
+  <Step title="Configure provider">
+    ```lua
+    {
+      "yetone/avante.nvim",
+      opts = {
+        provider = "openai",
+      },
+    }
+    ```
+  </Step>
+</Steps>
+
+## Configuration
+
+### Basic Configuration
+
+```lua
+providers = {
+  openai = {
+    endpoint = "https://api.openai.com/v1",
+    model = "gpt-4o",
+    timeout = 30000,
+    context_window = 128000,
+    extra_request_body = {
+      temperature = 0.75,
+      max_completion_tokens = 16384,
+    },
+  },
+}
+```
+
+### Available Models
+
+<CodeGroup>
+```lua GPT-4o (Recommended)
+providers = {
+  openai = {
+    model = "gpt-4o",
+    extra_request_body = {
+      max_completion_tokens = 16384,
+    },
+  },
+}
+```
+
+```lua GPT-4o Mini
+providers = {
+  ["openai-gpt-4o-mini"] = {
+    __inherited_from = "openai",
+    model = "gpt-4o-mini",
+  },
+}
+```
+
+```lua o1 Reasoning Model
+providers = {
+  openai = {
+    model = "o1",
+    timeout = 60000, -- Reasoning models take longer
+    extra_request_body = {
+      max_completion_tokens = 32768,
+      reasoning_effort = "medium", -- low|medium|high
+    },
+  },
+}
+```
+
+```lua o3-mini Reasoning Model
+providers = {
+  openai = {
+    model = "o3-mini",
+    timeout = 60000,
+    extra_request_body = {
+      max_completion_tokens = 32768,
+      reasoning_effort = "high",
+    },
+  },
+}
+```
+</CodeGroup>
+
+## Response API
+
+OpenAI's Response API provides enhanced conversation management with stateful interactions. Avante automatically uses it for compatible models.
+
+### Automatic Detection
+
+```lua
+providers = {
+  openai = {
+    -- Response API is automatically enabled for GPT-5 Codex models
+    use_response_api = function(opts)
+      local model = opts.model
+      return model and model:match("gpt%-5%-codex") ~= nil
+    end,
+  },
+}
+```
+
+### Features
+
+- **Stateful conversations**: Previous interactions tracked via `previous_response_id`
+- **Encrypted reasoning**: Reasoning content is encrypted for privacy
+- **Function calling**: Enhanced tool use with better state management
+
+## Environment Variables
+
+| Variable | Scoped Version | Purpose |
+|----------|----------------|----------|
+| `OPENAI_API_KEY` | `AVANTE_OPENAI_API_KEY` | API authentication |
+
+## Reasoning Models
+
+### Configuration
+
+Reasoning models (o1, o3-mini) have special requirements:
+
+```lua
+providers = {
+  openai = {
+    model = "o1",
+    timeout = 60000, -- Increase timeout for reasoning
+    extra_request_body = {
+      -- Temperature is fixed at 1 for reasoning models
+      max_completion_tokens = 32768, -- Include reasoning tokens
+      reasoning_effort = "high", -- low|medium|high
+    },
+  },
+}
+```
+
+### Reasoning Effort Levels
+
+| Level | Speed | Quality | Use Case |
+|-------|-------|---------|----------|
+| `low` | Fastest | Good | Simple tasks, quick iterations |
+| `medium` | Balanced | Better | General use, balanced performance |
+| `high` | Slowest | Best | Complex problems, maximum quality |
+
+### Response API Format
+
+When using Response API with reasoning models:
+
+```lua
+extra_request_body = {
+  reasoning = {
+    effort = "high", -- Converted from reasoning_effort
+  },
+  max_output_tokens = 32768, -- Converted from max_completion_tokens
+}
+```
+
+## Azure OpenAI
+
+### Configuration
+
+```lua
+providers = {
+  azure = {
+    endpoint = "https://<your-resource-name>.openai.azure.com",
+    deployment = "gpt-4o", -- Your Azure deployment name
+    api_version = "2024-12-01-preview",
+    timeout = 30000,
+    extra_request_body = {
+      temperature = 0.75,
+      max_completion_tokens = 16384,
+    },
+  },
+}
+```
+
+### Environment Variables
+
+```sh
+# Scoped (recommended)
+export AVANTE_AZURE_OPENAI_API_KEY=your-api-key
+
+# Or global
+export AZURE_OPENAI_API_KEY=your-api-key
+```
+
+### API Version
+
+Azure uses specific API versions. Current recommended version:
+
+```lua
+api_version = "2024-12-01-preview"
+```
+
+## Advanced Configuration
+
+### Custom Endpoint
+
+```lua
+providers = {
+  openai = {
+    endpoint = "https://your-proxy.example.com/v1",
+  },
+}
+```
+
+### OpenRouter
+
+Use OpenAI-compatible providers like OpenRouter:
+
+```lua
+providers = {
+  openrouter = {
+    __inherited_from = "openai",
+    endpoint = "https://openrouter.ai/api/v1",
+    model = "anthropic/claude-3-opus",
+  },
+}
+```
+
+### Proxy Configuration
+
+```lua
+providers = {
+  openai = {
+    proxy = "http://proxy.example.com:8080",
+    allow_insecure = false,
+  },
+}
+```
+
+## Parameter Compatibility
+
+### Chat Completions API vs Response API
+
+| Parameter | Chat API | Response API |
+|-----------|----------|---------------|
+| Temperature | ✅ | ❌ (reasoning models) |
+| Max tokens | `max_tokens` or `max_completion_tokens` | `max_output_tokens` |
+| Reasoning effort | `reasoning_effort` | `reasoning.effort` |
+| Top P | ✅ | ❌ |
+| Frequency penalty | ✅ | ❌ |
+| Presence penalty | ✅ | ❌ |
+
+Avante automatically converts parameters based on the API in use.
+
+## Tool Calling
+
+### Standard Format
+
+```lua
+-- Tools are automatically formatted for OpenAI
+-- No special configuration needed
+```
+
+### Response API Format
+
+With Response API, tools use a flattened structure:
+
+```lua
+{
+  type = "function",
+  name = "tool_name",
+  description = "Tool description",
+  parameters = { ... },
+}
+```
+
+Avante handles the conversion automatically.
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="API Key Not Found">
+    Ensure your API key is set:
+    
+    ```sh
+    echo $OPENAI_API_KEY
+    # or
+    echo $AVANTE_OPENAI_API_KEY
+    ```
+    
+    Restart Neovim after setting the variable.
+  </Accordion>
+  
+  <Accordion title="Rate Limit Errors">
+    OpenAI has different rate limits per tier:
+    
+    1. Check your limits at [OpenAI Platform](https://platform.openai.com/account/limits)
+    2. Increase timeout: `timeout = 60000`
+    3. Consider upgrading your tier
+  </Accordion>
+  
+  <Accordion title="Reasoning Model Timeout">
+    Reasoning models take longer:
+    
+    ```lua
+    timeout = 120000, -- 2 minutes
+    ```
+  </Accordion>
+  
+  <Accordion title="Azure Deployment Not Found">
+    Ensure the deployment name matches your Azure resource:
+    
+    ```lua
+    deployment = "gpt-4o", -- Must match Azure deployment
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Model Selection" icon="brain">
+    - **GPT-4o**: Best for general use
+    - **GPT-4o-mini**: Cost-effective option
+    - **o1/o3-mini**: Complex reasoning tasks
+  </Card>
+  
+  <Card title="Token Management" icon="gauge">
+    - Set `max_completion_tokens` appropriately
+    - Reasoning models need more tokens
+    - Monitor usage in OpenAI dashboard
+  </Card>
+  
+  <Card title="Timeouts" icon="clock">
+    - Standard models: 30s
+    - Reasoning models: 60-120s
+    - Adjust based on complexity
+  </Card>
+  
+  <Card title="Temperature" icon="temperature-half">
+    - `0.0-0.3`: Focused, deterministic
+    - `0.4-0.7`: Balanced (recommended)
+    - `0.8-1.0`: Creative
+    - Reasoning models: Always 1.0
+  </Card>
+</CardGroup>
+
+## Example Configurations
+
+<CodeGroup>
+```lua Standard Setup
+{
+  provider = "openai",
+  providers = {
+    openai = {
+      model = "gpt-4o",
+      timeout = 30000,
+      extra_request_body = {
+        temperature = 0.7,
+        max_completion_tokens = 16384,
+      },
+    },
+  },
+}
+```
+
+```lua Reasoning Model
+{
+  provider = "openai",
+  providers = {
+    openai = {
+      model = "o1",
+      timeout = 90000,
+      extra_request_body = {
+        max_completion_tokens = 32768,
+        reasoning_effort = "high",
+      },
+    },
+  },
+}
+```
+
+```lua Azure OpenAI
+{
+  provider = "azure",
+  providers = {
+    azure = {
+      endpoint = "https://my-resource.openai.azure.com",
+      deployment = "gpt-4o-deployment",
+      api_version = "2024-12-01-preview",
+      timeout = 30000,
+      extra_request_body = {
+        temperature = 0.75,
+        max_completion_tokens = 16384,
+      },
+    },
+  },
+}
+```
+</CodeGroup>
+
+## Related Resources
+
+- [OpenAI API Documentation](https://platform.openai.com/docs)
+- [Response API Guide](https://platform.openai.com/docs/api-reference/responses)
+- [Azure OpenAI Documentation](https://learn.microsoft.com/azure/ai-services/openai/)
+- [Provider Overview](/providers/overview)

@@ -1,0 +1,466 @@
+---
+title: LLM Tools
+description: Available tools that AI agents can use for code generation and analysis
+icon: toolbox
+---
+
+## Overview
+
+Avante.nvim provides a comprehensive set of tools that AI agents can use during code generation and analysis. These tools enable agents to read files, execute commands, search code, and perform various development tasks.
+
+<Note>
+  Tools are enabled by default in agentic mode. You can disable them globally or selectively per provider.
+</Note>
+
+## Available Tools
+
+Here's the complete list of available tools:
+
+### File Operations
+
+<AccordionGroup>
+  <Accordion title="read_file" icon="book-open">
+    Read the contents of a file.
+    
+    **Usage**: The AI can read any file in your project to understand context or analyze code.
+    
+    **Example**: "Read the authentication module to understand the login flow."
+  </Accordion>
+  
+  <Accordion title="read_file_toplevel_symbols" icon="list">
+    Read top-level symbols (functions, classes, etc.) from a file without reading the entire content.
+    
+    **Usage**: Quickly scan file structure without loading full content.
+    
+    **Example**: "What classes are defined in user.py?"
+  </Accordion>
+  
+  <Accordion title="create_file" icon="file-plus">
+    Create a new file with specified content.
+    
+    **Usage**: Generate new files based on requirements.
+    
+    **Example**: "Create a new test file for the authentication module."
+  </Accordion>
+  
+  <Accordion title="edit_file" icon="pen">
+    Edit an existing file (used with Fast Apply feature).
+    
+    **Usage**: Apply precise code modifications.
+    
+    **Example**: "Update the login function to add rate limiting."
+  </Accordion>
+  
+  <Accordion title="delete_path" icon="trash">
+    Delete a file or directory.
+    
+    **Usage**: Remove obsolete files or directories.
+    
+    **Example**: "Remove the old migration files."
+  </Accordion>
+  
+  <Accordion title="move_path" icon="arrows-alt">
+    Move or rename a file or directory.
+    
+    **Usage**: Reorganize project structure.
+    
+    **Example**: "Move the utility functions to a utils folder."
+  </Accordion>
+  
+  <Accordion title="copy_path" icon="copy">
+    Copy a file or directory.
+    
+    **Usage**: Duplicate files or create templates.
+    
+    **Example**: "Copy the base controller to create a new API controller."
+  </Accordion>
+  
+  <Accordion title="create_dir" icon="folder-plus">
+    Create a new directory.
+    
+    **Usage**: Set up new directory structures.
+    
+    **Example**: "Create a components directory for React components."
+  </Accordion>
+</AccordionGroup>
+
+### Search Operations
+
+<AccordionGroup>
+  <Accordion title="glob" icon="magnifying-glass">
+    Search for files using glob patterns.
+    
+    **Usage**: Find files matching specific patterns.
+    
+    **Example**: "Find all TypeScript test files."
+    
+    **Pattern Examples**:
+    - `**/*.ts` - All TypeScript files
+    - `src/**/*.test.js` - All test files in src
+  </Accordion>
+  
+  <Accordion title="search_keyword" icon="search">
+    Search for keywords in file contents using regex.
+    
+    **Usage**: Find specific code patterns or text.
+    
+    **Example**: "Find all usages of the deprecated API."
+  </Accordion>
+  
+  <Accordion title="rag_search" icon="database">
+    Perform semantic search using the RAG service.
+    
+    **Usage**: Find relevant code based on semantic similarity.
+    
+    **Example**: "Find code related to user authentication."
+    
+    **Requires**: RAG service to be enabled
+  </Accordion>
+</AccordionGroup>
+
+### Execution Tools
+
+<AccordionGroup>
+  <Accordion title="bash" icon="terminal">
+    Execute bash commands.
+    
+    **Usage**: Run shell commands, scripts, or build tools.
+    
+    **Example**: "Run the test suite to verify the changes."
+    
+    <Warning>
+      This tool can execute arbitrary commands. Review permissions carefully.
+    </Warning>
+  </Accordion>
+  
+  <Accordion title="python" icon="python">
+    Execute Python code.
+    
+    **Usage**: Run Python scripts or perform data analysis.
+    
+    **Example**: "Analyze the log file and extract error patterns."
+    
+    <Warning>
+      Can execute arbitrary Python code. Use with caution.
+    </Warning>
+  </Accordion>
+</AccordionGroup>
+
+### Git Operations
+
+<AccordionGroup>
+  <Accordion title="git_diff" icon="code-compare">
+    Show git diff of changes.
+    
+    **Usage**: Review uncommitted changes.
+    
+    **Example**: "What changes have been made since the last commit?"
+  </Accordion>
+  
+  <Accordion title="git_commit" icon="code-commit">
+    Create a git commit.
+    
+    **Usage**: Commit changes with an AI-generated message.
+    
+    **Example**: "Commit these authentication improvements."
+  </Accordion>
+</AccordionGroup>
+
+### Web Operations
+
+<AccordionGroup>
+  <Accordion title="web_search" icon="globe">
+    Search the web for information.
+    
+    **Usage**: Find documentation, solutions, or recent information.
+    
+    **Example**: "Search for the latest React hooks best practices."
+    
+    **Requires**: Web search provider configured (Tavily, SerpAPI, etc.)
+  </Accordion>
+  
+  <Accordion title="fetch" icon="download">
+    Fetch content from a URL.
+    
+    **Usage**: Retrieve web content or API responses.
+    
+    **Example**: "Fetch the API documentation from the endpoint."
+  </Accordion>
+</AccordionGroup>
+
+## Disabling Tools
+
+### Disable All Tools
+
+To disable all tools for a provider:
+
+```lua
+require('avante').setup({
+  providers = {
+    claude = {
+      endpoint = "https://api.anthropic.com",
+      model = "claude-sonnet-4-20250514",
+      disable_tools = true, -- Disable all tools
+    },
+  },
+})
+```
+
+<Info>
+  Some LLM models don't support tools. Disable them if you encounter errors.
+</Info>
+
+### Disable Specific Tools
+
+To disable only certain tools:
+
+```lua
+require('avante').setup({
+  disabled_tools = { "python", "bash" }, -- Disable specific tools
+})
+```
+
+<Tip>
+  If Claude 3.7 is overusing the Python tool, add it to `disabled_tools` to prevent its usage.
+</Tip>
+
+### Common Use Cases for Disabling
+
+<AccordionGroup>
+  <Accordion title="Security Concerns">
+    Disable execution tools in sensitive environments:
+    
+    ```lua
+    disabled_tools = { "bash", "python", "delete_path" }
+    ```
+  </Accordion>
+  
+  <Accordion title="Prevent Web Access">
+    Disable web-related tools:
+    
+    ```lua
+    disabled_tools = { "web_search", "fetch" }
+    ```
+  </Accordion>
+  
+  <Accordion title="Read-Only Mode">
+    Disable all modification tools:
+    
+    ```lua
+    disabled_tools = {
+      "create_file", "edit_file", "delete_path",
+      "move_path", "copy_path", "create_dir",
+      "git_commit", "bash", "python"
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Tool Permissions
+
+Control how tools are approved:
+
+```lua
+require('avante').setup({
+  behaviour = {
+    auto_approve_tool_permissions = true, -- Auto-approve all tools
+    -- OR
+    auto_approve_tool_permissions = { "bash", "str_replace" }, -- Specific tools only
+    -- OR  
+    auto_approve_tool_permissions = false, -- Show prompts for all tools
+  },
+})
+```
+
+### Permission Modes
+
+<Tabs>
+  <Tab title="Auto-Approve All (Default)">
+    ```lua
+    behaviour = {
+      auto_approve_tool_permissions = true,
+    }
+    ```
+    
+    All tools are automatically approved without prompting.
+    
+    **Use when**: You trust the AI completely and want maximum automation.
+  </Tab>
+  
+  <Tab title="Auto-Approve Specific">
+    ```lua
+    behaviour = {
+      auto_approve_tool_permissions = { "read_file", "glob", "search_keyword" },
+    }
+    ```
+    
+    Only specified tools are auto-approved; others require confirmation.
+    
+    **Use when**: You want to approve safe operations automatically but review potentially destructive ones.
+  </Tab>
+  
+  <Tab title="Manual Approval">
+    ```lua
+    behaviour = {
+      auto_approve_tool_permissions = false,
+    }
+    ```
+    
+    All tools require manual approval.
+    
+    **Use when**: Maximum control and security is needed.
+  </Tab>
+</Tabs>
+
+### Confirmation UI Style
+
+Choose how permission prompts are displayed:
+
+```lua
+require('avante').setup({
+  behaviour = {
+    confirmation_ui_style = "inline_buttons", -- or "popup"
+  },
+})
+```
+
+## Custom Tools
+
+You can define your own custom tools:
+
+```lua
+require('avante').setup({
+  custom_tools = {
+    {
+      name = "run_go_tests",
+      description = "Run Go unit tests and return results",
+      command = "go test -v ./...",
+      param = {
+        type = "table",
+        fields = {
+          {
+            name = "target",
+            description = "Package or directory to test",
+            type = "string",
+            optional = true,
+          },
+        },
+      },
+      returns = {
+        {
+          name = "result",
+          description = "Test results",
+          type = "string",
+        },
+        {
+          name = "error",
+          description = "Error message if test failed",
+          type = "string",
+          optional = true,
+        },
+      },
+      func = function(params, on_log, on_complete)
+        local target = params.target or "./..."
+        return vim.system({ "go", "test", "-v", target }, { text = true }):wait().stdout
+      end,
+    },
+  },
+})
+```
+
+### Custom Tool Example: Database Query
+
+```lua
+custom_tools = {
+  {
+    name = "query_database",
+    description = "Execute SQL query and return results",
+    param = {
+      type = "table",
+      fields = {
+        {
+          name = "query",
+          description = "SQL query to execute",
+          type = "string",
+        },
+      },
+    },
+    func = function(params)
+      -- Your database query logic here
+      return "Query results..."
+    end,
+  },
+}
+```
+
+## Tool Usage in Agentic Mode
+
+In agentic mode, the AI automatically uses tools to complete tasks:
+
+<Steps>
+  <Step title="Task Analysis">
+    The AI analyzes your request and determines which tools are needed.
+  </Step>
+  
+  <Step title="Tool Selection">
+    Based on the task, the AI selects appropriate tools (read_file, bash, etc.).
+  </Step>
+  
+  <Step title="Permission Check">
+    If auto-approval is disabled, you're prompted to approve the tool usage.
+  </Step>
+  
+  <Step title="Execution">
+    The tool is executed and results are returned to the AI.
+  </Step>
+  
+  <Step title="Iteration">
+    The AI may use additional tools based on the results until the task is complete.
+  </Step>
+</Steps>
+
+## Legacy Mode (No Tools)
+
+To use the old planning method without tools:
+
+```lua
+require('avante').setup({
+  mode = "legacy", -- Disable agentic mode and tools
+})
+```
+
+See the [Modes](/concepts/modes) documentation for more information on agentic vs legacy mode.
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Security First" icon="shield">
+    Carefully review which tools are auto-approved, especially `bash` and `python`.
+  </Card>
+  
+  <Card title="Selective Disabling" icon="filter">
+    Disable tools you don't need to reduce security surface area.
+  </Card>
+  
+  <Card title="Monitor Usage" icon="eye">
+    Watch which tools the AI uses to understand its decision-making process.
+  </Card>
+  
+  <Card title="Custom Tools" icon="wrench">
+    Create custom tools for project-specific operations to enhance AI capabilities.
+  </Card>
+</CardGroup>
+
+## Related Documentation
+
+<CardGroup cols={2}>
+  <Card title="ACP Support" icon="robot" href="/features/acp-support">
+    Agent Client Protocol integration
+  </Card>
+  <Card title="Agentic Workflow" icon="hammer" href="/concepts/agentic-workflow">
+    Understanding autonomous agents
+  </Card>
+  <Card title="Web Search" icon="globe" href="/advanced/web-search">
+    Configure web search tools
+  </Card>
+</CardGroup>

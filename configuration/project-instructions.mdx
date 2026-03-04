@@ -1,0 +1,356 @@
+---
+title: Project Instructions
+description: How to use avante.md files to provide project-specific context and instructions to the AI
+---
+
+The `avante.md` file allows you to provide project-specific context and instructions to the AI. This file is automatically referenced during all interactions with Avante, helping the AI understand your project's conventions, architecture, and requirements.
+
+## What is avante.md?
+
+The `avante.md` file is a markdown file that contains instructions and context for the AI assistant. When placed in your project root, it's automatically loaded and used as additional context for all AI interactions.
+
+<ParamField path="instructions_file" type="string" default="avante.md">
+  Name of the project-specific instruction file
+</ParamField>
+
+```lua
+require('avante').setup({
+  instructions_file = "avante.md", -- Default filename
+})
+```
+
+## File Location
+
+Place the `avante.md` file in your **project root directory**:
+
+```
+your-project/
+├── avante.md          ← Place instruction file here
+├── .git/
+├── src/
+├── package.json
+└── README.md
+```
+
+The project root is determined by:
+1. LSP workspace folders
+2. LSP root directory
+3. Root pattern of the current buffer's filename
+4. Root pattern of current working directory
+
+## File Structure
+
+A well-structured `avante.md` file typically includes these sections:
+
+### 1. Your Role
+
+Define the AI's persona and expertise level:
+
+```markdown
+### Your Role
+
+You are an expert senior software engineer specializing in [technology stack]. You have deep knowledge of [specific frameworks/tools] and understand best practices for [domain/industry]. You write clean, maintainable, and well-documented code. You prioritize code quality, performance, and security in all your recommendations.
+```
+
+### 2. Your Mission
+
+Clearly describe what the AI should focus on:
+
+```markdown
+### Your Mission
+
+Your primary goal is to help build and maintain [project description]. You should:
+
+- Provide code suggestions that follow our established patterns and conventions
+- Help debug issues by analyzing code and suggesting solutions
+- Assist with refactoring to improve code quality and maintainability
+- Suggest optimizations for performance and scalability
+- Ensure all code follows our security guidelines
+- Help write comprehensive tests for new features
+```
+
+### 3. Additional Sections
+
+Consider including:
+
+- **Project Context** - Brief description of the project, its goals, and target users
+- **Technology Stack** - List of technologies, frameworks, and tools used
+- **Coding Standards** - Specific conventions, style guides, and patterns to follow
+- **Architecture Guidelines** - How components should interact and be organized
+- **Testing Requirements** - Testing strategies and coverage expectations
+- **Security Considerations** - Specific security requirements or constraints
+
+## Complete Example
+
+```markdown
+# Project Instructions for MyApp
+
+## Your Role
+
+You are an expert full-stack developer specializing in React, Node.js, and TypeScript. You understand modern web development practices and have experience with our tech stack.
+
+## Your Mission
+
+Help build a scalable e-commerce platform by:
+
+- Writing type-safe TypeScript code
+- Following React best practices and hooks patterns
+- Implementing RESTful APIs with proper error handling
+- Ensuring responsive design with Tailwind CSS
+- Writing comprehensive unit and integration tests
+
+## Project Context
+
+MyApp is a modern e-commerce platform targeting small businesses. We prioritize performance, accessibility, and user experience.
+
+## Technology Stack
+
+- Frontend: React 18, TypeScript, Tailwind CSS, Vite
+- Backend: Node.js, Express, Prisma, PostgreSQL
+- Testing: Jest, React Testing Library, Playwright
+- Deployment: Docker, AWS
+
+## Coding Standards
+
+- Use functional components with hooks
+- Prefer composition over inheritance
+- Write self-documenting code with clear variable names
+- Add JSDoc comments for complex functions
+- Follow the existing folder structure and naming conventions
+- Use named exports instead of default exports
+- Keep components small and focused (under 200 lines)
+
+## Architecture Guidelines
+
+- Follow feature-based folder structure
+- Separate business logic from UI components
+- Use custom hooks for reusable logic
+- Implement proper error boundaries
+- Use context sparingly, prefer props drilling for simple cases
+
+## Testing Requirements
+
+- Write tests for all new features
+- Aim for 80%+ code coverage
+- Test edge cases and error scenarios
+- Use React Testing Library for component tests
+- Use Playwright for E2E tests
+
+## Security Considerations
+
+- Never commit secrets or API keys
+- Sanitize all user inputs
+- Use parameterized queries to prevent SQL injection
+- Implement proper authentication and authorization
+- Follow OWASP security guidelines
+```
+
+## Custom Filename
+
+You can use a different filename for project instructions:
+
+```lua
+require('avante').setup({
+  instructions_file = ".ai-instructions.md",
+})
+```
+
+## Per-Project Configuration
+
+Different projects can have different instruction files. The file is loaded based on the project root of the current buffer.
+
+### Example: Multiple Projects
+
+```
+workspace/
+├── project-a/
+│   ├── avante.md       ← Instructions for Project A
+│   └── src/
+└── project-b/
+    ├── avante.md       ← Instructions for Project B
+    └── src/
+```
+
+## Best Practices
+
+### Be Specific
+
+Provide concrete examples instead of vague instructions:
+
+```markdown
+❌ Bad:
+- Write good code
+- Follow best practices
+
+✅ Good:
+- Use functional components with TypeScript
+- Implement error handling with try-catch blocks
+- Add JSDoc comments for all exported functions
+```
+
+### Include Examples
+
+Show the AI what good code looks like in your project:
+
+```markdown
+## Code Examples
+
+### Component Structure
+
+\`\`\`tsx
+// src/components/Button/Button.tsx
+import { FC } from 'react';
+import styles from './Button.module.css';
+
+interface ButtonProps {
+  label: string;
+  onClick: () => void;
+  variant?: 'primary' | 'secondary';
+}
+
+export const Button: FC<ButtonProps> = ({ label, onClick, variant = 'primary' }) => {
+  return (
+    <button className={styles[variant]} onClick={onClick}>
+      {label}
+    </button>
+  );
+};
+\`\`\`
+```
+
+### Keep It Updated
+
+Update the `avante.md` file as your project evolves:
+
+- Add new conventions as they're established
+- Update technology stack information
+- Refine the AI's role based on what works
+- Remove outdated instructions
+
+### Focus on "Why"
+
+Explain the reasoning behind your conventions:
+
+```markdown
+## Naming Conventions
+
+- Use `PascalCase` for components (e.g., `UserProfile.tsx`)
+  **Why**: Matches React conventions and improves readability
+  
+- Use `camelCase` for utility functions (e.g., `formatDate.ts`)
+  **Why**: Standard JavaScript convention
+  
+- Prefix custom hooks with `use` (e.g., `useAuth.ts`)
+  **Why**: Required by React's Rules of Hooks linter
+```
+
+## Example: Different Project Types
+
+### Backend API Project
+
+```markdown
+# Backend API Instructions
+
+## Your Role
+
+You are a backend engineer specializing in Node.js, Express, and PostgreSQL.
+
+## Your Mission
+
+- Build RESTful APIs following OpenAPI 3.0 specification
+- Implement proper authentication with JWT
+- Write database migrations for schema changes
+- Ensure proper error handling and logging
+- Write integration tests for all endpoints
+
+## API Conventions
+
+- Use RESTful resource naming (plural nouns)
+- Return proper HTTP status codes
+- Include pagination for list endpoints
+- Use ISO 8601 for all timestamps
+- Version APIs using URL prefix (/api/v1/)
+```
+
+### CLI Tool Project
+
+```markdown
+# CLI Tool Instructions
+
+## Your Role
+
+You are a systems programmer specializing in command-line tools with Go.
+
+## Your Mission
+
+- Build a fast, reliable CLI tool
+- Follow UNIX philosophy (do one thing well)
+- Provide helpful error messages
+- Support standard input/output pipes
+- Include comprehensive help text
+
+## CLI Conventions
+
+- Use flags for options (--verbose, -v)
+- Read from stdin if no file specified
+- Exit with 0 on success, non-zero on error
+- Support --help and --version flags
+- Use color for terminal output sparingly
+```
+
+## Troubleshooting
+
+### File Not Being Loaded
+
+If your `avante.md` file isn't being loaded:
+
+1. **Check project root detection**:
+   ```vim
+   :lua print(vim.fn.getcwd())
+   ```
+
+2. **Verify filename**:
+   - Default is `avante.md` (case-sensitive)
+   - Check your `instructions_file` config
+
+3. **Restart Neovim**:
+   - Instructions are loaded on startup
+
+### Instructions Not Being Applied
+
+1. **Test with explicit reference**:
+   - Ask: "What instructions do you have for this project?"
+   
+2. **Check file content**:
+   - Ensure it's valid markdown
+   - Avoid very large files (>10KB)
+
+3. **Be specific in prompts**:
+   - Reference the instructions: "Following our coding standards, refactor this..."
+
+## Integration with Custom Prompts
+
+The `avante.md` file provides project-specific context:
+
+- `avante.md` - Project-specific context (what)
+- Custom prompts - Task-specific instructions (how)
+
+Both are combined to provide comprehensive context to the AI.
+
+## Tips
+
+<Tip>
+  Start with a simple `avante.md` file and expand it over time as you discover what helps the AI understand your project better.
+</Tip>
+
+<Tip>
+  Include links to your internal documentation, style guides, or architecture decision records (ADRs) in the `avante.md` file.
+</Tip>
+
+<Tip>
+  If working on a monorepo, place `avante.md` files in each package/service directory for package-specific instructions.
+</Tip>
+
+<Tip>
+  Use the `avante.md` file to specify domain-specific terminology and acronyms used in your project.
+</Tip>

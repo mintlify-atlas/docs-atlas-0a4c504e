@@ -1,0 +1,319 @@
+---
+title: RAG Service
+description: Retrieval-Augmented Generation service for enhanced AI context
+icon: database
+---
+
+## Overview
+
+The RAG (Retrieval-Augmented Generation) service is a powerful tool that helps the AI obtain the required context for generating better code suggestions. By indexing your codebase and providing relevant context to the AI, RAG significantly improves the quality and accuracy of AI responses.
+
+<Warning>
+  The RAG service is disabled by default. You need to explicitly enable it in your configuration.
+</Warning>
+
+## Prerequisites
+
+Before enabling the RAG service, ensure you have:
+
+<Steps>
+  <Step title="Docker or Nix">
+    The RAG service requires either Docker or Nix to run. For macOS users, [OrbStack](https://orbstack.dev/) is recommended as a Docker alternative.
+  </Step>
+  
+  <Step title="LLM Provider">
+    Configure an LLM provider (OpenAI, Ollama, DashScope, or OpenRouter) for the RAG service.
+  </Step>
+  
+  <Step title="Embedding Provider">
+    Configure an embedding model provider for semantic search capabilities.
+  </Step>
+</Steps>
+
+## Configuration
+
+Enable and configure the RAG service in your Avante setup:
+
+```lua
+require('avante').setup({
+  rag_service = {
+    enabled = true, -- Enable the RAG service
+    host_mount = os.getenv("HOME"), -- Path to mount for the service
+    runner = "docker", -- "docker" or "nix"
+    
+    llm = {
+      provider = "openai",
+      endpoint = "https://api.openai.com/v1",
+      api_key = "OPENAI_API_KEY", -- Environment variable name
+      model = "gpt-4o-mini",
+      extra = nil, -- Additional options
+    },
+    
+    embed = {
+      provider = "openai",
+      endpoint = "https://api.openai.com/v1",
+      api_key = "OPENAI_API_KEY",
+      model = "text-embedding-3-large",
+      extra = nil,
+    },
+    
+    docker_extra_args = "", -- Extra Docker arguments
+  },
+})
+```
+
+### Configuration Options
+
+<ParamField path="enabled" type="boolean" default="false">
+  Enables or disables the RAG service
+</ParamField>
+
+<ParamField path="host_mount" type="string" default="$HOME">
+  The path on the host machine that will be mounted to the container. This allows the RAG service to access your files.
+  
+  <Tip>
+    You can mount:
+    - Your home directory (default)
+    - The project directory only
+    - The root directory `/` for system-wide access
+  </Tip>
+  
+  <Note>
+    The mount will be **read-only** for security.
+  </Note>
+</ParamField>
+
+<ParamField path="runner" type="string" default="docker">
+  The container runtime to use. Options:
+  - `"docker"` - Use Docker
+  - `"nix"` - Use Nix
+</ParamField>
+
+<ParamField path="docker_extra_args" type="string">
+  Additional arguments to pass to the Docker command
+</ParamField>
+
+## LLM Configuration
+
+The `llm` block configures the language model used for RAG operations:
+
+<ParamField path="llm.provider" type="string" required>
+  Model provider. Supported providers:
+  - `"openai"`
+  - `"ollama"`
+  - `"dashscope"`
+  - `"openrouter"`
+</ParamField>
+
+<ParamField path="llm.endpoint" type="string" required>
+  API endpoint URL for the LLM provider
+</ParamField>
+
+<ParamField path="llm.api_key" type="string" required>
+  Environment variable name containing the API key
+</ParamField>
+
+<ParamField path="llm.model" type="string" required>
+  Model name to use for RAG operations
+</ParamField>
+
+<ParamField path="llm.extra" type="table">
+  Additional configuration options for the LLM
+</ParamField>
+
+## Embedding Configuration
+
+The `embed` block configures the embedding model for semantic search:
+
+<ParamField path="embed.provider" type="string" required>
+  Embedding provider. Same options as `llm.provider`
+</ParamField>
+
+<ParamField path="embed.endpoint" type="string" required>
+  API endpoint URL for the embedding provider
+</ParamField>
+
+<ParamField path="embed.api_key" type="string" required>
+  Environment variable name containing the API key
+</ParamField>
+
+<ParamField path="embed.model" type="string" required>
+  Embedding model name
+</ParamField>
+
+<ParamField path="embed.extra" type="table">
+  Additional configuration options for the embedding model
+</ParamField>
+
+## Supported Providers
+
+<Tabs>
+  <Tab title="OpenAI">
+    ```lua
+    llm = {
+      provider = "openai",
+      endpoint = "https://api.openai.com/v1",
+      api_key = "OPENAI_API_KEY",
+      model = "gpt-4o-mini",
+    },
+    embed = {
+      provider = "openai",
+      endpoint = "https://api.openai.com/v1",
+      api_key = "OPENAI_API_KEY",
+      model = "text-embedding-3-large",
+    },
+    ```
+  </Tab>
+  
+  <Tab title="Ollama">
+    ```lua
+    llm = {
+      provider = "ollama",
+      endpoint = "http://localhost:11434",
+      api_key = "", -- Not required for Ollama
+      model = "llama2",
+    },
+    embed = {
+      provider = "ollama",
+      endpoint = "http://localhost:11434",
+      api_key = "",
+      model = "nomic-embed-text",
+    },
+    ```
+  </Tab>
+  
+  <Tab title="DashScope">
+    ```lua
+    llm = {
+      provider = "dashscope",
+      endpoint = "https://dashscope.aliyuncs.com/api/v1",
+      api_key = "DASHSCOPE_API_KEY",
+      model = "qwen-plus",
+    },
+    embed = {
+      provider = "dashscope",
+      endpoint = "https://dashscope.aliyuncs.com/api/v1",
+      api_key = "DASHSCOPE_API_KEY",
+      model = "text-embedding-v1",
+    },
+    ```
+  </Tab>
+  
+  <Tab title="OpenRouter">
+    ```lua
+    llm = {
+      provider = "openrouter",
+      endpoint = "https://openrouter.ai/api/v1",
+      api_key = "OPENROUTER_API_KEY",
+      model = "anthropic/claude-3-sonnet",
+    },
+    embed = {
+      provider = "openrouter",
+      endpoint = "https://openrouter.ai/api/v1",
+      api_key = "OPENROUTER_API_KEY",
+      model = "openai/text-embedding-3-large",
+    },
+    ```
+  </Tab>
+</Tabs>
+
+## Container Management
+
+After changing the RAG service configuration, you need to manually delete the container to ensure the new configuration is used:
+
+```bash
+docker rm -fv avante-rag-service
+```
+
+The container will be recreated automatically the next time you use Avante.
+
+## Mount Path Considerations
+
+<Warning>
+  Choose your `host_mount` path carefully based on where your projects are stored.
+</Warning>
+
+<AccordionGroup>
+  <Accordion title="Home Directory (Default)">
+    **Path**: `os.getenv("HOME")`
+    
+    **Use when**: All your projects are within your home directory.
+    
+    **Pros**: Secure, limits access to your user files only.
+    
+    **Cons**: Cannot access projects outside your home directory.
+  </Accordion>
+  
+  <Accordion title="Project Directory">
+    **Path**: `/path/to/your/project`
+    
+    **Use when**: You want to limit RAG to a specific project.
+    
+    **Pros**: Most restrictive, best security.
+    
+    **Cons**: Need to reconfigure for different projects.
+  </Accordion>
+  
+  <Accordion title="Root Directory">
+    **Path**: `/`
+    
+    **Use when**: Projects are scattered across your file system.
+    
+    **Pros**: Access to all files on your system.
+    
+    **Cons**: Broader access (though still read-only).
+  </Accordion>
+</AccordionGroup>
+
+## Usage with @codebase
+
+Once the RAG service is enabled, you can use the `@codebase` mention to leverage it:
+
+```
+@codebase How does the authentication system work?
+```
+
+The RAG service will:
+1. Index your codebase
+2. Find relevant code snippets
+3. Provide them as context to the AI
+4. Generate a more informed response
+
+<Tip>
+  For more information on using mentions, see the [Completion Sources](/advanced/completion-sources) documentation.
+</Tip>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Container fails to start">
+    1. Ensure Docker/Nix is running
+    2. Check that you have internet connectivity
+    3. Verify API keys are set correctly
+    4. Remove and recreate the container:
+       ```bash
+       docker rm -fv avante-rag-service
+       ```
+  </Accordion>
+  
+  <Accordion title="RAG service is slow">
+    1. Consider using a faster embedding model
+    2. Use `gpt-4o-mini` instead of larger models for LLM
+    3. Reduce the scope of your `host_mount`
+  </Accordion>
+  
+  <Accordion title="Cannot access project files">
+    Ensure your project is within the `host_mount` path. If projects are outside your home directory, you may need to set `host_mount = "/"`.
+  </Accordion>
+</AccordionGroup>
+
+## Related Documentation
+
+<CardGroup cols={2}>
+  <Card title="Completion Sources" icon="terminal" href="/advanced/completion-sources">
+    Learn about @codebase and other mentions
+  </Card>
+  <Card title="Providers" icon="plug" href="/configuration/providers">
+    Configure AI providers
+  </Card>
+</CardGroup>

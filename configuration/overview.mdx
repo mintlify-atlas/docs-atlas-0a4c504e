@@ -1,0 +1,181 @@
+---
+title: Configuration Overview
+description: Overview of Avante.nvim's configuration system and how to set up the plugin
+---
+
+Avante.nvim provides a comprehensive configuration system that allows you to customize every aspect of the plugin's behavior. This page covers the basics of configuring Avante.nvim.
+
+## Setup Function
+
+Avante.nvim is configured through the `setup()` function, which should be called in your Neovim configuration:
+
+```lua
+require('avante').setup({
+  -- your configuration options here
+})
+```
+
+### When to Call Setup
+
+<Note>
+  When loading the plugin synchronously, we recommend calling `require('avante').setup()` sometime **after** your colorscheme to ensure proper highlight groups are applied.
+</Note>
+
+## Configuration Structure
+
+The configuration is organized into several main sections:
+
+- **Provider Settings** - Configure AI providers (Claude, OpenAI, Gemini, etc.)
+- **Behavior Settings** - Control plugin behavior (auto-suggestions, keymaps, diff handling)
+- **Window Settings** - Customize window appearance and layout
+- **Mappings** - Define keybindings for all plugin actions
+- **Advanced Features** - RAG service, web search, custom tools, etc.
+
+## Minimal Configuration
+
+Here's a minimal configuration to get started with Claude:
+
+```lua
+require('avante').setup({
+  provider = "claude",
+  providers = {
+    claude = {
+      endpoint = "https://api.anthropic.com",
+      model = "claude-sonnet-4-5-20250929",
+      extra_request_body = {
+        temperature = 0.75,
+        max_tokens = 64000,
+      },
+    },
+  },
+})
+```
+
+## Full Configuration Example
+
+Here's a more complete configuration showing commonly used options:
+
+```lua
+require('avante').setup({
+  -- Core settings
+  debug = false,
+  mode = "agentic", -- "agentic" or "legacy"
+  provider = "claude",
+  auto_suggestions_provider = nil,
+  
+  -- Provider configuration
+  providers = {
+    claude = {
+      endpoint = "https://api.anthropic.com",
+      auth_type = "api",
+      model = "claude-sonnet-4-5-20250929",
+      timeout = 30000,
+      context_window = 200000,
+      extra_request_body = {
+        temperature = 0.75,
+        max_tokens = 64000,
+      },
+    },
+  },
+  
+  -- Behavior settings
+  behaviour = {
+    auto_focus_sidebar = true,
+    auto_suggestions = false,
+    auto_set_highlight_group = true,
+    auto_set_keymaps = true,
+    auto_apply_diff_after_generation = false,
+    minimize_diff = true,
+    enable_token_counting = true,
+    auto_add_current_file = true,
+  },
+  
+  -- Window configuration
+  windows = {
+    position = "right",
+    width = 30,
+    sidebar_header = {
+      enabled = true,
+      align = "center",
+      rounded = true,
+    },
+  },
+  
+  -- Keybindings (using defaults)
+  mappings = {},
+})
+```
+
+## Configuration Modes
+
+Avante.nvim supports two interaction modes:
+
+<ParamField path="mode" type="'agentic' | 'legacy'" default="agentic">
+  The interaction mode:
+  
+  - **`agentic`** - AI uses tools to automatically generate and apply code changes
+  - **`legacy`** - Traditional planning method without automatic tool execution
+</ParamField>
+
+## Environment Variables
+
+### Scoped API Keys (Recommended)
+
+Avante supports scoped API keys that are isolated specifically for Avante:
+
+```bash
+export AVANTE_ANTHROPIC_API_KEY=your-claude-api-key
+export AVANTE_OPENAI_API_KEY=your-openai-api-key
+export AVANTE_AZURE_OPENAI_API_KEY=your-azure-api-key
+export AVANTE_GEMINI_API_KEY=your-gemini-api-key
+```
+
+### Global API Keys (Legacy)
+
+You can still use traditional global API keys:
+
+```bash
+export ANTHROPIC_API_KEY=your-api-key
+export OPENAI_API_KEY=your-api-key
+export AZURE_OPENAI_API_KEY=your-api-key
+```
+
+<Warning>
+  If API keys are not set in environment variables, Avante will prompt you at startup to input the API key for your selected provider.
+</Warning>
+
+## Overriding Configuration
+
+You can dynamically override configuration at runtime using the `override()` function:
+
+```lua
+require("avante.config").override({
+  provider = "openai",
+  system_prompt = "You are a helpful coding assistant."
+})
+```
+
+## Configuration Files Location
+
+Avante stores some configuration data in:
+
+- **Config file**: `~/.config/avante.nvim/config.json` (last used model/provider)
+- **History storage**: `vim.fn.stdpath("state") .. "/avante"` (chat history)
+- **Prompt logs**: `vim.fn.stdpath("cache")` (prompt logger)
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Provider Configuration" icon="cloud" href="/configuration/providers">
+    Learn how to configure different AI providers
+  </Card>
+  <Card title="Keybindings" icon="keyboard" href="/configuration/keybindings">
+    Customize keyboard shortcuts
+  </Card>
+  <Card title="Window Settings" icon="window" href="/configuration/windows">
+    Configure window appearance and layout
+  </Card>
+  <Card title="Behavior Settings" icon="sliders" href="/configuration/behavior">
+    Control plugin behavior and features
+  </Card>
+</CardGroup>

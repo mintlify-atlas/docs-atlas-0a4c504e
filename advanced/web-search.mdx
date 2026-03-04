@@ -1,0 +1,423 @@
+---
+title: Web Search
+description: Integrate web search capabilities with Tavily, SerpAPI, Google, Kagi, Brave, and SearXNG
+icon: globe
+---
+
+## Overview
+
+Avante.nvim includes web search tools that allow AI agents to search the internet for up-to-date information, documentation, and solutions. This is particularly useful when dealing with:
+
+- Latest framework updates and best practices
+- Recently discovered bugs and solutions
+- API documentation and examples
+- Current technology trends and recommendations
+
+<Note>
+  Web search is available as a tool that the AI can use in agentic mode. You must enable a web search provider and configure the appropriate API keys.
+</Note>
+
+## Supported Providers
+
+Avante supports multiple web search providers:
+
+- **Tavily** (default) - AI-optimized search API
+- **SerpAPI** - Google Search API wrapper
+- **Google** - Programmable Search Engine
+- **Kagi** - Privacy-focused search
+- **Brave Search** - Privacy-focused search from Brave
+- **SearXNG** - Self-hosted metasearch engine
+
+## Configuration
+
+### Basic Setup
+
+Configure the web search provider in your Avante setup:
+
+```lua
+require('avante').setup({
+  web_search_engine = {
+    provider = "tavily", -- tavily, serpapi, google, kagi, brave, or searxng
+    proxy = nil, -- Optional proxy: "http://127.0.0.1:7890"
+  },
+})
+```
+
+<ParamField path="provider" type="string" default="tavily">
+  The web search provider to use. Options: `tavily`, `serpapi`, `google`, `kagi`, `brave`, `searxng`
+</ParamField>
+
+<ParamField path="proxy" type="string">
+  Optional HTTP proxy URL for search requests. Useful in restricted networks.
+  
+  **Example**: `"http://127.0.0.1:7890"`
+</ParamField>
+
+## Provider Setup
+
+### Tavily (Default)
+
+[Tavily](https://tavily.com/) provides AI-optimized search results.
+
+<Steps>
+  <Step title="Get API Key">
+    Sign up at [tavily.com](https://tavily.com/) and get your API key.
+  </Step>
+  
+  <Step title="Set Environment Variable">
+    ```bash
+    export TAVILY_API_KEY=your-tavily-api-key
+    ```
+  </Step>
+  
+  <Step title="Configure Avante">
+    ```lua
+    web_search_engine = {
+      provider = "tavily",
+    }
+    ```
+  </Step>
+</Steps>
+
+**Pros**:
+- Optimized for AI applications
+- Returns clean, structured results
+- Fast response times
+
+---
+
+### SerpAPI
+
+[SerpAPI](https://serpapi.com/) provides Google Search results through their API.
+
+<Steps>
+  <Step title="Get API Key">
+    Sign up at [serpapi.com](https://serpapi.com/) and get your API key.
+  </Step>
+  
+  <Step title="Set Environment Variable">
+    ```bash
+    export SERPAPI_API_KEY=your-serpapi-api-key
+    ```
+  </Step>
+  
+  <Step title="Configure Avante">
+    ```lua
+    web_search_engine = {
+      provider = "serpapi",
+    }
+    ```
+  </Step>
+</Steps>
+
+**Pros**:
+- Reliable Google Search results
+- Rich metadata and structured data
+- Supports many search engines
+
+---
+
+### Google Programmable Search Engine
+
+Use Google's [Programmable Search Engine](https://developers.google.com/custom-search/v1/overview) for custom search.
+
+<Steps>
+  <Step title="Create Search Engine">
+    1. Go to [Google Programmable Search Engine](https://programmablesearchengine.google.com)
+    2. Create a new search engine
+    3. Configure search scope (entire web or specific sites)
+    4. Get your Search Engine ID
+  </Step>
+  
+  <Step title="Get API Key">
+    Get an API key from [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
+  </Step>
+  
+  <Step title="Set Environment Variables">
+    ```bash
+    export GOOGLE_SEARCH_API_KEY=your-google-api-key
+    export GOOGLE_SEARCH_ENGINE_ID=your-search-engine-id
+    ```
+  </Step>
+  
+  <Step title="Configure Avante">
+    ```lua
+    web_search_engine = {
+      provider = "google",
+    }
+    ```
+  </Step>
+</Steps>
+
+**Pros**:
+- Direct Google Search integration
+- Customizable search scope
+- Free tier available
+
+---
+
+### Kagi
+
+[Kagi](https://help.kagi.com/kagi/api/search.html) is a privacy-focused search engine with an API.
+
+<Steps>
+  <Step title="Get API Token">
+    1. Subscribe to Kagi (requires paid plan)
+    2. Go to [Settings → API](https://kagi.com/settings?p=api)
+    3. Generate an API token
+  </Step>
+  
+  <Step title="Set Environment Variable">
+    ```bash
+    export KAGI_API_KEY=your-kagi-api-token
+    ```
+  </Step>
+  
+  <Step title="Configure Avante">
+    ```lua
+    web_search_engine = {
+      provider = "kagi",
+    }
+    ```
+  </Step>
+</Steps>
+
+**Pros**:
+- Privacy-focused (no tracking)
+- High-quality results
+- Fast and ad-free
+
+**Cons**:
+- Requires paid Kagi subscription
+
+---
+
+### Brave Search
+
+[Brave Search](https://api-dashboard.search.brave.com/) offers a privacy-respecting search API.
+
+<Steps>
+  <Step title="Get API Key">
+    1. Go to [Brave Search API Dashboard](https://api-dashboard.search.brave.com/)
+    2. Sign up and create an API key
+  </Step>
+  
+  <Step title="Set Environment Variable">
+    ```bash
+    export BRAVE_API_KEY=your-brave-api-key
+    ```
+  </Step>
+  
+  <Step title="Configure Avante">
+    ```lua
+    web_search_engine = {
+      provider = "brave",
+    }
+    ```
+  </Step>
+</Steps>
+
+**Pros**:
+- Privacy-focused
+- Independent index (not Google)
+- Free tier available
+
+---
+
+### SearXNG
+
+[SearXNG](https://searxng.github.io/searxng/) is a self-hosted metasearch engine.
+
+<Steps>
+  <Step title="Deploy SearXNG">
+    Set up your own SearXNG instance or use a public one. See [SearXNG docs](https://docs.searxng.org/) for deployment.
+  </Step>
+  
+  <Step title="Set Environment Variable">
+    ```bash
+    export SEARXNG_API_URL=https://your-searxng-instance.com
+    ```
+  </Step>
+  
+  <Step title="Configure Avante">
+    ```lua
+    web_search_engine = {
+      provider = "searxng",
+    }
+    ```
+  </Step>
+</Steps>
+
+**Pros**:
+- Self-hosted (full control)
+- No API costs
+- Privacy-focused
+- Aggregates multiple search engines
+
+**Cons**:
+- Requires hosting infrastructure
+- More complex setup
+
+## Using Web Search
+
+Once configured, the AI can automatically use web search in agentic mode:
+
+### Automatic Usage
+
+```
+What are the new features in React 19?
+```
+
+The AI will:
+1. Recognize it needs current information
+2. Use the `web_search` tool automatically
+3. Search for "React 19 new features"
+4. Incorporate findings into the response
+
+### Manual Tool Control
+
+You can control tool usage through permissions:
+
+```lua
+require('avante').setup({
+  behaviour = {
+    auto_approve_tool_permissions = { "web_search" }, -- Auto-approve web search
+    -- OR
+    auto_approve_tool_permissions = false, -- Prompt for all tools
+  },
+})
+```
+
+## Proxy Configuration
+
+If you're behind a corporate proxy or firewall:
+
+```lua
+require('avante').setup({
+  web_search_engine = {
+    provider = "tavily",
+    proxy = "http://proxy.company.com:8080",
+  },
+})
+```
+
+Supported proxy formats:
+- HTTP: `http://proxy:port`
+- HTTPS: `https://proxy:port`
+- With auth: `http://user:pass@proxy:port`
+
+## Disabling Web Search
+
+To disable the web search tool:
+
+```lua
+require('avante').setup({
+  disabled_tools = { "web_search" },
+})
+```
+
+See [LLM Tools](/advanced/tools) for more on tool management.
+
+## Response Formatting
+
+Web search results are automatically formatted and integrated into the AI's response. The AI will:
+
+1. Parse search results
+2. Extract relevant information
+3. Cite sources when applicable
+4. Synthesize findings into a coherent answer
+
+<Tip>
+  The AI typically provides source URLs in its response, allowing you to verify information.
+</Tip>
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Choose the Right Provider" icon="compass">
+    Use Tavily for AI tasks, SerpAPI for Google results, or Kagi for privacy.
+  </Card>
+  
+  <Card title="Monitor API Usage" icon="chart-line">
+    Web search can be expensive. Monitor your API usage and costs.
+  </Card>
+  
+  <Card title="Verify Results" icon="check">
+    Always verify critical information from web searches, especially for security-sensitive code.
+  </Card>
+  
+  <Card title="Use for Documentation" icon="book">
+    Web search is excellent for finding official docs and recent API changes.
+  </Card>
+</CardGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Web search not working">
+    1. Verify environment variable is set: `echo $TAVILY_API_KEY`
+    2. Check provider is configured correctly
+    3. Ensure you have internet connectivity
+    4. Verify API key is valid (not expired)
+    5. Check API quota hasn't been exceeded
+  </Accordion>
+  
+  <Accordion title="Proxy errors">
+    1. Verify proxy URL format is correct
+    2. Test proxy with curl: `curl -x http://proxy:port https://google.com`
+    3. Check if proxy requires authentication
+    4. Ensure proxy allows HTTPS connections
+  </Accordion>
+  
+  <Accordion title="Rate limit errors">
+    1. Check your API plan limits
+    2. Reduce search frequency
+    3. Consider upgrading your plan
+    4. Use caching if possible
+  </Accordion>
+  
+  <Accordion title="Poor search results">
+    1. Try a different provider
+    2. Rephrase your question to be more specific
+    3. For Google CSE, adjust your search engine settings
+  </Accordion>
+</AccordionGroup>
+
+## Example Use Cases
+
+<Tabs>
+  <Tab title="Latest Documentation">
+    **Prompt**: "How do I use the new async/await syntax in Python 3.12?"
+    
+    The AI will search for Python 3.12 documentation and provide current information.
+  </Tab>
+  
+  <Tab title="Bug Solutions">
+    **Prompt**: "I'm getting 'cannot find module' error with Next.js 14"
+    
+    The AI will search for recent solutions and workarounds.
+  </Tab>
+  
+  <Tab title="Best Practices">
+    **Prompt**: "What are the current best practices for React state management?"
+    
+    The AI will search for recent articles and recommendations.
+  </Tab>
+  
+  <Tab title="Security Advisories">
+    **Prompt**: "Are there any security issues with lodash version 4.17.20?"
+    
+    The AI will search for CVEs and security advisories.
+  </Tab>
+</Tabs>
+
+## Related Documentation
+
+<CardGroup cols={2}>
+  <Card title="LLM Tools" icon="toolbox" href="/advanced/tools">
+    Learn about all available AI tools
+  </Card>
+  <Card title="Tool Permissions" icon="lock" href="/advanced/tools#tool-permissions">
+    Configure tool approval settings
+  </Card>
+</CardGroup>

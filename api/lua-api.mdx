@@ -1,0 +1,557 @@
+---
+title: Lua API
+description: Complete Lua API reference for Avante.nvim
+---
+
+Avante.nvim provides a comprehensive Lua API for programmatic control and integration.
+
+## Module: `avante`
+
+Main module accessible via `require('avante')`.
+
+### setup(opts)
+
+Initialize Avante.nvim with configuration options.
+
+**Parameters:**
+- `opts` (table|nil) - Configuration options (see [Configuration Schema](/api/config-schema))
+
+**Example:**
+```lua
+require('avante').setup({
+  provider = "claude",
+  behaviour = {
+    auto_suggestions = true,
+    auto_set_keymaps = true,
+  },
+})
+```
+
+**Source:** lua/avante/init.lua:489-572
+
+---
+
+### get(current)
+
+Get the current sidebar, selection, and suggestion instances for the active tab.
+
+**Parameters:**
+- `current` (boolean|nil) - If `false`, doesn't update the global current state (default: `true`)
+
+**Returns:**
+- `sidebar` (avante.Sidebar) - Current sidebar instance
+- `selection` (avante.Selection) - Current selection instance
+- `suggestion` (avante.Suggestion) - Current suggestion instance
+
+**Example:**
+```lua
+local sidebar, selection, suggestion = require('avante').get()
+if sidebar then
+  print("Sidebar is open:", sidebar:is_open())
+end
+```
+
+**Source:** lua/avante/init.lua:378-390
+
+---
+
+### toggle()
+
+Toggle the Avante sidebar visibility.
+
+**Returns:**
+- `boolean` - `true` if sidebar is now open, `false` if closed
+
+**Example:**
+```lua
+require('avante').toggle()
+```
+
+**Source:** lua/avante/init.lua:417-430
+
+---
+
+### toggle_sidebar(opts)
+
+Toggle sidebar with options.
+
+**Parameters:**
+- `opts` (AskOptions|nil) - Options for sidebar behavior
+
+**Example:**
+```lua
+require('avante').toggle_sidebar({
+  ask = true,
+  win = { position = "right" },
+})
+```
+
+**Source:** lua/avante/init.lua:417-430
+
+---
+
+### is_sidebar_open()
+
+Check if the sidebar is currently open.
+
+**Returns:**
+- `boolean` - `true` if sidebar is open
+
+**Example:**
+```lua
+if require('avante').is_sidebar_open() then
+  print("Sidebar is visible")
+end
+```
+
+**Source:** lua/avante/init.lua:432-436
+
+---
+
+### open_sidebar(opts)
+
+Open the Avante sidebar.
+
+**Parameters:**
+- `opts` (AskOptions|nil) - Options for opening
+
+**Example:**
+```lua
+require('avante').open_sidebar({
+  ask = true,
+  question = "How can I optimize this?",
+})
+```
+
+**Source:** lua/avante/init.lua:439-446
+
+---
+
+### close_sidebar()
+
+Close the Avante sidebar.
+
+**Example:**
+```lua
+require('avante').close_sidebar()
+```
+
+**Source:** lua/avante/init.lua:448-452
+
+---
+
+### toggle.debug()
+
+Toggle debug mode on/off.
+
+**Example:**
+```lua
+require('avante').toggle.debug()
+```
+
+**Source:** lua/avante/init.lua:454-458
+
+---
+
+### toggle.selection()
+
+Toggle selection mode on/off.
+
+**Example:**
+```lua
+require('avante').toggle.selection()
+```
+
+**Source:** lua/avante/init.lua:460-464
+
+---
+
+### toggle.suggestion()
+
+Toggle auto-suggestions on/off.
+
+**Example:**
+```lua
+require('avante').toggle.suggestion()
+```
+
+**Source:** lua/avante/init.lua:466-479
+
+---
+
+### register_acp_client(client_id, client)
+
+Register an ACP (Agent Client Protocol) client for cleanup on exit.
+
+**Parameters:**
+- `client_id` (string) - Unique identifier for the client
+- `client` (any) - ACP client instance
+
+**Example:**
+```lua
+local client = MyACPClient:new()
+require('avante').register_acp_client("my-client", client)
+```
+
+**Source:** lua/avante/init.lua:31-34
+
+---
+
+### unregister_acp_client(client_id)
+
+Unregister an ACP client.
+
+**Parameters:**
+- `client_id` (string) - Unique identifier for the client
+
+**Example:**
+```lua
+require('avante').unregister_acp_client("my-client")
+```
+
+**Source:** lua/avante/init.lua:37-41
+
+---
+
+### cleanup_all_acp_clients()
+
+Cleanup all registered ACP clients (called automatically on exit).
+
+**Example:**
+```lua
+require('avante').cleanup_all_acp_clients()
+```
+
+**Source:** lua/avante/init.lua:43-54
+
+---
+
+## Module: `avante.api`
+
+API module accessible via `require('avante.api')`.
+
+### ask(opts)
+
+Ask AI about code or start a chat session.
+
+**Parameters:**
+- `opts` (AskOptions|string|nil) - Options or question string
+
+**AskOptions fields:**
+- `question` (string|nil) - Question to ask
+- `win` (table|nil) - Window options (similar to `nvim_open_win`)
+- `ask` (boolean|nil) - Enable ask mode (default: `true`)
+- `floating` (boolean|nil) - Use floating window for input
+- `new_chat` (boolean|nil) - Start new chat session
+- `without_selection` (boolean|nil) - Don't include current selection
+- `sidebar_pre_render` (function|nil) - Callback before rendering
+- `sidebar_post_render` (function|nil) - Callback after rendering
+- `project_root` (string|nil) - Override project root
+- `show_logo` (boolean|nil) - Show Avante logo
+
+**Example:**
+```lua
+local api = require('avante.api')
+
+-- Simple question
+api.ask({ question = "Explain this function" })
+
+-- New chat session
+api.ask({ new_chat = true })
+
+-- With custom window position
+api.ask({
+  question = "Optimize this code",
+  win = { position = "left" },
+})
+
+-- Floating input
+api.ask({ floating = true })
+```
+
+**Source:** lua/avante/api.lua:132-186
+
+---
+
+### zen_mode()
+
+Open Avante in zen mode (full-screen chat experience).
+
+**Example:**
+```lua
+require('avante.api').zen_mode()
+```
+
+**Source:** lua/avante/api.lua:118-127, 129
+
+---
+
+### edit(request, line1, line2)
+
+Edit selected code block with AI assistance.
+
+**Parameters:**
+- `request` (string|nil) - Editing instruction
+- `line1` (integer|nil) - Start line (from visual selection)
+- `line2` (integer|nil) - End line (from visual selection)
+
+**Example:**
+```lua
+local api = require('avante.api')
+
+-- Edit with instruction
+api.edit("Add error handling", 10, 20)
+
+-- Edit with prompt (opens input window)
+api.edit()
+```
+
+**Source:** lua/avante/api.lua:191-200
+
+---
+
+### refresh(opts)
+
+Refresh Avante windows to sync with current buffer.
+
+**Parameters:**
+- `opts` (AskOptions|nil) - Refresh options
+
+**Example:**
+```lua
+require('avante.api').refresh()
+```
+
+**Source:** lua/avante/api.lua:209-228
+
+---
+
+### focus(opts)
+
+Switch focus between sidebar and code window.
+
+**Parameters:**
+- `opts` (AskOptions|nil) - Focus options
+
+**Example:**
+```lua
+require('avante.api').focus()
+```
+
+**Source:** lua/avante/api.lua:231-255
+
+---
+
+### build(opts)
+
+Build Avante.nvim dependencies.
+
+**Parameters:**
+- `opts` (table|nil) - Build options
+  - `source` (boolean) - Build from source (default: `false`)
+
+**Example:**
+```lua
+local api = require('avante.api')
+
+-- Build using pre-built binaries
+api.build()
+
+-- Build from source
+api.build({ source = true })
+```
+
+**Source:** lua/avante/api.lua:47-104
+
+---
+
+### switch_provider(target)
+
+Switch the active AI provider.
+
+**Parameters:**
+- `target` (string) - Provider name (e.g., "claude", "openai", "gemini")
+
+**Example:**
+```lua
+require('avante.api').switch_provider("claude")
+```
+
+**Source:** lua/avante/api.lua:33
+
+---
+
+### switch_selector_provider(target_provider)
+
+Switch the selector provider (e.g., telescope, fzf_lua).
+
+**Parameters:**
+- `target_provider` (string) - Selector provider name
+
+**Example:**
+```lua
+require('avante.api').switch_selector_provider("telescope")
+```
+
+**Source:** lua/avante/api.lua:15-21
+
+---
+
+### switch_input_provider(target_provider)
+
+Switch the input provider (native, dressing, snacks).
+
+**Parameters:**
+- `target_provider` (string) - Input provider name
+
+**Example:**
+```lua
+require('avante.api').switch_input_provider("snacks")
+```
+
+**Source:** lua/avante/api.lua:24-30
+
+---
+
+### select_model()
+
+Open the model selector UI.
+
+**Example:**
+```lua
+require('avante.api').select_model()
+```
+
+**Source:** lua/avante/api.lua:257
+
+---
+
+### select_history()
+
+Open the chat history selector.
+
+**Example:**
+```lua
+require('avante.api').select_history()
+```
+
+**Source:** lua/avante/api.lua:259-273
+
+---
+
+### add_buffer_files()
+
+Add all open buffers to the selected files list.
+
+**Example:**
+```lua
+require('avante.api').add_buffer_files()
+```
+
+**Source:** lua/avante/api.lua:275-283
+
+---
+
+### add_selected_file(filepath)
+
+Add a specific file to the chat context.
+
+**Parameters:**
+- `filepath` (string) - Path to the file
+
+**Example:**
+```lua
+require('avante.api').add_selected_file("/path/to/file.lua")
+```
+
+**Source:** lua/avante/api.lua:285-295
+
+---
+
+### remove_selected_file(filepath)
+
+Remove a file or directory from the chat context.
+
+**Parameters:**
+- `filepath` (string) - Path to the file or directory
+
+**Example:**
+```lua
+require('avante.api').remove_selected_file("/path/to/file.lua")
+```
+
+**Source:** lua/avante/api.lua:297-318
+
+---
+
+### stop()
+
+Stop the current AI request.
+
+**Example:**
+```lua
+require('avante.api').stop()
+```
+
+**Source:** lua/avante/api.lua:320
+
+---
+
+### get_suggestion()
+
+Get the current suggestion instance.
+
+**Returns:**
+- `avante.Suggestion|nil` - Current suggestion instance
+
+**Example:**
+```lua
+local suggestion = require('avante.api').get_suggestion()
+if suggestion and suggestion:is_visible() then
+  print("Suggestion is active")
+end
+```
+
+**Source:** lua/avante/api.lua:203-206
+
+---
+
+## API Summary
+
+### Main Module (`avante`)
+
+| Function | Description |
+|----------|-------------|
+| `setup(opts)` | Initialize plugin |
+| `get(current)` | Get current instances |
+| `toggle()` | Toggle sidebar |
+| `is_sidebar_open()` | Check sidebar state |
+| `open_sidebar(opts)` | Open sidebar |
+| `close_sidebar()` | Close sidebar |
+| `toggle.debug()` | Toggle debug mode |
+| `toggle.selection()` | Toggle selection mode |
+| `toggle.suggestion()` | Toggle auto-suggestions |
+| `register_acp_client(id, client)` | Register ACP client |
+| `unregister_acp_client(id)` | Unregister ACP client |
+| `cleanup_all_acp_clients()` | Cleanup all ACP clients |
+
+### API Module (`avante.api`)
+
+| Function | Description |
+|----------|-------------|
+| `ask(opts)` | Ask AI or start chat |
+| `zen_mode()` | Full-screen chat mode |
+| `edit(request, line1, line2)` | Edit code with AI |
+| `refresh(opts)` | Refresh windows |
+| `focus(opts)` | Switch focus |
+| `build(opts)` | Build dependencies |
+| `switch_provider(target)` | Switch AI provider |
+| `switch_selector_provider(target)` | Switch selector UI |
+| `switch_input_provider(target)` | Switch input UI |
+| `select_model()` | Open model selector |
+| `select_history()` | Open history selector |
+| `add_buffer_files()` | Add all buffers |
+| `add_selected_file(filepath)` | Add file to context |
+| `remove_selected_file(filepath)` | Remove file from context |
+| `stop()` | Stop AI request |
+| `get_suggestion()` | Get suggestion instance |

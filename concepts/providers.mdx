@@ -1,0 +1,206 @@
+---
+title: "AI Providers"
+description: "Understanding AI providers in Avante.nvim and how they power your coding assistant"
+---
+
+## What are Providers?
+
+Providers are the AI services that power Avante.nvim's intelligent code assistance. Each provider offers different models, capabilities, and pricing structures, giving you the flexibility to choose the best option for your needs.
+
+## Provider Architecture
+
+Avante.nvim uses a flexible provider system that allows you to:
+
+- **Switch between providers** on the fly
+- **Use different providers** for different tasks
+- **Create custom providers** to integrate with any AI service
+- **Configure provider-specific** settings and models
+
+### How Providers Work
+
+```lua
+-- Provider configuration structure
+providers = {
+  provider_name = {
+    endpoint = "https://api.example.com",
+    model = "model-name",
+    api_key_name = "ENV_VAR_NAME",
+    parse_curl_args = function(opts, code_opts)
+      -- Custom request formatting
+    end,
+    parse_response_data = function(data_stream, event_state, opts)
+      -- Custom response parsing
+    end,
+  },
+}
+```
+
+## Available Providers
+
+Avante.nvim supports a wide range of AI providers out of the box:
+
+<CardGroup cols={2}>
+  <Card title="Claude" icon="brain" href="/providers/claude">
+    Anthropic's Claude models with extended context and reasoning
+  </Card>
+  <Card title="OpenAI" icon="openai" href="/providers/openai">
+    GPT-4o and reasoning models (o1, o3-mini)
+  </Card>
+  <Card title="Gemini" icon="google" href="/providers/gemini">
+    Google's Gemini with 1M+ token context window
+  </Card>
+  <Card title="GitHub Copilot" icon="github" href="/providers/copilot">
+    Use your Copilot subscription with Avante
+  </Card>
+  <Card title="Ollama" icon="server" href="/providers/ollama">
+    Run local models privately on your machine
+  </Card>
+  <Card title="Custom Providers" icon="code" href="/providers/custom-providers">
+    Create your own provider integrations
+  </Card>
+</CardGroup>
+
+## Provider Selection
+
+### Default Provider
+
+Set your default provider in the configuration:
+
+```lua
+require('avante').setup({
+  provider = "claude",  -- Default provider
+})
+```
+
+### Specialized Providers
+
+You can use different providers for different tasks:
+
+```lua
+require('avante').setup({
+  provider = "claude",                    -- Main provider
+  auto_suggestions_provider = "copilot",  -- Fast suggestions
+  memory_summary_provider = "openai",     -- Memory summaries
+})
+```
+
+<Warning>
+  Since auto-suggestions are a high-frequency operation, using expensive providers like Copilot can be costly. Consider using a local model with Ollama for suggestions.
+</Warning>
+
+### Runtime Switching
+
+Switch providers while Neovim is running:
+
+```vim
+:AvanteSwitchProvider claude
+:AvanteSwitchProvider openai
+:AvanteSwitchProvider ollama
+```
+
+Or use the interactive picker:
+
+```vim
+:AvanteSwitchProvider
+```
+
+## Provider Capabilities
+
+### Streaming Responses
+
+All built-in providers support streaming responses, allowing you to see AI output as it's generated:
+
+```lua
+providers = {
+  custom = {
+    parse_response_data = function(data_stream, event_state, opts)
+      -- Handle streaming data
+      if data_stream:match('"delta":') then
+        -- Extract and return delta content
+      end
+    end,
+  },
+}
+```
+
+### Tool Calling
+
+Providers that support tool calling enable agentic workflows:
+
+```lua
+providers = {
+  claude = {
+    -- Tools are automatically supported
+    -- Disable specific tools if needed
+    __inherited_tools = { "bash", "str_replace" },
+  },
+}
+```
+
+### Context Windows
+
+Different providers have different context window sizes:
+
+| Provider | Context Window | Notes |
+|----------|---------------|-------|
+| Claude Sonnet 4.5 | 200K tokens | Prompt caching available |
+| GPT-4o | 128K tokens | Structured outputs |
+| Gemini 2.0 Flash | 1M+ tokens | Massive context |
+| Ollama (varies) | 8K-128K tokens | Model dependent |
+
+## API Keys and Authentication
+
+Each provider requires authentication. Avante supports both scoped and global API keys:
+
+### Scoped API Keys (Recommended)
+
+```bash
+# Avante-specific keys (won't affect other tools)
+export AVANTE_ANTHROPIC_API_KEY=your-claude-key
+export AVANTE_OPENAI_API_KEY=your-openai-key
+export AVANTE_GEMINI_API_KEY=your-gemini-key
+```
+
+### Global API Keys
+
+```bash
+# System-wide keys
+export ANTHROPIC_API_KEY=your-claude-key
+export OPENAI_API_KEY=your-openai-key
+export GEMINI_API_KEY=your-gemini-key
+```
+
+Avante will check for scoped keys first, then fall back to global keys.
+
+## Provider Inheritance
+
+Custom providers can inherit from existing providers:
+
+```lua
+providers = {
+  my_custom_claude = {
+    __inherited_from = "claude",
+    model = "claude-opus-4-20250514",
+    endpoint = "https://my-proxy.com/v1",
+  },
+}
+```
+
+This inherits all the parsing logic while allowing customization.
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Configure Providers" icon="gear" href="/configuration/providers">
+    Detailed provider configuration options
+  </Card>
+  <Card title="Claude Setup" icon="brain" href="/providers/claude">
+    Get started with Claude
+  </Card>
+  <Card title="Ollama Local Models" icon="server" href="/providers/ollama">
+    Run AI models locally
+  </Card>
+  <Card title="Custom Providers" icon="code" href="/providers/custom-providers">
+    Create your own provider
+  </Card>
+</CardGroup>

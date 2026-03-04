@@ -1,0 +1,414 @@
+---
+title: Gemini Provider
+description: Configure Google's Gemini models with massive context windows in Avante.nvim
+---
+
+Google's Gemini models offer industry-leading context windows (up to 1M+ tokens) and powerful multimodal capabilities. Avante.nvim provides full support for Gemini's API.
+
+## Quick Start
+
+<Steps>
+  <Step title="Get your API key">
+    Get an API key from [Google AI Studio](https://makersuite.google.com/app/apikey).
+  </Step>
+  
+  <Step title="Set environment variable">
+    Add to your shell configuration:
+    ```sh
+    # Scoped (recommended)
+    export AVANTE_GEMINI_API_KEY=your-api-key
+    
+    # Or global
+    export GEMINI_API_KEY=your-api-key
+    ```
+  </Step>
+  
+  <Step title="Configure provider">
+    ```lua
+    {
+      "yetone/avante.nvim",
+      opts = {
+        provider = "gemini",
+      },
+    }
+    ```
+  </Step>
+</Steps>
+
+## Configuration
+
+### Basic Configuration
+
+```lua
+providers = {
+  gemini = {
+    endpoint = "https://generativelanguage.googleapis.com/v1beta/models",
+    model = "gemini-2.0-flash",
+    timeout = 30000,
+    context_window = 1048576, -- 1M+ tokens
+    extra_request_body = {
+      generationConfig = {
+        temperature = 0.75,
+      },
+    },
+  },
+}
+```
+
+### Available Models
+
+<CodeGroup>
+```lua Gemini 2.0 Flash (Recommended)
+providers = {
+  gemini = {
+    model = "gemini-2.0-flash",
+    context_window = 1048576,
+  },
+}
+```
+
+```lua Gemini 1.5 Pro
+providers = {
+  gemini = {
+    model = "gemini-1.5-pro",
+    context_window = 1048576,
+  },
+}
+```
+
+```lua Gemini 1.5 Flash
+providers = {
+  gemini = {
+    model = "gemini-1.5-flash",
+    context_window = 1048576,
+  },
+}
+```
+</CodeGroup>
+
+## Environment Variables
+
+| Variable | Scoped Version | Purpose |
+|----------|----------------|----------|
+| `GEMINI_API_KEY` | `AVANTE_GEMINI_API_KEY` | API authentication |
+
+## API Endpoint Structure
+
+Gemini uses a unique endpoint structure:
+
+```lua
+endpoint = "https://generativelanguage.googleapis.com/v1beta/models"
+
+-- Full URL is constructed as:
+-- {endpoint}/{model}:streamGenerateContent?alt=sse&key={api_key}
+```
+
+## Generation Configuration
+
+Gemini uses `generationConfig` for model parameters:
+
+```lua
+extra_request_body = {
+  generationConfig = {
+    temperature = 0.75,
+    topP = 0.95,
+    topK = 40,
+    maxOutputTokens = 8192,
+    candidateCount = 1,
+  },
+}
+```
+
+### Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `temperature` | number | 0.75 | Controls randomness (0.0-1.0) |
+| `topP` | number | 0.95 | Nucleus sampling threshold |
+| `topK` | number | 40 | Top-k sampling parameter |
+| `maxOutputTokens` | number | 8192 | Maximum response length |
+| `candidateCount` | number | 1 | Number of response candidates |
+
+## Tool Calling
+
+Gemini uses a different format for function declarations:
+
+```lua
+-- Avante automatically converts tools to Gemini format:
+{
+  tools = {
+    {
+      functionDeclarations = {
+        {
+          name = "tool_name",
+          description = "Tool description",
+          parameters = {
+            type = "object",
+            properties = { ... },
+            required = { ... },
+          },
+        },
+      },
+    },
+  },
+}
+```
+
+### Function Responses
+
+```lua
+-- Function results are formatted as:
+{
+  functionResponse = {
+    name = "tool_name",
+    response = {
+      name = "tool_name",
+      content = { result_data },
+    },
+  },
+}
+```
+
+## Safety Settings
+
+Gemini includes safety filters. If your prompt is blocked:
+
+```lua
+-- Response includes:
+{
+  promptFeedback = {
+    blockReason = "SAFETY", -- or "RECITATION"
+  },
+}
+```
+
+To adjust safety settings, add to your configuration:
+
+```lua
+extra_request_body = {
+  safetySettings = {
+    {
+      category = "HARM_CATEGORY_HARASSMENT",
+      threshold = "BLOCK_MEDIUM_AND_ABOVE",
+    },
+    -- Add other categories as needed
+  },
+}
+```
+
+## Finish Reasons
+
+Gemini responses include finish reasons:
+
+| Reason | Meaning |
+|--------|----------|
+| `STOP` | Natural completion |
+| `MAX_TOKENS` | Reached token limit |
+| `SAFETY` | Blocked by safety filters |
+| `RECITATION` | Blocked due to recitation |
+| `TOOL_CODE` | Tool use requested |
+
+## Vertex AI
+
+For Google Cloud Vertex AI, use the `vertex` provider:
+
+```lua
+providers = {
+  vertex = {
+    endpoint = "https://aiplatform.googleapis.com/v1/projects/PROJECT_ID/locations/LOCATION/publishers/google/models",
+    model = "gemini-1.5-flash-002",
+    timeout = 30000,
+    context_window = 1048576,
+    extra_request_body = {
+      generationConfig = {
+        temperature = 0.75,
+      },
+    },
+  },
+}
+```
+
+### Authentication
+
+Vertex AI uses Google Cloud authentication:
+
+```sh
+# Set up gcloud CLI authentication
+gcloud auth application-default login
+
+# Or use a service account
+export GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account.json
+```
+
+## Advanced Features
+
+### ReAct Prompting
+
+Enable ReAct-style prompting for better tool use:
+
+```lua
+providers = {
+  gemini = {
+    use_ReAct_prompt = true,
+  },
+}
+```
+
+### Stop Sequences
+
+Custom stop sequences for ReAct mode:
+
+```lua
+extra_request_body = {
+  generationConfig = {
+    stopSequences = { "</tool_use>" },
+  },
+}
+```
+
+### Multimodal Input
+
+Gemini supports image inputs:
+
+```lua
+-- Images are automatically formatted as:
+{
+  inline_data = {
+    mime_type = "image/png",
+    data = "base64_encoded_data",
+  },
+}
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="API Key Not Found">
+    Ensure your API key is set:
+    
+    ```sh
+    echo $GEMINI_API_KEY
+    # or
+    echo $AVANTE_GEMINI_API_KEY
+    ```
+    
+    Get a key from [Google AI Studio](https://makersuite.google.com/app/apikey).
+  </Accordion>
+  
+  <Accordion title="Prompt Blocked by Safety Filters">
+    If your prompt is blocked:
+    
+    1. Review the `blockReason` in the error
+    2. Adjust your prompt to be less sensitive
+    3. Configure safety settings (use with caution)
+  </Accordion>
+  
+  <Accordion title="Vertex AI Authentication Failed">
+    For Vertex AI:
+    
+    1. Ensure gcloud is authenticated: `gcloud auth list`
+    2. Check project ID in endpoint URL
+    3. Verify service account permissions
+  </Accordion>
+  
+  <Accordion title="Rate Limit Errors">
+    Gemini has generous quotas, but if you hit limits:
+    
+    1. Check quota at [Google Cloud Console](https://console.cloud.google.com/)
+    2. Request quota increase
+    3. Implement request throttling
+  </Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Model Selection" icon="brain">
+    - **Gemini 2.0 Flash**: Latest, best performance
+    - **Gemini 1.5 Pro**: Maximum capability
+    - **Gemini 1.5 Flash**: Fastest responses
+  </Card>
+  
+  <Card title="Context Window" icon="window-maximize">
+    - 1M+ token context is unique to Gemini
+    - Great for large codebases
+    - Entire files can fit in context
+  </Card>
+  
+  <Card title="Temperature Settings" icon="temperature-half">
+    - `0.0-0.3`: Focused, consistent
+    - `0.4-0.7`: Balanced (recommended)
+    - `0.8-1.0`: Creative, varied
+  </Card>
+  
+  <Card title="Safety" icon="shield">
+    - Default filters are moderate
+    - Adjust only when necessary
+    - Review blocked content carefully
+  </Card>
+</CardGroup>
+
+## Example Configurations
+
+<CodeGroup>
+```lua Standard Setup
+{
+  provider = "gemini",
+  providers = {
+    gemini = {
+      model = "gemini-2.0-flash",
+      timeout = 30000,
+      extra_request_body = {
+        generationConfig = {
+          temperature = 0.7,
+          maxOutputTokens = 8192,
+        },
+      },
+    },
+  },
+}
+```
+
+```lua With ReAct Prompting
+{
+  provider = "gemini",
+  providers = {
+    gemini = {
+      model = "gemini-2.0-flash",
+      use_ReAct_prompt = true,
+      extra_request_body = {
+        generationConfig = {
+          temperature = 0.7,
+          stopSequences = { "</tool_use>" },
+        },
+      },
+    },
+  },
+}
+```
+
+```lua Vertex AI
+{
+  provider = "vertex",
+  providers = {
+    vertex = {
+      endpoint = "https://aiplatform.googleapis.com/v1/projects/my-project/locations/us-central1/publishers/google/models",
+      model = "gemini-1.5-flash-002",
+      timeout = 30000,
+      extra_request_body = {
+        generationConfig = {
+          temperature = 0.75,
+        },
+      },
+    },
+  },
+}
+```
+</CodeGroup>
+
+## Related Resources
+
+- [Gemini API Documentation](https://ai.google.dev/docs)
+- [Google AI Studio](https://makersuite.google.com/)
+- [Vertex AI Documentation](https://cloud.google.com/vertex-ai/docs)
+- [Provider Overview](/providers/overview)

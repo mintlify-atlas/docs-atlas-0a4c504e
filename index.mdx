@@ -1,97 +1,277 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: "Avante.nvim - AI-Powered Coding in Neovim"
+description: "Bring Cursor AI IDE's powerful AI-assisted coding capabilities to Neovim with agentic workflows, multi-provider support, and seamless code editing"
+mode: "custom"
 ---
 
-## Setting up
+<div className="relative overflow-hidden dark:bg-[#0f1117] bg-gradient-to-br from-[#0577cc]/10 via-white to-[#5ea439]/10 dark:from-[#0577cc]/5 dark:via-[#0f1117] dark:to-[#5ea439]/5">
+  <div className="absolute inset-0 bg-grid-slate-900/[0.04] dark:bg-grid-slate-100/[0.02] [mask-image:linear-gradient(0deg,transparent,black)]" />
+  <div className="relative max-w-7xl mx-auto px-6 sm:px-8 py-20 sm:py-24 lg:py-32">
+    <div className="grid lg:grid-cols-12 gap-12 items-center">
+      <div className="lg:col-span-7">
+        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold dark:text-white text-gray-900 leading-tight">
+          Use Neovim like{" "}
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#0577cc] to-[#5ea439]">
+            Cursor AI IDE
+          </span>
+        </h1>
+        <p className="mt-6 text-lg sm:text-xl dark:text-gray-300 text-gray-600 max-w-2xl">
+          Avante.nvim brings AI-powered code assistance directly to Neovim with agentic workflows, multi-provider support, and instant code edits. Experience the power of AI without leaving your terminal.
+        </p>
+        <div className="mt-8 flex flex-wrap gap-4">
+          <a
+            href="/quickstart"
+            className="inline-flex items-center px-6 py-3 rounded-lg text-base font-semibold bg-[#0577cc] text-white hover:bg-[#044c9c] transition-colors shadow-lg shadow-[#0577cc]/20"
+          >
+            Get Started
+            <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
+          </a>
+          <a
+            href="/installation"
+            className="inline-flex items-center px-6 py-3 rounded-lg text-base font-semibold dark:bg-white/10 bg-gray-100 dark:text-white text-gray-900 dark:border-white/20 border-gray-300 border dark:hover:bg-white/15 hover:bg-gray-200 transition-colors"
+          >
+            Installation Guide
+          </a>
+        </div>
+        <div className="mt-8 flex items-center gap-6 text-sm dark:text-gray-400 text-gray-600">
+          <div className="flex items-center gap-2">
+            <svg className="w-5 h-5 text-[#5ea439]" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+            </svg>
+            <span>17,000+ Stars</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <svg className="w-5 h-5 text-[#5ea439]" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+            </svg>
+            <span>Apache 2.0 License</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <svg className="w-5 h-5 text-[#5ea439]" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+            </svg>
+            <span>Neovim 0.10+</span>
+          </div>
+        </div>
+      </div>
+      <div className="lg:col-span-5 hidden lg:block">
+        <div className="relative">
+          <div className="absolute inset-0 dark:bg-gradient-to-r from-[#0577cc]/20 to-[#5ea439]/20 blur-3xl" />
+          <div className="relative dark:bg-[#1a1d27] bg-white rounded-2xl border dark:border-[#27272a] border-gray-200 p-6 shadow-2xl">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-3 h-3 rounded-full bg-red-500" />
+              <div className="w-3 h-3 rounded-full bg-yellow-500" />
+              <div className="w-3 h-3 rounded-full bg-green-500" />
+            </div>
+            <pre className="text-sm dark:text-gray-300 text-gray-700 overflow-x-auto"><code>{`-- Ask AI about your code
+:AvanteAsk
 
-Get your documentation site up and running in minutes.
+-- Edit selected blocks
+:AvanteEdit
 
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
-</Card>
+-- Start a chat session
+:AvanteChat
 
-## Make it yours
+-- Toggle the sidebar
+:AvanteToggle`}</code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
-Design a docs site that looks great and empowers your users.
+<div className="mt-16 mb-16 max-w-5xl mx-auto px-6">
+  <h2 className="text-2xl sm:text-3xl font-bold dark:text-white text-gray-900 mb-4">
+    Quick Start
+  </h2>
+  <p className="text-base dark:text-gray-400 text-gray-600 mb-8">
+    Get up and running with Avante.nvim in just a few steps
+  </p>
 
-<Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
-  </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
-  </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
-  </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
-  </Card>
-</Columns>
+  <Steps>
+    <Step title="Install with your favorite plugin manager">
+      Add Avante.nvim to your Neovim configuration. For lazy.nvim:
 
-## Create beautiful pages
+      ```lua lazy.nvim
+      {
+        "yetone/avante.nvim",
+        build = "make",
+        event = "VeryLazy",
+        opts = {
+          provider = "claude",
+        },
+        dependencies = {
+          "nvim-lua/plenary.nvim",
+          "MunifTanjim/nui.nvim",
+          "nvim-tree/nvim-web-devicons",
+        },
+      }
+      ```
 
-Everything you need to create world-class documentation.
+      See the [installation guide](/installation) for other plugin managers.
+    </Step>
 
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
-  </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
-  </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
-  </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
-  </Card>
-</Columns>
+    <Step title="Configure your AI provider">
+      Set up your preferred AI provider. Avante supports Claude, OpenAI, Gemini, Copilot, and more:
 
-## Need inspiration?
+      ```bash
+      export ANTHROPIC_API_KEY=your-api-key
+      ```
 
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+      Or configure directly in your setup:
+
+      ```lua
+      require('avante').setup({
+        provider = "claude",
+        providers = {
+          claude = {
+            model = "claude-sonnet-4-20250514",
+          },
+        },
+      })
+      ```
+    </Step>
+
+    <Step title="Start using AI assistance">
+      Open a code file and ask AI for help:
+
+      ```vim
+      :AvanteAsk Refactor this function to improve performance
+      ```
+
+      Or toggle the sidebar and start chatting:
+
+      ```vim
+      :AvanteToggle
+      ```
+
+      Select code in visual mode and use `:AvanteEdit` to apply AI suggestions directly.
+    </Step>
+  </Steps>
+</div>
+
+<div className="mt-16 mb-16 max-w-5xl mx-auto px-6">
+  <h2 className="text-2xl sm:text-3xl font-bold dark:text-white text-gray-900 mb-4">
+    Key Features
+  </h2>
+  <p className="text-base dark:text-gray-400 text-gray-600 mb-8">
+    Everything you need for AI-powered coding in Neovim
+  </p>
+
+  <CardGroup cols={2}>
+    <Card title="Agentic Workflows" icon="robot" href="/concepts/agentic-workflow">
+      Autonomous AI agents that can execute tools, generate code, and make intelligent decisions without constant prompting.
+    </Card>
+    <Card title="Multi-Provider Support" icon="network-wired" href="/providers/overview">
+      Choose from Claude, OpenAI, Gemini, Copilot, Ollama, and more. Switch providers on the fly or use custom providers.
+    </Card>
+    <Card title="Fast Apply" icon="bolt" href="/features/fast-apply">
+      Instant code edits with specialized models achieving 96-98% accuracy at 2500-4500+ tokens per second.
+    </Card>
+    <Card title="Zen Mode" icon="om" href="/concepts/zen-mode">
+      Terminal-based Vibe Coding experience that combines CLI convenience with full Neovim power.
+    </Card>
+    <Card title="ACP Support" icon="handshake" href="/features/acp-support">
+      Standardized Agent Client Protocol support for seamless integration with AI agents like Gemini CLI and Claude Code.
+    </Card>
+    <Card title="Project Instructions" icon="file-lines" href="/configuration/project-instructions">
+      Context-aware assistance with project-specific instruction files (avante.md) for tailored AI responses.
+    </Card>
+    <Card title="RAG Service" icon="database" href="/features/rag-service">
+      Project-aware code suggestions with retrieval-augmented generation for better context understanding.
+    </Card>
+    <Card title="Inline Suggestions" icon="wand-magic-sparkles" href="/features/suggestions">
+      Real-time AI code suggestions and completions as you type, with diff management for reviewing changes.
+    </Card>
+  </CardGroup>
+</div>
+
+<div className="mt-16 mb-16 max-w-5xl mx-auto px-6">
+  <h2 className="text-2xl sm:text-3xl font-bold dark:text-white text-gray-900 mb-4">
+    Explore by Topic
+  </h2>
+  <p className="text-base dark:text-gray-400 text-gray-600 mb-8">
+    Dive deeper into Avante.nvim's capabilities
+  </p>
+
+  <CardGroup cols={3}>
+    <Card title="Core Concepts" icon="lightbulb" href="/concepts/overview">
+      Understand modes, providers, and workflows
+    </Card>
+    <Card title="Configuration" icon="gear" href="/configuration/overview">
+      Customize keybindings, windows, and behavior
+    </Card>
+    <Card title="Providers" icon="cloud" href="/providers/overview">
+      Configure Claude, OpenAI, Gemini, and more
+    </Card>
+    <Card title="Advanced Topics" icon="graduation-cap" href="/advanced/tools">
+      Tools, completion sources, and web search
+    </Card>
+    <Card title="Guides" icon="book" href="/guides/usage">
+      Practical guides and integrations
+    </Card>
+    <Card title="API Reference" icon="code" href="/api/commands">
+      Complete command and Lua API documentation
+    </Card>
+  </CardGroup>
+</div>
+
+<div className="mt-16 mb-16 max-w-5xl mx-auto px-6">
+  <h2 className="text-2xl sm:text-3xl font-bold dark:text-white text-gray-900 mb-4">
+    Community & Support
+  </h2>
+  <p className="text-base dark:text-gray-400 text-gray-600 mb-8">
+    Get help and connect with other Avante.nvim users
+  </p>
+
+  <CardGroup cols={2}>
+    <Card title="GitHub Discussions" icon="github" href="https://github.com/yetone/avante.nvim/discussions">
+      Ask questions, share tips, and discuss features with the community
+    </Card>
+    <Card title="Discord Server" icon="discord" href="https://discord.gg/QfnEFEdSjz">
+      Join our Discord for real-time chat and support
+    </Card>
+    <Card title="Issue Tracker" icon="bug" href="https://github.com/yetone/avante.nvim/issues">
+      Report bugs, request features, and track development
+    </Card>
+    <Card title="Troubleshooting" icon="life-ring" href="/guides/troubleshooting">
+      Common issues and solutions to get you unstuck
+    </Card>
+  </CardGroup>
+</div>
+
+<div className="mt-20 mb-16 max-w-5xl mx-auto px-6">
+  <div className="dark:bg-gradient-to-r from-[#0577cc]/10 to-[#5ea439]/10 bg-gradient-to-r from-[#0577cc]/5 to-[#5ea439]/5 rounded-2xl border dark:border-[#27272a] border-gray-200 p-8 sm:p-12">
+    <div className="text-center">
+      <h2 className="text-2xl sm:text-3xl font-bold dark:text-white text-gray-900 mb-4">
+        Ready to transform your Neovim workflow?
+      </h2>
+      <p className="text-base dark:text-gray-400 text-gray-600 mb-8 max-w-2xl mx-auto">
+        Start using AI-powered coding assistance in Neovim today. No subscription required for local models with Ollama.
+      </p>
+      <div className="flex flex-col sm:flex-row gap-4 justify-center">
+        <a
+          href="/quickstart"
+          className="inline-flex items-center justify-center px-6 py-3 rounded-lg text-base font-semibold bg-[#0577cc] text-white hover:bg-[#044c9c] transition-colors shadow-lg shadow-[#0577cc]/20"
+        >
+          Get Started Now
+          <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+          </svg>
+        </a>
+        <a
+          href="https://github.com/yetone/avante.nvim"
+          className="inline-flex items-center justify-center px-6 py-3 rounded-lg text-base font-semibold dark:bg-white/10 bg-gray-100 dark:text-white text-gray-900 dark:border-white/20 border-gray-300 border dark:hover:bg-white/15 hover:bg-gray-200 transition-colors"
+        >
+          <svg className="mr-2 w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+            <path fillRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clipRule="evenodd" />
+          </svg>
+          View on GitHub
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

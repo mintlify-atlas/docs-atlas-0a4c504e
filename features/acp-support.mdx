@@ -1,0 +1,266 @@
+---
+title: ACP Support
+description: Integration with Agent Client Protocol (ACP) for enhanced AI agent capabilities
+icon: robot
+---
+
+## What is ACP?
+
+The [Agent Client Protocol (ACP)](https://agentclientprotocol.com/overview/introduction) is a standardized protocol that enables AI agents to communicate with development tools and environments. Avante.nvim now supports ACP, allowing seamless integration with AI agents that follow this unified communication protocol.
+
+### Key Benefits
+
+ACP provides several advantages over traditional API-based providers:
+
+<CardGroup cols={2}>
+  <Card title="Standardized Communication" icon="comments">
+    A unified JSON-RPC based protocol for agent-client interactions
+  </Card>
+  <Card title="Enhanced Tool Access" icon="wrench">
+    Agents can directly interact with your file system, run commands, and access development tools
+  </Card>
+  <Card title="Persistent Context" icon="clock">
+    Sessions maintain state across multiple interactions for better continuity
+  </Card>
+  <Card title="Fine-grained Permissions" icon="lock">
+    Granular control over what agents can access and modify
+  </Card>
+</CardGroup>
+
+## Supported ACP Agents
+
+Avante.nvim currently supports the following ACP-compatible agents:
+
+### Gemini CLI
+
+Google's Gemini agent with ACP support:
+
+```lua
+{
+  provider = "gemini-cli",
+  acp_providers = {
+    ["gemini-cli"] = {
+      command = "gemini",
+      args = { "--experimental-acp" },
+      env = {
+        NODE_NO_WARNINGS = "1",
+        GEMINI_API_KEY = os.getenv("GEMINI_API_KEY"),
+      },
+    },
+  },
+}
+```
+
+### Claude Code
+
+Anthropic's Claude with ACP support:
+
+```lua
+{
+  provider = "claude-code",
+  acp_providers = {
+    ["claude-code"] = {
+      command = "npx",
+      args = { "@zed-industries/claude-code-acp" },
+      env = {
+        NODE_NO_WARNINGS = "1",
+        ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY"),
+      },
+    },
+  },
+}
+```
+
+### Goose
+
+Block's Goose agent:
+
+```lua
+{
+  provider = "goose",
+  acp_providers = {
+    ["goose"] = {
+      command = "goose",
+      args = { "acp" },
+    },
+  },
+}
+```
+
+### Codex
+
+OpenAI's Codex with ACP support:
+
+```lua
+{
+  provider = "codex",
+  acp_providers = {
+    ["codex"] = {
+      command = "npx",
+      args = { "@zed-industries/codex-acp" },
+      env = {
+        NODE_NO_WARNINGS = "1",
+        OPENAI_API_KEY = os.getenv("OPENAI_API_KEY"),
+      },
+    },
+  },
+}
+```
+
+### Kimi CLI
+
+Moonshot's Kimi agent:
+
+```lua
+{
+  provider = "kimi-cli",
+  acp_providers = {
+    ["kimi-cli"] = {
+      command = "kimi",
+      args = { "--experimental-acp" },
+      env = {
+        NODE_NO_WARNINGS = "1",
+        MOONSHOT_API_KEY = os.getenv("MOONSHOT_API_KEY"),
+      },
+    },
+  },
+}
+```
+
+## Prerequisites
+
+Before using ACP agents, ensure you have the required tools installed:
+
+<Steps>
+  <Step title="Install Agent CLI">
+    Install the specific CLI tool for your chosen agent:
+    
+    <CodeGroup>
+    ```bash Gemini CLI
+    npm install -g @google/generative-ai-cli
+    ```
+    
+    ```bash Claude Code
+    # No installation needed - uses npx
+    ```
+    
+    ```bash Goose
+    # Install Goose from https://github.com/block/goose
+    ```
+    
+    ```bash Codex
+    # No installation needed - uses npx
+    ```
+    
+    ```bash Kimi CLI
+    npm install -g kimi-cli
+    ```
+    </CodeGroup>
+  </Step>
+  
+  <Step title="Set API Keys">
+    Configure the necessary environment variables:
+    
+    ```bash
+    # For Gemini CLI
+    export GEMINI_API_KEY=your-gemini-api-key
+    
+    # For Claude Code
+    export ANTHROPIC_API_KEY=your-anthropic-api-key
+    
+    # For Codex
+    export OPENAI_API_KEY=your-openai-api-key
+    
+    # For Kimi CLI
+    export MOONSHOT_API_KEY=your-moonshot-api-key
+    ```
+  </Step>
+  
+  <Step title="Configure Avante">
+    Add the ACP provider configuration to your Avante setup.
+  </Step>
+</Steps>
+
+## Configuration
+
+ACP providers are configured in the `acp_providers` section of your Avante configuration:
+
+```lua
+require('avante').setup({
+  provider = "gemini-cli", -- or any other ACP provider
+  acp_providers = {
+    ["gemini-cli"] = {
+      command = "gemini",
+      args = { "--experimental-acp" },
+      env = {
+        NODE_NO_WARNINGS = "1",
+        GEMINI_API_KEY = os.getenv("GEMINI_API_KEY"),
+      },
+    },
+    -- Add other ACP providers as needed
+  },
+})
+```
+
+### Configuration Options
+
+<ParamField path="command" type="string" required>
+  The command to execute the ACP agent
+</ParamField>
+
+<ParamField path="args" type="table">
+  Command-line arguments to pass to the agent
+</ParamField>
+
+<ParamField path="env" type="table">
+  Environment variables to set for the agent process
+</ParamField>
+
+## ACP vs Traditional Providers
+
+<AccordionGroup>
+  <Accordion title="Enhanced Tool Access">
+    ACP agents can directly interact with your file system, run commands, and access development tools, providing more powerful automation capabilities than traditional API-based providers.
+  </Accordion>
+  
+  <Accordion title="Persistent Context">
+    Sessions maintain state across multiple interactions, allowing agents to remember previous conversations and build upon earlier work.
+  </Accordion>
+  
+  <Accordion title="Fine-grained Permissions">
+    Control exactly what agents can access and modify through a granular permission system.
+  </Accordion>
+  
+  <Accordion title="Standardized Protocol">
+    Compatible with any ACP-compliant agent, ensuring future compatibility and flexibility.
+  </Accordion>
+</AccordionGroup>
+
+<Note>
+  When using ACP agents, the agent has more direct access to your development environment. Make sure you trust the agent provider and understand what permissions you're granting.
+</Note>
+
+## Switching Providers
+
+You can easily switch between different ACP providers using the command:
+
+```vim
+:AvanteSwitchProvider gemini-cli
+```
+
+Or use the model selector:
+
+```vim
+<Leader>a?
+```
+
+## Related Documentation
+
+<CardGroup cols={2}>
+  <Card title="Providers" icon="plug" href="/configuration/providers">
+    Learn about all available providers
+  </Card>
+  <Card title="Tools" icon="toolbox" href="/advanced/tools">
+    Explore available LLM tools
+  </Card>
+</CardGroup>

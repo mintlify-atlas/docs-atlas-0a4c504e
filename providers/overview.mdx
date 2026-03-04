@@ -1,0 +1,203 @@
+---
+title: Providers Overview
+description: Overview of AI providers available in Avante.nvim
+---
+
+Avante.nvim supports multiple AI providers, giving you flexibility in choosing the best model for your workflow. You can easily switch between providers and configure them to suit your needs.
+
+## Available Providers
+
+| Provider | Type | Authentication | Key Features |
+|----------|------|----------------|---------------|
+| [Claude](/providers/claude) | Cloud API | API Key or OAuth | Anthropic's powerful models with extended thinking |
+| [OpenAI](/providers/openai) | Cloud API | API Key | GPT-4o, reasoning models, Response API |
+| [Azure OpenAI](/providers/openai#azure-openai) | Cloud API | API Key | Microsoft-hosted OpenAI models |
+| [Gemini](/providers/gemini) | Cloud API | API Key | Google's Gemini models with large context |
+| [Copilot](/providers/copilot) | Cloud API | OAuth | GitHub Copilot integration |
+| [Ollama](/providers/ollama) | Local | None | Run models locally with Ollama |
+| [Custom](/providers/custom-providers) | Varies | Varies | Create your own provider |
+
+## Switching Providers
+
+### During Runtime
+
+You can switch providers at any time using the command:
+
+```vim
+:AvanteSwitchProvider <provider-name>
+```
+
+Or use the keyboard shortcut:
+
+```
+<Leader>a?  " Select model (opens provider/model selector)
+```
+
+### In Configuration
+
+Set the default provider in your configuration:
+
+```lua
+{
+  "yetone/avante.nvim",
+  opts = {
+    provider = "claude", -- Default provider
+  },
+}
+```
+
+## Provider Comparison
+
+### Performance
+
+- **Fastest**: Claude (Sonnet 4), Gemini (Flash)
+- **Most Capable**: Claude (Opus 4), OpenAI (GPT-4o)
+- **Best for Reasoning**: OpenAI (o1, o3-mini), Claude (with thinking)
+- **Local/Private**: Ollama
+
+### Context Window
+
+- **Largest**: Gemini (1M+ tokens)
+- **Claude**: 200K tokens
+- **OpenAI**: 128K tokens
+- **Copilot**: 64K tokens
+
+### Cost Considerations
+
+- **Free Options**: Ollama (local), Copilot (with subscription)
+- **Pay-per-use**: OpenAI, Claude, Gemini
+- **Enterprise**: Azure OpenAI, AWS Bedrock
+
+## API Key Management
+
+Avante supports two methods for setting API keys:
+
+### Scoped Keys (Recommended)
+
+Isolate API keys specifically for Avante by prefixing with `AVANTE_`:
+
+```sh
+export AVANTE_ANTHROPIC_API_KEY=your-claude-api-key
+export AVANTE_OPENAI_API_KEY=your-openai-api-key
+export AVANTE_GEMINI_API_KEY=your-gemini-api-key
+```
+
+### Global Keys
+
+Use standard environment variable names:
+
+```sh
+export ANTHROPIC_API_KEY=your-api-key
+export OPENAI_API_KEY=your-api-key
+export GEMINI_API_KEY=your-api-key
+```
+
+<Note>
+Scoped keys (`AVANTE_*`) take precedence over global keys.
+</Note>
+
+## Provider Configuration Structure
+
+All providers share a common configuration structure:
+
+```lua
+providers = {
+  provider_name = {
+    endpoint = "https://api.example.com",
+    model = "model-name",
+    timeout = 30000, -- milliseconds
+    context_window = 128000, -- tokens
+    extra_request_body = {
+      temperature = 0.75,
+      max_tokens = 4096,
+    },
+  },
+}
+```
+
+### Common Options
+
+- `endpoint`: API endpoint URL
+- `model`: Model identifier
+- `timeout`: Request timeout in milliseconds
+- `context_window`: Maximum context size in tokens
+- `api_key_name`: Environment variable name for API key
+- `extra_request_body`: Provider-specific parameters
+- `proxy`: HTTP proxy URL (optional)
+- `allow_insecure`: Allow insecure connections (optional)
+
+## Advanced Features
+
+### Dual Boost Mode
+
+Combine responses from two providers for enhanced quality:
+
+```lua
+dual_boost = {
+  enabled = true,
+  first_provider = "openai",
+  second_provider = "claude",
+  timeout = 60000,
+}
+```
+
+### Auto-Suggestions Provider
+
+Use a different provider for auto-suggestions:
+
+```lua
+auto_suggestions_provider = "claude"
+```
+
+<Warning>
+Auto-suggestions are high-frequency operations. Using expensive providers like Copilot can be costly.
+</Warning>
+
+## Troubleshooting
+
+### Provider Not Working
+
+1. **Check API Key**: Ensure your API key is set correctly
+   ```vim
+   :echo $ANTHROPIC_API_KEY
+   ```
+
+2. **Verify Provider Setup**: Check if the provider is configured
+   ```vim
+   :lua print(vim.inspect(require('avante.config').providers.claude))
+   ```
+
+3. **Check Login Status**: Ensure authentication succeeded
+   ```vim
+   :lua print(vim.g.avante_login)
+   ```
+
+### Rate Limiting
+
+If you encounter rate limits:
+
+- Increase the `timeout` value
+- Reduce request frequency
+- Consider upgrading your API plan
+
+### Network Issues
+
+For proxy or network problems:
+
+```lua
+providers = {
+  claude = {
+    proxy = "http://proxy.example.com:8080",
+    allow_insecure = false, -- Set to true only if necessary
+  },
+}
+```
+
+## Next Steps
+
+- [Configure Claude](/providers/claude) - Anthropic's powerful AI
+- [Configure OpenAI](/providers/openai) - GPT models and reasoning
+- [Configure Gemini](/providers/gemini) - Google's AI with massive context
+- [Configure Copilot](/providers/copilot) - GitHub Copilot integration
+- [Configure Ollama](/providers/ollama) - Run models locally
+- [Create Custom Provider](/providers/custom-providers) - Build your own

@@ -1,0 +1,348 @@
+---
+title: 'Usage Guide'
+description: 'Learn how to use Avante.nvim effectively - ask questions, edit code, manage files, and use mentions'
+icon: 'rocket'
+---
+
+# Practical Usage Guide
+
+This guide covers the essential workflows for using Avante.nvim effectively in your daily development.
+
+## Getting Started
+
+Avante.nvim provides AI-powered code assistance directly in Neovim. You can interact with it through commands, keybindings, and mentions.
+
+### Opening the Sidebar
+
+<Steps>
+  <Step title="Toggle the sidebar">
+    Use `<Leader>aa` to show the Avante sidebar, or run `:AvanteAsk`
+  </Step>
+  <Step title="Focus the sidebar">
+    Press `<Leader>af` to switch focus between the sidebar and your code
+  </Step>
+  <Step title="Close the sidebar">
+    Press `q` or `<Esc>` when focused on the sidebar
+  </Step>
+</Steps>
+
+## Asking Questions About Your Code
+
+### Chat with Current File
+
+<Steps>
+  <Step title="Open a code file">
+    Navigate to any file in your project that you want to ask about
+  </Step>
+  <Step title="Start a chat">
+    Run `:AvanteAsk` or press `<Leader>aa`
+    
+    By default, the current file is automatically added to the chat context when `behaviour.auto_add_current_file = true`
+  </Step>
+  <Step title="Type your question">
+    Enter your question in the input area at the bottom of the sidebar:
+    
+    ```
+    > What does this function do?
+    ```
+  </Step>
+  <Step title="Submit">
+    Press `<CR>` in normal mode or `<C-s>` in insert mode to submit
+  </Step>
+</Steps>
+
+### Ask About Specific Lines
+
+You can ask questions about specific line ranges:
+
+```vim
+:AvanteAsk /lines 10-25 What does this block do?
+```
+
+Or use the slash command within the chat:
+
+```
+> /lines 10-25 Explain this code block
+```
+
+## Editing Code with AI
+
+### Edit Selected Code
+
+<Steps>
+  <Step title="Select code in visual mode">
+    Use visual mode (`v`, `V`, or `<C-v>`) to select the code you want to modify
+  </Step>
+  <Step title="Trigger edit mode">
+    Press `<Leader>ae` or run `:AvanteEdit`
+  </Step>
+  <Step title="Describe the changes">
+    Type what you want to change:
+    
+    ```
+    > Refactor this to use async/await instead of callbacks
+    ```
+  </Step>
+  <Step title="Review and apply">
+    The AI will generate a diff. Use:
+    - `a` - Apply changes at cursor
+    - `A` - Apply all changes
+    - Press `]x` and `[x` to navigate between conflicts
+  </Step>
+</Steps>
+
+### Apply AI Suggestions
+
+When the AI suggests code changes, you'll see diff markers:
+
+| Key Binding | Action |
+|-------------|--------|
+| `co` | Choose ours (keep current) |
+| `ct` | Choose theirs (accept AI suggestion) |
+| `ca` | Choose all theirs |
+| `cb` | Choose both |
+| `cc` | Choose cursor |
+| `]x` | Next conflict |
+| `[x` | Previous conflict |
+
+<Note>
+  Changes are shown using diff markers similar to git conflicts. Review each change carefully before applying.
+</Note>
+
+## Managing Files in Chat Context
+
+### Using Mentions to Add Files
+
+Mentions are special commands that start with `@` and help you add context to your chat:
+
+#### Available Mentions
+
+<AccordionGroup>
+  <Accordion title="@file - Add specific files">
+    Type `@file` in the input and it will open a file selector to add files to the chat context.
+    
+    ```
+    > @file Let's refactor these components
+    ```
+    
+    This is useful when you want to discuss multiple related files together.
+  </Accordion>
+
+  <Accordion title="@codebase - Enable project context">
+    Use `@codebase` to enable repository mapping and project-wide context.
+    
+    ```
+    > @codebase How is authentication implemented?
+    ```
+    
+    <Warning>
+      You must have a file open before using `@codebase`. The file's extension is used to generate the repo map.
+    </Warning>
+  </Accordion>
+
+  <Accordion title="@diagnostics - Include error information">
+    Add `@diagnostics` to include LSP diagnostics (errors, warnings) in the context.
+    
+    ```
+    > @diagnostics Why am I getting this error?
+    ```
+  </Accordion>
+
+  <Accordion title="@quickfix - Add quickfix files">
+    Use `@quickfix` to add all files from the quickfix list to the chat context.
+    
+    ```
+    > @quickfix Fix all these test failures
+    ```
+  </Accordion>
+
+  <Accordion title="@buffers - Add all open buffers">
+    Use `@buffers` to add all currently open buffers to the chat context.
+    
+    ```
+    > @buffers Review these changes across all open files
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Manual File Management
+
+<Steps>
+  <Step title="Add current buffer">
+    Press `<Leader>ac` to add the current buffer to selected files
+  </Step>
+  <Step title="Add all buffers">
+    Press `<Leader>aB` to add all open buffers to selected files
+  </Step>
+  <Step title="Add file from sidebar">
+    Press `@` when focused on the sidebar to open the file selector
+  </Step>
+  <Step title="Remove a file">
+    Press `d` while hovering over a file in the "Selected Files" section
+  </Step>
+</Steps>
+
+## Using Slash Commands
+
+Slash commands (starting with `/`) provide quick access to common operations:
+
+| Command | Description |
+|---------|-------------|
+| `/help` | Show help message with available commands |
+| `/init` | Initialize AGENTS.md based on current project |
+| `/clear` | Clear chat history |
+| `/new` | Start a new chat session |
+| `/compact` | Compact history messages to save tokens |
+| `/lines <start>-<end> <question>` | Ask about specific line ranges |
+| `/commit` | Generate commit message for changes |
+
+### Examples
+
+```
+> /clear
+```
+
+```
+> /lines 42-58 Explain what this does
+```
+
+```
+> /commit
+```
+
+## Using Shortcuts
+
+Shortcuts (starting with `#`) provide quick access to predefined prompts:
+
+```
+> #refactor
+```
+
+This expands to: "Please refactor this code following best practices, improving readability and maintainability while preserving functionality."
+
+You can configure custom shortcuts in your config:
+
+```lua
+require('avante').setup({
+  shortcuts = {
+    {
+      name = "refactor",
+      description = "Refactor code with best practices",
+      prompt = "Please refactor this code..."
+    },
+    {
+      name = "test",
+      description = "Generate unit tests",
+      prompt = "Please generate comprehensive unit tests..."
+    },
+  }
+})
+```
+
+## Chat History Management
+
+### Working with Multiple Chats
+
+<Steps>
+  <Step title="Start a new chat">
+    Press `<Leader>an` or run `:AvanteChatNew`
+  </Step>
+  <Step title="Browse chat history">
+    Press `<Leader>ah` or run `:AvanteHistory` to see previous chats
+  </Step>
+  <Step title="Navigate between prompts">
+    Use `]p` and `[p` to move between prompts in the current chat
+  </Step>
+  <Step title="Clear current chat">
+    Run `:AvanteClear` to clear the current chat history
+  </Step>
+</Steps>
+
+## Switching Between Windows
+
+When the sidebar is open:
+
+| Key Binding | Action |
+|-------------|--------|
+| `<Tab>` | Switch to next window |
+| `<S-Tab>` | Switch to previous window |
+| `<Leader>af` | Toggle focus between sidebar and code |
+
+## Token Counting
+
+<Note>
+  When `behaviour.enable_token_counting = true`, Avante displays the token count for your chat.
+  This helps you stay within model limits and estimate API costs.
+</Note>
+
+## Tips and Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Be Specific" icon="bullseye">
+    Ask specific questions about what you want to know or change. The AI works better with clear instructions.
+  </Card>
+  
+  <Card title="Use Context" icon="files">
+    Add relevant files to the chat context using `@file` or mentions to get better responses.
+  </Card>
+  
+  <Card title="Review Changes" icon="magnifying-glass">
+    Always review AI-generated changes before applying them. Use the diff navigation keys.
+  </Card>
+  
+  <Card title="Start Fresh" icon="rotate">
+    If the conversation gets off-track, start a new chat with `/new` or `<Leader>an`.
+  </Card>
+</CardGroup>
+
+## Advanced Usage
+
+### Project-Specific Instructions
+
+Create an `avante.md` file in your project root to provide project-specific context:
+
+```markdown
+# Project Instructions for MyApp
+
+## Your Role
+
+You are an expert full-stack developer specializing in React and Node.js.
+
+## Your Mission
+
+- Write type-safe TypeScript code
+- Follow React best practices
+- Ensure responsive design with Tailwind CSS
+
+## Coding Standards
+
+- Use functional components with hooks
+- Prefer composition over inheritance
+- Add JSDoc comments for complex functions
+```
+
+See the configuration documentation for more details on project instructions.
+
+### Custom Prompts
+
+You can override prompts by creating `.avanterules` files in your project root. See the configuration documentation for details.
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Neo-tree Integration" icon="folder-tree" href="/guides/neotree-integration">
+    Learn how to add files from the neo-tree sidebar
+  </Card>
+  
+  <Card title="Blink.cmp Setup" icon="terminal" href="/guides/blink-cmp">
+    Configure completion sources for blink.cmp users
+  </Card>
+  
+  <Card title="Troubleshooting" icon="wrench" href="/guides/troubleshooting">
+    Fix common issues and errors
+  </Card>
+  
+  <Card title="Configuration" icon="gear" href="/configuration/overview">
+    Explore all configuration options
+  </Card>
+</CardGroup>

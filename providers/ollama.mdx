@@ -1,0 +1,504 @@
+---
+title: Ollama Provider
+description: Run AI models locally with Ollama in Avante.nvim
+---
+
+Ollama allows you to run large language models locally on your machine, providing privacy, offline capability, and no API costs. Avante.nvim has full support for Ollama.
+
+## Prerequisites
+
+<Note>
+You must have Ollama installed and running before using this provider.
+</Note>
+
+<Steps>
+  <Step title="Install Ollama">
+    Download and install from [ollama.ai](https://ollama.ai/)
+    
+    ```sh
+    # macOS/Linux
+    curl -fsSL https://ollama.ai/install.sh | sh
+    
+    # Or download from the website
+    ```
+  </Step>
+  
+  <Step title="Start Ollama service">
+    ```sh
+    ollama serve
+    ```
+    
+    By default, Ollama runs on `http://127.0.0.1:11434`
+  </Step>
+  
+  <Step title="Pull a model">
+    ```sh
+    ollama pull qwen2.5-coder:14b
+    # or
+    ollama pull deepseek-coder-v2
+    # or
+    ollama pull codellama
+    ```
+  </Step>
+</Steps>
+
+## Quick Start
+
+```lua
+{
+  "yetone/avante.nvim",
+  opts = {
+    provider = "ollama",
+    providers = {
+      ollama = {
+        model = "qwen2.5-coder:14b",
+        -- Enable the provider by checking endpoint
+        is_env_set = require("avante.providers.ollama").check_endpoint_alive,
+      },
+    },
+  },
+}
+```
+
+## Configuration
+
+### Basic Configuration
+
+```lua
+providers = {
+  ollama = {
+    endpoint = "http://127.0.0.1:11434",
+    model = "qwen2.5-coder:14b",
+    timeout = 30000,
+    extra_request_body = {
+      options = {
+        temperature = 0.75,
+        num_ctx = 20480,
+        keep_alive = "5m",
+      },
+    },
+  },
+}
+```
+
+### Model Selection
+
+Ollama supports many models. Some recommended for coding:
+
+<CodeGroup>
+```lua Qwen2.5 Coder (Recommended)
+providers = {
+  ollama = {
+    model = "qwen2.5-coder:14b",
+    extra_request_body = {
+      options = {
+        num_ctx = 32768,
+      },
+    },
+  },
+}
+```
+
+```lua DeepSeek Coder V2
+providers = {
+  ollama = {
+    model = "deepseek-coder-v2",
+    extra_request_body = {
+      options = {
+        num_ctx = 20480,
+      },
+    },
+  },
+}
+```
+
+```lua CodeLlama
+providers = {
+  ollama = {
+    model = "codellama:34b",
+    extra_request_body = {
+      options = {
+        num_ctx = 16384,
+      },
+    },
+  },
+}
+```
+
+```lua Llama 3
+providers = {
+  ollama = {
+    model = "llama3:70b",
+    extra_request_body = {
+      options = {
+        num_ctx = 8192,
+      },
+    },
+  },
+}
+```
+</CodeGroup>
+
+## Environment Setup
+
+### Enabling the Provider
+
+By default, Ollama is disabled. You must provide an `is_env_set` implementation:
+
+```lua
+providers = {
+  ollama = {
+    -- Check if endpoint is alive
+    is_env_set = require("avante.providers.ollama").check_endpoint_alive,
+  },
+}
+```
+
+Or use a custom check:
+
+```lua
+providers = {
+  ollama = {
+    is_env_set = function()
+      -- Your custom logic here
+      return true
+    end,
+  },
+}
+```
+
+### Custom Endpoint
+
+For remote Ollama instances:
+
+```lua
+providers = {
+  ollama = {
+    endpoint = "http://192.168.1.100:11434",
+  },
+}
+```
+
+## Model Parameters
+
+Ollama uses the `options` object for model parameters:
+
+```lua
+extra_request_body = {
+  options = {
+    temperature = 0.75,     -- Randomness (0.0-1.0)
+    num_ctx = 20480,        -- Context window size
+    top_p = 0.9,            -- Nucleus sampling
+    top_k = 40,             -- Top-k sampling
+    repeat_penalty = 1.1,   -- Repetition penalty
+    keep_alive = "5m",      -- Model keep-alive duration
+  },
+}
+```
+
+### Parameter Details
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `temperature` | number | 0.75 | Controls randomness (0.0-1.0) |
+| `num_ctx` | number | 2048 | Context window size in tokens |
+| `top_p` | number | 0.9 | Nucleus sampling threshold |
+| `top_k` | number | 40 | Top-k sampling parameter |
+| `repeat_penalty` | number | 1.1 | Penalty for repetition |
+| `keep_alive` | string | "5m" | How long to keep model loaded |
+
+## List Available Models
+
+List all models installed in Ollama:
+
+```lua
+local models = require('avante.providers').ollama:list_models()
+for _, model in ipairs(models) do
+  print(model.display_name)
+end
+```
+
+Or via command line:
+
+```sh
+ollama list
+```
+
+## Model Management
+
+### Pull Models
+
+```sh
+# Pull a specific model
+ollama pull qwen2.5-coder:14b
+
+# Pull latest version
+ollama pull qwen2.5-coder:latest
+
+# Pull a specific size variant
+ollama pull llama3:70b
+```
+
+### Remove Models
+
+```sh
+ollama rm model-name
+```
+
+### Check Model Info
+
+```sh
+ollama show model-name
+```
+
+## ReAct Prompting
+
+Ollama uses ReAct-style prompting by default for tool use:
+
+```lua
+providers = {
+  ollama = {
+    use_ReAct_prompt = true, -- Default
+  },
+}
+```
+
+This enables better tool calling through XML-based prompting.
+
+## Advanced Configuration
+
+### Keep-Alive Settings
+
+Control how long models stay in memory:
+
+```lua
+extra_request_body = {
+  options = {
+    keep_alive = "10m", -- Keep loaded for 10 minutes
+    -- keep_alive = "0",   -- Unload immediately
+    -- keep_alive = "-1",  -- Keep loaded indefinitely
+  },
+}
+```
+
+### Context Window Optimization
+
+Adjust based on your hardware:
+
+```lua
+extra_request_body = {
+  options = {
+    -- For 8GB+ VRAM
+    num_ctx = 32768,
+    
+    -- For 4-8GB VRAM
+    -- num_ctx = 16384,
+    
+    -- For <4GB VRAM
+    -- num_ctx = 8192,
+  },
+}
+```
+
+### Authentication
+
+For secured Ollama instances:
+
+```lua
+providers = {
+  ollama = {
+    api_key_name = "OLLAMA_API_KEY", -- Optional
+  },
+}
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Ollama Not Running">
+    If you see connection errors:
+    
+    1. Check if Ollama is running:
+       ```sh
+       curl http://127.0.0.1:11434/api/tags
+       ```
+    
+    2. Start Ollama:
+       ```sh
+       ollama serve
+       ```
+    
+    3. Verify endpoint in config matches Ollama's address
+  </Accordion>
+  
+  <Accordion title="Model Not Found">
+    Error: "model 'model-name' not found"
+    
+    1. List installed models:
+       ```sh
+       ollama list
+       ```
+    
+    2. Pull the model:
+       ```sh
+       ollama pull model-name
+       ```
+  </Accordion>
+  
+  <Accordion title="Out of Memory">
+    If Ollama crashes or runs out of memory:
+    
+    1. Use a smaller model (e.g., `qwen2.5-coder:7b` instead of `:14b`)
+    2. Reduce `num_ctx`
+    3. Close other applications
+    4. Consider upgrading RAM/VRAM
+  </Accordion>
+  
+  <Accordion title="Slow Responses">
+    If responses are too slow:
+    
+    1. Use GPU acceleration (should be automatic)
+    2. Try a smaller model
+    3. Reduce `num_ctx`
+    4. Ensure no other heavy processes are running
+  </Accordion>
+</AccordionGroup>
+
+## Performance Tips
+
+<CardGroup cols={2}>
+  <Card title="Model Size" icon="gauge">
+    - Larger ≠ always better
+    - 7B models: Fast, good for simple tasks
+    - 14B models: Balanced performance
+    - 34B+ models: Best quality, slower
+  </Card>
+  
+  <Card title="Context Window" icon="window-maximize">
+    - Larger context uses more memory
+    - Start with 8192-16384
+    - Increase only if needed
+    - Monitor memory usage
+  </Card>
+  
+  <Card title="Hardware" icon="microchip">
+    - GPU: Much faster than CPU
+    - RAM: 16GB+ recommended
+    - VRAM: 8GB+ for larger models
+    - SSD: Faster model loading
+  </Card>
+  
+  <Card title="Keep-Alive" icon="clock">
+    - Longer = faster responses
+    - Shorter = less memory usage
+    - Balance based on usage pattern
+  </Card>
+</CardGroup>
+
+## Best Practices
+
+### Model Selection
+
+For different use cases:
+
+```lua
+-- Quick code completion
+model = "qwen2.5-coder:7b"
+
+-- Balanced coding assistance
+model = "qwen2.5-coder:14b"
+
+-- Complex refactoring
+model = "deepseek-coder-v2:16b"
+
+-- General purpose
+model = "llama3:8b"
+```
+
+### Resource Management
+
+```lua
+providers = {
+  ollama = {
+    timeout = 60000, -- Longer timeout for local models
+    extra_request_body = {
+      options = {
+        keep_alive = "5m", -- Good default
+        num_ctx = 16384,   -- Adjust to your RAM
+      },
+    },
+  },
+}
+```
+
+## Example Configurations
+
+<CodeGroup>
+```lua Balanced Setup
+{
+  provider = "ollama",
+  providers = {
+    ollama = {
+      endpoint = "http://127.0.0.1:11434",
+      model = "qwen2.5-coder:14b",
+      is_env_set = require("avante.providers.ollama").check_endpoint_alive,
+      timeout = 30000,
+      extra_request_body = {
+        options = {
+          temperature = 0.7,
+          num_ctx = 20480,
+          keep_alive = "5m",
+        },
+      },
+    },
+  },
+}
+```
+
+```lua High Performance
+{
+  provider = "ollama",
+  providers = {
+    ollama = {
+      model = "deepseek-coder-v2:16b",
+      is_env_set = require("avante.providers.ollama").check_endpoint_alive,
+      timeout = 60000,
+      extra_request_body = {
+        options = {
+          temperature = 0.7,
+          num_ctx = 32768,
+          keep_alive = "10m",
+        },
+      },
+    },
+  },
+}
+```
+
+```lua Low Resource
+{
+  provider = "ollama",
+  providers = {
+    ollama = {
+      model = "qwen2.5-coder:7b",
+      is_env_set = require("avante.providers.ollama").check_endpoint_alive,
+      timeout = 30000,
+      extra_request_body = {
+        options = {
+          temperature = 0.7,
+          num_ctx = 8192,
+          keep_alive = "3m",
+        },
+      },
+    },
+  },
+}
+```
+</CodeGroup>
+
+## Related Resources
+
+- [Ollama Official Website](https://ollama.ai/)
+- [Ollama GitHub](https://github.com/ollama/ollama)
+- [Model Library](https://ollama.ai/library)
+- [Provider Overview](/providers/overview)

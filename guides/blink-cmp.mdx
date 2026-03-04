@@ -1,0 +1,460 @@
+---
+title: blink.cmp Setup
+description: Configure blink.cmp with Avante for fast completions
+icon: zap
+---
+
+## Overview
+
+[blink.cmp](https://github.com/Saghen/blink.cmp) is a performant alternative to nvim-cmp. Avante.nvim provides full compatibility with blink.cmp through `blink.compat`, enabling you to use mentions, slash commands, and shortcuts with better performance.
+
+<Warning>
+  When using blink.cmp with Avante, choose a selector other than `native` as it currently has known issues.
+</Warning>
+
+## Installation
+
+Install blink.cmp and configure it with Avante sources:
+
+### LazyVim Users
+
+If you're using LazyVim, extend the blink.cmp configuration:
+
+```lua
+return {
+  {
+    "saghen/blink.cmp",
+    opts = {
+      sources = {
+        compat = {
+          "avante_commands",
+          "avante_mentions",
+          "avante_files",
+        },
+      },
+    },
+  },
+  {
+    "yetone/avante.nvim",
+    opts = {
+      selector = {
+        provider = "telescope", -- Don't use "native"
+      },
+    },
+  },
+}
+```
+
+### Manual Setup
+
+For other setups, configure blink.cmp with custom providers:
+
+```lua
+return {
+  {
+    "saghen/blink.cmp",
+    version = "v0.*",
+    dependencies = {
+      "rafamadriz/friendly-snippets",
+    },
+    opts = {
+      sources = {
+        default = {
+          "lsp",
+          "path",
+          "snippets",
+          "buffer",
+          -- Avante sources
+          "avante_commands",
+          "avante_mentions",
+          "avante_shortcuts",
+          "avante_files",
+        },
+        providers = {
+          avante_commands = {
+            name = "avante_commands",
+            module = "blink.compat.source",
+            score_offset = 90, -- Higher priority than LSP
+            opts = {},
+          },
+          avante_files = {
+            name = "avante_files",
+            module = "blink.compat.source",
+            score_offset = 100,
+            opts = {},
+          },
+          avante_mentions = {
+            name = "avante_mentions",
+            module = "blink.compat.source",
+            score_offset = 1000, -- Highest priority
+            opts = {},
+          },
+          avante_shortcuts = {
+            name = "avante_shortcuts",
+            module = "blink.compat.source",
+            score_offset = 1000,
+            opts = {},
+          },
+        },
+      },
+      keymap = { preset = "default" },
+      appearance = {
+        use_nvim_cmp_as_default = true,
+        nerd_font_variant = "mono",
+      },
+      signature = { enabled = true },
+    },
+  },
+}
+```
+
+## Avante Sources Explained
+
+### avante_commands
+
+Provides slash command completions when you type `/`:
+
+- `/help` - Show help
+- `/init` - Initialize project instructions
+- `/clear` - Clear chat history
+- `/new` - Start new chat
+- `/compact` - Compact history
+- `/lines` - Query specific lines
+- `/commit` - Generate commit message
+
+**Priority**: `score_offset = 90` (above LSP)
+
+### avante_mentions
+
+Provides mention completions when you type `@`:
+
+- `@codebase` - Enable project context
+- `@diagnostics` - Include diagnostics
+- `@file` - Add files to context
+- `@quickfix` - Add quickfix files
+- `@buffers` - Add open buffers
+
+**Priority**: `score_offset = 1000` (highest)
+
+### avante_shortcuts
+
+Provides shortcut completions when you type `#`:
+
+- `#refactor` - Refactoring prompt
+- `#test` - Test generation prompt
+- `#explain` - Code explanation prompt
+- Custom shortcuts you define
+
+**Priority**: `score_offset = 1000` (highest)
+
+### avante_files
+
+Provides file path completions in Avante context.
+
+**Priority**: `score_offset = 100`
+
+## Complete Configuration Example
+
+Here's a full example with both blink.cmp and Avante configured:
+
+```lua
+return {
+  -- blink.cmp
+  {
+    "saghen/blink.cmp",
+    version = "v0.*",
+    dependencies = {
+      "rafamadriz/friendly-snippets",
+    },
+    opts = {
+      sources = {
+        default = {
+          "lsp",
+          "path",
+          "snippets",
+          "buffer",
+          "avante_commands",
+          "avante_mentions",
+          "avante_shortcuts",
+          "avante_files",
+        },
+        providers = {
+          avante_commands = {
+            name = "avante_commands",
+            module = "blink.compat.source",
+            score_offset = 90,
+            opts = {},
+          },
+          avante_files = {
+            name = "avante_files",
+            module = "blink.compat.source",
+            score_offset = 100,
+            opts = {},
+          },
+          avante_mentions = {
+            name = "avante_mentions",
+            module = "blink.compat.source",
+            score_offset = 1000,
+            opts = {},
+          },
+          avante_shortcuts = {
+            name = "avante_shortcuts",
+            module = "blink.compat.source",
+            score_offset = 1000,
+            opts = {},
+          },
+        },
+      },
+      keymap = { preset = "default" },
+      appearance = {
+        use_nvim_cmp_as_default = true,
+        nerd_font_variant = "mono",
+      },
+      signature = { enabled = true },
+      completion = {
+        menu = {
+          draw = {
+            treesitter = { "lsp" },
+          },
+        },
+        documentation = {
+          auto_show = true,
+          auto_show_delay_ms = 500,
+        },
+      },
+    },
+  },
+  
+  -- Avante.nvim
+  {
+    "yetone/avante.nvim",
+    event = "VeryLazy",
+    build = "make",
+    opts = {
+      provider = "claude",
+      selector = {
+        provider = "telescope", -- Use telescope instead of native
+      },
+      shortcuts = {
+        {
+          name = "refactor",
+          description = "Refactor code with best practices",
+          prompt = "Please refactor this code following best practices.",
+        },
+        {
+          name = "test",
+          description = "Generate unit tests",
+          prompt = "Please generate comprehensive unit tests.",
+        },
+      },
+    },
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "MunifTanjim/nui.nvim",
+      "nvim-telescope/telescope.nvim",
+      "saghen/blink.cmp", -- Add blink.cmp as dependency
+    },
+  },
+}
+```
+
+## Alternative: blink-cmp-avante
+
+You can also use the dedicated [Kaiser-Yang/blink-cmp-avante](https://github.com/Kaiser-Yang/blink-cmp-avante) plugin:
+
+```lua
+return {
+  {
+    "Kaiser-Yang/blink-cmp-avante",
+    dependencies = {
+      "saghen/blink.cmp",
+      "yetone/avante.nvim",
+    },
+  },
+}
+```
+
+## Selector Provider Configuration
+
+When using blink.cmp, you must configure a non-native selector:
+
+<Tabs>
+  <Tab title="Telescope (Recommended)">
+    ```lua
+    require('avante').setup({
+      selector = {
+        provider = "telescope",
+      },
+    })
+    ```
+    
+    Requires: `nvim-telescope/telescope.nvim`
+  </Tab>
+  
+  <Tab title="fzf-lua">
+    ```lua
+    require('avante').setup({
+      selector = {
+        provider = "fzf_lua",
+      },
+    })
+    ```
+    
+    Requires: `ibhagwan/fzf-lua`
+  </Tab>
+  
+  <Tab title="mini.pick">
+    ```lua
+    require('avante').setup({
+      selector = {
+        provider = "mini_pick",
+      },
+    })
+    ```
+    
+    Requires: `nvim-mini/mini.pick`
+  </Tab>
+  
+  <Tab title="snacks">
+    ```lua
+    require('avante').setup({
+      selector = {
+        provider = "snacks",
+      },
+    })
+    ```
+    
+    Requires: `folke/snacks.nvim`
+  </Tab>
+</Tabs>
+
+## Priority Configuration
+
+Adjust `score_offset` to change completion priority:
+
+```lua
+providers = {
+  avante_mentions = {
+    score_offset = 1000, -- Show first
+  },
+  avante_commands = {
+    score_offset = 90,   -- Show before LSP (usually 50-80)
+  },
+  avante_files = {
+    score_offset = 100,  -- Show before commands
+  },
+}
+```
+
+**Higher values** = **higher priority** in completion menu.
+
+## Usage
+
+Once configured, completions work automatically:
+
+### Slash Commands
+
+1. Type `/` in Avante chat
+2. Completion menu shows available commands
+3. Select with arrow keys or `<C-n>`/`<C-p>`
+4. Press `<CR>` to accept
+
+### Mentions
+
+1. Type `@` in Avante chat
+2. See mentions like `@codebase`, `@file`
+3. Select and accept
+4. For `@file`, a file picker opens
+
+### Shortcuts
+
+1. Type `#` in Avante chat
+2. See shortcuts like `#refactor`, `#test`
+3. Select to expand the prompt
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Completions not appearing">
+    1. Verify blink.cmp is installed and loaded
+    2. Check that Avante sources are in `sources.default`
+    3. Ensure `module = "blink.compat.source"` is set
+    4. Look for errors in `:messages`
+    5. Try `:BlingCmpDebug` to check sources
+  </Accordion>
+  
+  <Accordion title="Native selector error">
+    Change selector provider:
+    ```lua
+    selector = {
+      provider = "telescope", -- Not "native"
+    }
+    ```
+    Install the corresponding dependency (telescope, fzf-lua, etc.)
+  </Accordion>
+  
+  <Accordion title="Completions in wrong order">
+    Adjust `score_offset` values to change priority:
+    ```lua
+    score_offset = 1000, -- Higher = more priority
+    ```
+  </Accordion>
+  
+  <Accordion title="Performance issues">
+    1. blink.cmp should be faster than nvim-cmp
+    2. If still slow, reduce number of active sources
+    3. Check for conflicts with other completion plugins
+  </Accordion>
+</AccordionGroup>
+
+## blink.cmp vs nvim-cmp
+
+| Feature | nvim-cmp | blink.cmp |
+|---------|----------|------------|
+| Performance | Good | Excellent |
+| Lua API | Stable | Evolving |
+| Ecosystem | Large | Growing |
+| Setup Complexity | Medium | Medium |
+| Avante Support | Native | Via compat |
+
+**Recommendation**: Use blink.cmp if you prioritize performance; use nvim-cmp for a more mature ecosystem.
+
+## Migration from nvim-cmp
+
+If migrating from nvim-cmp to blink.cmp:
+
+<Steps>
+  <Step title="Install blink.cmp">
+    Add blink.cmp to your plugin manager with the configuration above.
+  </Step>
+  
+  <Step title="Remove nvim-cmp">
+    Remove or disable nvim-cmp from your config.
+  </Step>
+  
+  <Step title="Configure Avante Sources">
+    Use `blink.compat.source` module for Avante completion sources.
+  </Step>
+  
+  <Step title="Test Completions">
+    Verify slash commands, mentions, and shortcuts work in Avante chat.
+  </Step>
+  
+  <Step title="Adjust Priorities">
+    Fine-tune `score_offset` values based on your preferences.
+  </Step>
+</Steps>
+
+## Related Documentation
+
+<CardGroup cols={2}>
+  <Card title="Completion Sources" icon="terminal" href="/advanced/completion-sources">
+    Learn about all completion sources
+  </Card>
+  <Card title="Slash Commands" icon="slash" href="/advanced/slash-commands">
+    Complete slash command reference
+  </Card>
+  <Card title="File Selector" icon="folder" href="/advanced/completion-sources#file-selector-configuration">
+    Configure file picker providers
+  </Card>
+</CardGroup>

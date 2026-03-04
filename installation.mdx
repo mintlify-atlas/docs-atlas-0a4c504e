@@ -1,0 +1,268 @@
+---
+title: Installation
+description: Install Avante.nvim with your preferred Neovim package manager
+---
+
+## Prerequisites
+
+<Warning>
+  Avante.nvim is currently only compatible with **Neovim 0.10.1 or later**. Please ensure that your Neovim version meets these requirements before proceeding.
+</Warning>
+
+### Build Dependencies
+
+For building the binary:
+- **cargo** - Required if you wish to build from source
+- **curl** and **tar** - Used to get prebuilt binary from GitHub (if not building from source)
+
+## Installation Methods
+
+Choose your preferred package manager below:
+
+<CodeGroup>
+
+```lua lazy.nvim (Recommended)
+{
+  "yetone/avante.nvim",
+  -- if you want to build from source then do `make BUILD_FROM_SOURCE=true`
+  -- ⚠️ must add this setting! ! !
+  build = vim.fn.has("win32") ~= 0
+      and "powershell -ExecutionPolicy Bypass -File Build.ps1 -BuildFromSource false"
+      or "make",
+  event = "VeryLazy",
+  version = false, -- Never set this value to "*"! Never!
+  ---@module 'avante'
+  ---@type avante.Config
+  opts = {
+    -- add any opts here
+    -- this file can contain specific instructions for your project
+    instructions_file = "avante.md",
+    -- for example
+    provider = "claude",
+    providers = {
+      claude = {
+        endpoint = "https://api.anthropic.com",
+        model = "claude-sonnet-4-20250514",
+        timeout = 30000, -- Timeout in milliseconds
+          extra_request_body = {
+            temperature = 0.75,
+            max_tokens = 20480,
+          },
+      },
+    },
+  },
+  dependencies = {
+    "nvim-lua/plenary.nvim",
+    "MunifTanjim/nui.nvim",
+    --- The below dependencies are optional,
+    "nvim-mini/mini.pick", -- for file_selector provider mini.pick
+    "nvim-telescope/telescope.nvim", -- for file_selector provider telescope
+    "hrsh7th/nvim-cmp", -- autocompletion for avante commands and mentions
+    "ibhagwan/fzf-lua", -- for file_selector provider fzf
+    "stevearc/dressing.nvim", -- for input provider dressing
+    "folke/snacks.nvim", -- for input provider snacks
+    "nvim-tree/nvim-web-devicons", -- or echasnovski/mini.icons
+    "zbirenbaum/copilot.lua", -- for providers='copilot'
+    {
+      -- support for image pasting
+      "HakonHarnes/img-clip.nvim",
+      event = "VeryLazy",
+      opts = {
+        -- recommended settings
+        default = {
+          embed_image_as_base64 = false,
+          prompt_for_file_name = false,
+          drag_and_drop = {
+            insert_mode = true,
+          },
+          -- required for Windows users
+          use_absolute_path = true,
+        },
+      },
+    },
+    {
+      -- Make sure to set this up properly if you have lazy=true
+      'MeanderingProgrammer/render-markdown.nvim',
+      opts = {
+        file_types = { "markdown", "Avante" },
+      },
+      ft = { "markdown", "Avante" },
+    },
+  },
+}
+```
+
+```vim vim-plug
+call plug#begin()
+
+" Deps
+Plug 'nvim-lua/plenary.nvim'
+Plug 'MunifTanjim/nui.nvim'
+Plug 'MeanderingProgrammer/render-markdown.nvim'
+
+" Optional deps
+Plug 'hrsh7th/nvim-cmp'
+Plug 'nvim-tree/nvim-web-devicons' "or Plug 'echasnovski/mini.icons'
+Plug 'HakonHarnes/img-clip.nvim'
+Plug 'zbirenbaum/copilot.lua'
+Plug 'stevearc/dressing.nvim' " for enhanced input UI
+Plug 'folke/snacks.nvim' " for modern input UI
+
+" Yay, pass source=true if you want to build from source
+Plug 'yetone/avante.nvim', { 'branch': 'main', 'do': 'make' }
+
+call plug#end()
+
+autocmd! User avante.nvim
+lua << EOF
+require('avante').setup({})
+EOF
+```
+
+```lua mini.deps
+local add, later, now = MiniDeps.add, MiniDeps.later, MiniDeps.now
+
+add({
+  source = 'yetone/avante.nvim',
+  monitor = 'main',
+  depends = {
+    'nvim-lua/plenary.nvim',
+    'MunifTanjim/nui.nvim',
+    'echasnovski/mini.icons'
+  },
+  hooks = { post_checkout = function() vim.cmd('make') end }
+})
+--- optional
+add({ source = 'hrsh7th/nvim-cmp' })
+add({ source = 'zbirenbaum/copilot.lua' })
+add({ source = 'HakonHarnes/img-clip.nvim' })
+add({ source = 'MeanderingProgrammer/render-markdown.nvim' })
+
+later(function() require('render-markdown').setup({...}) end)
+later(function()
+  require('img-clip').setup({...}) -- config img-clip
+  require("copilot").setup({...}) -- setup copilot to your liking
+  require("avante").setup({...}) -- config for avante.nvim
+end)
+```
+
+```vim Packer
+-- Required plugins
+use 'nvim-lua/plenary.nvim'
+use 'MunifTanjim/nui.nvim'
+use 'MeanderingProgrammer/render-markdown.nvim'
+
+-- Optional dependencies
+use 'hrsh7th/nvim-cmp'
+use 'nvim-tree/nvim-web-devicons' -- or use 'echasnovski/mini.icons'
+use 'HakonHarnes/img-clip.nvim'
+use 'zbirenbaum/copilot.lua'
+use 'stevearc/dressing.nvim' -- for enhanced input UI
+use 'folke/snacks.nvim' -- for modern input UI
+
+-- Avante.nvim with build process
+use {
+  'yetone/avante.nvim',
+  branch = 'main',
+  run = 'make',
+  config = function()
+    require('avante').setup()
+  end
+}
+```
+
+```nix Home Manager
+programs.neovim = {
+  plugins = [
+    {
+      plugin = pkgs.vimPlugins.avante-nvim;
+      type = "lua";
+      config = ''
+              require("avante_lib").load()
+              require("avante").setup()
+      '' # or builtins.readFile ./plugins/avante.lua;
+    }
+  ];
+};
+```
+
+```nix Nixvim
+plugins.avante.enable = true;
+plugins.avante.settings = {
+  # setup options here
+};
+```
+
+```lua Plain Lua Setup
+-- deps:
+require('cmp').setup ({
+  -- use recommended settings from above
+})
+require('img-clip').setup ({
+  -- use recommended settings from above
+})
+require('copilot').setup ({
+  -- use recommended settings from above
+})
+require('render-markdown').setup ({
+  -- use recommended settings from above
+})
+require('avante').setup({
+  -- Example: Using snacks.nvim as input provider
+  input = {
+    provider = "snacks", -- "native" | "dressing" | "snacks"
+    provider_opts = {
+      -- Snacks input configuration
+      title = "Avante Input",
+      icon = " ",
+      placeholder = "Enter your API key...",
+    },
+  },
+  -- Your other config here!
+})
+```
+
+</CodeGroup>
+
+## Important Notes
+
+<Note>
+  When loading the plugin synchronously, we recommend `require`ing it sometime after your colorscheme.
+</Note>
+
+<Note>
+  Recommended **Neovim** options:
+  
+  ```lua
+  -- views can only be fully collapsed with the global statusline
+  vim.opt.laststatus = 3
+  ```
+</Note>
+
+<Tip>
+  Any rendering plugins that support markdown should work with Avante as long as you add the supported filetype `Avante`. See [this GitHub issue](https://github.com/yetone/avante.nvim/issues/175) for more information.
+</Tip>
+
+## Build from Source
+
+If you want to build from source with **lazy.nvim**, modify the build command:
+
+```lua
+build = "make BUILD_FROM_SOURCE=true"
+```
+
+For **vim-plug**, you can pass `source=true` when installing.
+
+## Verify Installation
+
+After installation, you can verify that Avante.nvim is properly installed by running:
+
+```vim
+:checkhealth avante
+```
+
+This will check for any missing dependencies or configuration issues.
+
+## Next Steps
+
+Now that you've installed Avante.nvim, head over to the [Quickstart](/quickstart) guide to configure your AI provider and make your first AI-assisted code edit!

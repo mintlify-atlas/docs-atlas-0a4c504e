@@ -1,0 +1,345 @@
+---
+title: Keymaps
+description: Complete keybindings reference for Avante.nvim
+---
+
+Avante.nvim provides comprehensive keybindings organized by category. All keymaps can be customized in your configuration.
+
+<Note>
+Keymaps are only set if `behaviour.auto_set_keymaps = true` (default). Avante uses safe keymap setting, meaning existing mappings won't be overridden.
+</Note>
+
+## Sidebar Keymaps
+
+Keymaps active when the Avante sidebar is focused.
+
+| Key | Action | Description | Config Path |
+|-----|--------|-------------|-------------|
+| <kbd>]</kbd><kbd>p</kbd> | Next prompt | Navigate to next prompt in history | `mappings.sidebar.next_prompt` |
+| <kbd>[</kbd><kbd>p</kbd> | Previous prompt | Navigate to previous prompt in history | `mappings.sidebar.prev_prompt` |
+| <kbd>A</kbd> | Apply all | Apply all suggested changes | `mappings.sidebar.apply_all` |
+| <kbd>a</kbd> | Apply cursor | Apply change at cursor position | `mappings.sidebar.apply_cursor` |
+| <kbd>r</kbd> | Retry request | Retry the last user request | `mappings.sidebar.retry_user_request` |
+| <kbd>e</kbd> | Edit request | Edit the last user request | `mappings.sidebar.edit_user_request` |
+| <kbd>Tab</kbd> | Switch windows | Switch between sidebar windows | `mappings.sidebar.switch_windows` |
+| <kbd>Shift+Tab</kbd> | Reverse switch | Switch windows in reverse order | `mappings.sidebar.reverse_switch_windows` |
+| <kbd>Shift+Tab</kbd> | Expand tool use | Expand tool usage details | `mappings.sidebar.expand_tool_use` |
+| <kbd>x</kbd> | Toggle code window | Show/hide code window | `mappings.sidebar.toggle_code_window` |
+| <kbd>d</kbd> | Remove file | Remove file from context | `mappings.sidebar.remove_file` |
+| <kbd>@</kbd> | Add file | Add file to context | `mappings.sidebar.add_file` |
+| <kbd>q</kbd> | Close sidebar | Close the sidebar | `mappings.sidebar.close` |
+
+**Default Configuration:**
+```lua
+mappings = {
+  sidebar = {
+    expand_tool_use = "<S-Tab>",
+    next_prompt = "]p",
+    prev_prompt = "[p",
+    apply_all = "A",
+    apply_cursor = "a",
+    retry_user_request = "r",
+    edit_user_request = "e",
+    switch_windows = "<Tab>",
+    reverse_switch_windows = "<S-Tab>",
+    toggle_code_window = "x",
+    remove_file = "d",
+    add_file = "@",
+    close = { "q" },
+    close_from_input = nil, -- e.g., { normal = "<Esc>", insert = "<C-d>" }
+    toggle_code_window_from_input = nil, -- e.g., { normal = "x", insert = "<C-;>" }
+  },
+}
+```
+
+**Source:** lua/avante/config.lua:649-669
+
+---
+
+## Global Keymaps
+
+Keymaps available globally in normal and visual modes.
+
+| Key | Action | Description | Config Path |
+|-----|--------|-------------|-------------|
+| <kbd>Leader</kbd><kbd>a</kbd><kbd>a</kbd> | Ask | Ask AI about code | `mappings.ask` |
+| <kbd>Leader</kbd><kbd>a</kbd><kbd>n</kbd> | New ask | Create new ask session | `mappings.new_ask` |
+| <kbd>Leader</kbd><kbd>a</kbd><kbd>z</kbd> | Zen mode | Toggle Zen Mode (full-screen chat) | `mappings.zen_mode` |
+| <kbd>Leader</kbd><kbd>a</kbd><kbd>e</kbd> | Edit | Edit selected code blocks | `mappings.edit` |
+| <kbd>Leader</kbd><kbd>a</kbd><kbd>r</kbd> | Refresh | Refresh sidebar | `mappings.refresh` |
+| <kbd>Leader</kbd><kbd>a</kbd><kbd>f</kbd> | Focus | Switch focus between windows | `mappings.focus` |
+| <kbd>Leader</kbd><kbd>a</kbd><kbd>S</kbd> | Stop | Stop current AI request | `mappings.stop` |
+| <kbd>Leader</kbd><kbd>a</kbd><kbd>t</kbd> | Toggle | Toggle sidebar visibility | `mappings.toggle.default` |
+| <kbd>Leader</kbd><kbd>a</kbd><kbd>d</kbd> | Toggle debug | Toggle debug mode | `mappings.toggle.debug` |
+| <kbd>Leader</kbd><kbd>a</kbd><kbd>C</kbd> | Toggle selection | Toggle selection hints | `mappings.toggle.selection` |
+| <kbd>Leader</kbd><kbd>a</kbd><kbd>s</kbd> | Toggle suggestion | Toggle auto-suggestions | `mappings.toggle.suggestion` |
+| <kbd>Leader</kbd><kbd>a</kbd><kbd>R</kbd> | Toggle repomap | Show/hide repository map | `mappings.toggle.repomap` |
+| <kbd>Leader</kbd><kbd>a</kbd><kbd>?</kbd> | Select model | Open model selector | `mappings.select_model` |
+| <kbd>Leader</kbd><kbd>a</kbd><kbd>h</kbd> | Select history | Browse chat histories | `mappings.select_history` |
+
+**Default Configuration:**
+```lua
+mappings = {
+  ask = "<leader>aa",
+  new_ask = "<leader>an",
+  zen_mode = "<leader>az",
+  edit = "<leader>ae",
+  refresh = "<leader>ar",
+  focus = "<leader>af",
+  stop = "<leader>aS",
+  toggle = {
+    default = "<leader>at",
+    debug = "<leader>ad",
+    selection = "<leader>aC",
+    suggestion = "<leader>as",
+    repomap = "<leader>aR",
+  },
+  select_model = "<leader>a?",
+  select_history = "<leader>ah",
+}
+```
+
+**Source:** lua/avante/config.lua:635-648, 674-675
+
+---
+
+## Suggestion Keymaps
+
+Keymaps for auto-suggestion mode (insert mode).
+
+<Warning>
+These keymaps are only available when `behaviour.auto_suggestions = true`.
+</Warning>
+
+| Key | Action | Description | Config Path |
+|-----|--------|-------------|-------------|
+| <kbd>Alt+l</kbd> | Accept | Accept current suggestion | `mappings.suggestion.accept` |
+| <kbd>Alt+]</kbd> | Next | Show next suggestion | `mappings.suggestion.next` |
+| <kbd>Alt+[</kbd> | Previous | Show previous suggestion | `mappings.suggestion.prev` |
+| <kbd>Ctrl+]</kbd> | Dismiss | Dismiss current suggestion | `mappings.suggestion.dismiss` |
+
+**Default Configuration:**
+```lua
+mappings = {
+  suggestion = {
+    accept = "<M-l>",
+    next = "<M-]>",
+    prev = "<M-[>",
+    dismiss = "<C-]>",
+  },
+}
+```
+
+**Source:** lua/avante/config.lua:616-621
+
+---
+
+## Diff Keymaps
+
+Keymaps for resolving code conflicts.
+
+| Key | Action | Description | Config Path |
+|-----|--------|-------------|-------------|
+| <kbd>c</kbd><kbd>o</kbd> | Choose ours | Accept current version | `mappings.diff.ours` |
+| <kbd>c</kbd><kbd>t</kbd> | Choose theirs | Accept incoming change | `mappings.diff.theirs` |
+| <kbd>c</kbd><kbd>a</kbd> | Choose all theirs | Accept all incoming changes | `mappings.diff.all_theirs` |
+| <kbd>c</kbd><kbd>b</kbd> | Choose both | Keep both versions | `mappings.diff.both` |
+| <kbd>c</kbd><kbd>c</kbd> | Choose cursor | Accept change at cursor | `mappings.diff.cursor` |
+| <kbd>]</kbd><kbd>x</kbd> | Next conflict | Jump to next conflict | `mappings.diff.next` |
+| <kbd>[</kbd><kbd>x</kbd> | Previous conflict | Jump to previous conflict | `mappings.diff.prev` |
+
+**Default Configuration:**
+```lua
+mappings = {
+  diff = {
+    ours = "co",
+    theirs = "ct",
+    all_theirs = "ca",
+    both = "cb",
+    cursor = "cc",
+    next = "]x",
+    prev = "[x",
+  },
+}
+```
+
+**Source:** lua/avante/config.lua:607-615
+
+---
+
+## Files Keymaps
+
+Keymaps for managing files in the chat context.
+
+| Key | Action | Description | Config Path |
+|-----|--------|-------------|-------------|
+| <kbd>Leader</kbd><kbd>a</kbd><kbd>c</kbd> | Add current | Add current buffer to context | `mappings.files.add_current` |
+| <kbd>Leader</kbd><kbd>a</kbd><kbd>B</kbd> | Add all buffers | Add all open buffers to context | `mappings.files.add_all_buffers` |
+
+**Default Configuration:**
+```lua
+mappings = {
+  files = {
+    add_current = "<leader>ac",
+    add_all_buffers = "<leader>aB",
+  },
+}
+```
+
+**Source:** lua/avante/config.lua:670-673
+
+---
+
+## Submit & Cancel Keymaps
+
+Keymaps for submitting or canceling actions.
+
+| Key | Mode | Action | Config Path |
+|-----|------|--------|-------------|
+| <kbd>Enter</kbd> | Normal | Submit | `mappings.submit.normal` |
+| <kbd>Ctrl+s</kbd> | Insert | Submit | `mappings.submit.insert` |
+| <kbd>Ctrl+c</kbd> | Both | Cancel | `mappings.cancel.normal` / `insert` |
+| <kbd>Esc</kbd> | Normal | Cancel | `mappings.cancel.normal` |
+| <kbd>q</kbd> | Normal | Cancel | `mappings.cancel.normal` |
+
+**Default Configuration:**
+```lua
+mappings = {
+  submit = {
+    normal = "<CR>",
+    insert = "<C-s>",
+  },
+  cancel = {
+    normal = { "<C-c>", "<Esc>", "q" },
+    insert = { "<C-c>" },
+  },
+}
+```
+
+**Source:** lua/avante/config.lua:626-633
+
+---
+
+## Jump Keymaps
+
+Keymaps for jumping between sections.
+
+| Key | Action | Description | Config Path |
+|-----|--------|-------------|-------------|
+| <kbd>]</kbd><kbd>]</kbd> | Next | Jump to next section | `mappings.jump.next` |
+| <kbd>[</kbd><kbd>[</kbd> | Previous | Jump to previous section | `mappings.jump.prev` |
+
+**Default Configuration:**
+```lua
+mappings = {
+  jump = {
+    next = "]]",
+    prev = "[[",
+  },
+}
+```
+
+**Source:** lua/avante/config.lua:622-625
+
+---
+
+## Confirm Keymaps
+
+Keymaps for confirmation windows.
+
+| Key | Action | Description | Config Path |
+|-----|--------|-------------|-------------|
+| <kbd>Ctrl+w</kbd><kbd>f</kbd> | Focus window | Focus confirm window | `mappings.confirm.focus_window` |
+| <kbd>c</kbd> | Confirm code | Confirm code changes | `mappings.confirm.code` |
+| <kbd>r</kbd> | Confirm response | Confirm response | `mappings.confirm.resp` |
+| <kbd>i</kbd> | Confirm input | Confirm input | `mappings.confirm.input` |
+
+**Default Configuration:**
+```lua
+mappings = {
+  confirm = {
+    focus_window = "<C-w>f",
+    code = "c",
+    resp = "r",
+    input = "i",
+  },
+}
+```
+
+**Source:** lua/avante/config.lua:676-681
+
+---
+
+## Plug Mappings
+
+Low-level plug mappings available for custom keybinding.
+
+| Plug Mapping | Description | Modes |
+|--------------|-------------|-------|
+| `<Plug>(AvanteAsk)` | Ask AI | n, v |
+| `<Plug>(AvanteAskNew)` | New ask session | n, v |
+| `<Plug>(AvanteChat)` | Start chat | n, v |
+| `<Plug>(AvanteEdit)` | Edit selection | v |
+| `<Plug>(AvanteRefresh)` | Refresh windows | n |
+| `<Plug>(AvanteFocus)` | Switch focus | n |
+| `<Plug>(AvanteBuild)` | Build dependencies | n |
+| `<Plug>(AvanteToggle)` | Toggle sidebar | n |
+| `<Plug>(AvanteToggleDebug)` | Toggle debug | n |
+| `<Plug>(AvanteToggleSelection)` | Toggle selection | n |
+| `<Plug>(AvanteToggleSuggestion)` | Toggle suggestion | n |
+| `<Plug>(AvanteConflictOurs)` | Choose ours | n, v |
+| `<Plug>(AvanteConflictTheirs)` | Choose theirs | n, v |
+| `<Plug>(AvanteConflictBoth)` | Choose both | n, v |
+| `<Plug>(AvanteConflictAllTheirs)` | Choose all theirs | n, v |
+| `<Plug>(AvanteConflictCursor)` | Choose at cursor | n, v |
+| `<Plug>(AvanteConflictNextConflict)` | Next conflict | n |
+| `<Plug>(AvanteConflictPrevConflict)` | Previous conflict | n |
+| `<Plug>(AvanteSelectModel)` | Select model | n |
+
+**Example:**
+```lua
+-- Custom keymap using plug mapping
+vim.keymap.set('n', '<leader>ai', '<Plug>(AvanteAsk)', { desc = 'Avante Ask' })
+vim.keymap.set('v', '<leader>ae', '<Plug>(AvanteEdit)', { desc = 'Avante Edit' })
+```
+
+**Source:** lua/avante/init.lua:89-119
+
+---
+
+## Customization Example
+
+```lua
+require('avante').setup({
+  mappings = {
+    -- Change ask keymap
+    ask = "<leader>ai",
+    
+    -- Disable auto keymaps
+    -- behaviour = { auto_set_keymaps = false },
+    
+    -- Custom sidebar keymaps
+    sidebar = {
+      apply_all = "<leader>A",
+      apply_cursor = "<leader>a",
+      close = { "q", "<Esc>" },
+    },
+    
+    -- Custom diff keymaps
+    diff = {
+      ours = "<leader>co",
+      theirs = "<leader>ct",
+      next = "]c",
+      prev = "[c",
+    },
+    
+    -- Custom suggestion keymaps (insert mode)
+    suggestion = {
+      accept = "<C-l>",
+      next = "<C-j>",
+      prev = "<C-k>",
+      dismiss = "<C-h>",
+    },
+  },
+})
+```

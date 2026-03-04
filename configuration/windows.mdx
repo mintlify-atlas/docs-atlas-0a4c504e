@@ -1,0 +1,397 @@
+---
+title: Window Configuration
+description: Customize Avante.nvim's window appearance, position, and layout
+---
+
+Avante.nvim provides extensive window customization options to match your workflow and preferences.
+
+## Window Position
+
+<ParamField path="windows.position" type="'right' | 'left' | 'top' | 'bottom' | 'smart'" default="right">
+  Position of the sidebar window:
+  
+  - `right` - Right side of the screen
+  - `left` - Left side of the screen
+  - `top` - Top of the screen (horizontal layout)
+  - `bottom` - Bottom of the screen (horizontal layout)
+  - `smart` - Automatically choose best position
+</ParamField>
+
+```lua
+windows = {
+  position = "right", -- right | left | top | bottom | smart
+}
+```
+
+## Window Dimensions
+
+<ParamField path="windows.width" type="number" default="30">
+  Width of the sidebar as percentage of available width (for vertical layouts)
+</ParamField>
+
+<ParamField path="windows.height" type="number" default="30">
+  Height of the sidebar as percentage of available height (for horizontal layouts)
+</ParamField>
+
+```lua
+windows = {
+  position = "right",
+  width = 30,  -- 30% of screen width
+  height = 30, -- 30% of screen height (for horizontal layout)
+}
+```
+
+## Text Wrapping
+
+<ParamField path="windows.wrap" type="boolean" default="true">
+  Enable text wrapping in windows (similar to `vim.o.wrap`)
+</ParamField>
+
+```lua
+windows = {
+  wrap = true, -- Enable text wrapping
+}
+```
+
+## Fill Characters
+
+<ParamField path="windows.fillchars" type="string" default="eob: ">
+  Characters used to fill empty lines (end of buffer)
+</ParamField>
+
+```lua
+windows = {
+  fillchars = "eob: ", -- Hide end-of-buffer ~ characters
+}
+```
+
+## Sidebar Header
+
+Customize the sidebar header appearance:
+
+<ParamField path="windows.sidebar_header.enabled" type="boolean" default="true">
+  Enable or disable the sidebar header
+</ParamField>
+
+<ParamField path="windows.sidebar_header.align" type="'left' | 'center' | 'right'" default="center">
+  Alignment of the header title
+</ParamField>
+
+<ParamField path="windows.sidebar_header.rounded" type="boolean" default="true">
+  Use rounded borders for the header
+</ParamField>
+
+<ParamField path="windows.sidebar_header.include_model" type="boolean" default="false">
+  Include the current model name in the header
+</ParamField>
+
+```lua
+windows = {
+  sidebar_header = {
+    enabled = true,
+    align = "center", -- left | center | right
+    rounded = true,
+    include_model = false,
+  },
+}
+```
+
+### Example: Minimal Header
+
+```lua
+windows = {
+  sidebar_header = {
+    enabled = true,
+    align = "left",
+    rounded = false,
+    include_model = true, -- Show model in header
+  },
+}
+```
+
+## Spinner Animation
+
+Customize the loading spinner characters:
+
+<ParamField path="windows.spinner.editing" type="string[]">
+  Spinner frames shown while editing code
+</ParamField>
+
+<ParamField path="windows.spinner.generating" type="string[]">
+  Spinner frames shown while generating responses
+</ParamField>
+
+<ParamField path="windows.spinner.thinking" type="string[]">
+  Spinner frames shown while AI is thinking
+</ParamField>
+
+```lua
+windows = {
+  spinner = {
+    editing = { "⡀", "⠄", "⠂", "⠁", "⠈", "⠐", "⠠", "⢀", "⣀", "⢄", "⢂", "⢁", "⢈", "⢐", "⢠", "⣠", "⢤", "⢢", "⢡", "⢨", "⢰", "⣰", "⢴", "⢲", "⢱", "⢸", "⣸", "⢼", "⢺", "⢹", "⣹", "⢽", "⢻", "⣻", "⢿", "⣿" },
+    generating = { "·", "✢", "✳", "∗", "✻", "✽" },
+    thinking = { "🤯", "🙄" },
+  },
+}
+```
+
+### Example: Simple Spinner
+
+```lua
+windows = {
+  spinner = {
+    editing = { "|", "/", "-", "\\" },
+    generating = { ".", "..", "..." },
+    thinking = { "💭", "💡" },
+  },
+}
+```
+
+## Input Window
+
+<ParamField path="windows.input.prefix" type="string" default="> ">
+  Prefix shown in the input window
+</ParamField>
+
+<ParamField path="windows.input.height" type="number" default="8">
+  Height of the input window in vertical layout (number of lines)
+</ParamField>
+
+```lua
+windows = {
+  input = {
+    prefix = "> ",
+    height = 8, -- 8 lines tall
+  },
+}
+```
+
+## Selected Files Window
+
+<ParamField path="windows.selected_files.height" type="number" default="6">
+  Maximum height of the selected files window
+</ParamField>
+
+```lua
+windows = {
+  selected_files = {
+    height = 6, -- Max 6 lines
+  },
+}
+```
+
+## Edit Window
+
+<ParamField path="windows.edit.border" type="string | table" default="{ ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ' }">
+  Border style for the edit window
+</ParamField>
+
+<ParamField path="windows.edit.start_insert" type="boolean" default="true">
+  Automatically enter insert mode when opening edit window
+</ParamField>
+
+```lua
+windows = {
+  edit = {
+    border = "rounded", -- or { " ", " ", " ", " ", " ", " ", " ", " " }
+    start_insert = true,
+  },
+}
+```
+
+### Border Styles
+
+Available border styles:
+- `"rounded"` - Rounded corners
+- `"single"` - Single line border
+- `"double"` - Double line border
+- `"solid"` - Solid border
+- `"shadow"` - Shadow effect
+- `{ " ", " ", " ", " ", " ", " ", " ", " " }` - Custom characters (top, right, bottom, left, topleft, topright, bottomright, bottomleft)
+
+## Ask Window
+
+<ParamField path="windows.ask.floating" type="boolean" default="false">
+  Open the Ask prompt in a floating window instead of sidebar
+</ParamField>
+
+<ParamField path="windows.ask.border" type="string | table" default="{ ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ' }">
+  Border style for the ask window
+</ParamField>
+
+<ParamField path="windows.ask.start_insert" type="boolean" default="true">
+  Automatically enter insert mode when opening ask window
+</ParamField>
+
+<ParamField path="windows.ask.focus_on_apply" type="'ours' | 'theirs'" default="ours">
+  Which diff to focus after applying changes
+</ParamField>
+
+```lua
+windows = {
+  ask = {
+    floating = false,
+    border = "rounded",
+    start_insert = true,
+    focus_on_apply = "ours", -- ours | theirs
+  },
+}
+```
+
+## Complete Window Configuration Example
+
+```lua
+windows = {
+  -- Layout
+  position = "right",
+  width = 30,
+  height = 30,
+  wrap = true,
+  fillchars = "eob: ",
+  
+  -- Sidebar header
+  sidebar_header = {
+    enabled = true,
+    align = "center",
+    rounded = true,
+    include_model = false,
+  },
+  
+  -- Spinner animations
+  spinner = {
+    editing = { "⡀", "⠄", "⠂", "⠁", "⠈", "⠐", "⠠", "⢀", "⣀", "⢄", "⢂", "⢁", "⢈", "⢐", "⢠", "⣠", "⢤", "⢢", "⢡", "⢨", "⢰", "⣰", "⢴", "⢲", "⢱", "⢸", "⣸", "⢼", "⢺", "⢹", "⣹", "⢽", "⢻", "⣻", "⢿", "⣿" },
+    generating = { "·", "✢", "✳", "∗", "✻", "✽" },
+    thinking = { "🤯", "🙄" },
+  },
+  
+  -- Input window
+  input = {
+    prefix = "> ",
+    height = 8,
+  },
+  
+  -- Selected files window
+  selected_files = {
+    height = 6,
+  },
+  
+  -- Edit window
+  edit = {
+    border = { " ", " ", " ", " ", " ", " ", " ", " " },
+    start_insert = true,
+  },
+  
+  -- Ask window
+  ask = {
+    floating = false,
+    border = { " ", " ", " ", " ", " ", " ", " ", " " },
+    start_insert = true,
+    focus_on_apply = "ours",
+  },
+}
+```
+
+## Recommended Neovim Settings
+
+For best results with Avante windows, set these Neovim options:
+
+```lua
+-- Global statusline (allows full collapse of views)
+vim.opt.laststatus = 3
+
+-- Better window splitting
+vim.opt.splitright = true
+vim.opt.splitbelow = true
+```
+
+## Layout Examples
+
+### Right Sidebar (Default)
+
+```lua
+windows = {
+  position = "right",
+  width = 30,
+}
+```
+
+```
+┌─────────────────┬─────────┐
+│                 │         │
+│  Code Editor    │ Avante  │
+│                 │ Sidebar │
+│                 │         │
+└─────────────────┴─────────┘
+```
+
+### Left Sidebar
+
+```lua
+windows = {
+  position = "left",
+  width = 30,
+}
+```
+
+```
+┌─────────┬─────────────────┐
+│         │                 │
+│ Avante  │  Code Editor    │
+│ Sidebar │                 │
+│         │                 │
+└─────────┴─────────────────┘
+```
+
+### Bottom Panel
+
+```lua
+windows = {
+  position = "bottom",
+  height = 30,
+}
+```
+
+```
+┌─────────────────────────┐
+│                         │
+│     Code Editor         │
+│                         │
+├─────────────────────────┤
+│   Avante Sidebar        │
+└─────────────────────────┘
+```
+
+## Window Focus Behavior
+
+<ParamField path="behaviour.auto_focus_sidebar" type="boolean" default="true">
+  Automatically focus the sidebar when opening Avante
+</ParamField>
+
+<ParamField path="behaviour.auto_focus_on_diff_view" type="boolean" default="false">
+  Automatically focus the diff view when changes are applied
+</ParamField>
+
+```lua
+behaviour = {
+  auto_focus_sidebar = true,
+  auto_focus_on_diff_view = false,
+}
+```
+
+## Tips
+
+<Tip>
+  Use `position = "right"` with `width = 30` for a comfortable vertical layout that doesn't take too much screen space.
+</Tip>
+
+<Tip>
+  For ultrawide monitors, increase `width` to 40-50 to take advantage of extra screen space.
+</Tip>
+
+<Tip>
+  Set `wrap = true` to avoid horizontal scrolling in the sidebar, especially useful for longer AI responses.
+</Tip>
+
+<Tip>
+  Use `sidebar_header.include_model = true` if you frequently switch between different AI models.
+</Tip>

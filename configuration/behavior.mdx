@@ -1,0 +1,427 @@
+---
+title: Behavior Settings
+description: Configure Avante.nvim's behavior, auto-suggestions, diff handling, and more
+---
+
+Avante.nvim's behavior settings control how the plugin interacts with your code, handles suggestions, and manages various features.
+
+## Auto-Focus Settings
+
+<ParamField path="behaviour.auto_focus_sidebar" type="boolean" default="true">
+  Automatically focus the sidebar when opening Avante
+</ParamField>
+
+<ParamField path="behaviour.auto_focus_on_diff_view" type="boolean" default="false">
+  Automatically focus the diff view when changes are applied
+</ParamField>
+
+```lua
+behaviour = {
+  auto_focus_sidebar = true,
+  auto_focus_on_diff_view = false,
+}
+```
+
+## Auto-Suggestions
+
+<ParamField path="behaviour.auto_suggestions" type="boolean" default="false">
+  Enable automatic code suggestions (experimental)
+</ParamField>
+
+<ParamField path="behaviour.auto_suggestions_respect_ignore" type="boolean" default="false">
+  Respect gitignore patterns when generating auto-suggestions
+</ParamField>
+
+<ParamField path="suggestion.debounce" type="number" default="600">
+  Debounce time in milliseconds before triggering auto-suggestions
+</ParamField>
+
+<ParamField path="suggestion.throttle" type="number" default="600">
+  Throttle time in milliseconds for auto-suggestions
+</ParamField>
+
+```lua
+behaviour = {
+  auto_suggestions = false, -- Still experimental
+  auto_suggestions_respect_ignore = false,
+},
+suggestion = {
+  debounce = 600,
+  throttle = 600,
+}
+```
+
+<Warning>
+  Auto-suggestions are **high-frequency operations** and can be expensive. Avoid using expensive providers like Copilot for auto-suggestions. Consider using a separate, cheaper provider via `auto_suggestions_provider`.
+</Warning>
+
+## Keymap Settings
+
+<ParamField path="behaviour.auto_set_keymaps" type="boolean" default="true">
+  Automatically set keymaps for Avante actions. Only sets keymaps that aren't already bound.
+</ParamField>
+
+```lua
+behaviour = {
+  auto_set_keymaps = true,
+}
+```
+
+## Diff Handling
+
+<ParamField path="behaviour.auto_apply_diff_after_generation" type="boolean" default="false">
+  Automatically apply diff after LLM response (similar to Cursor's behavior)
+</ParamField>
+
+<ParamField path="behaviour.minimize_diff" type="boolean" default="true">
+  Remove unchanged lines when applying code blocks to reduce clutter
+</ParamField>
+
+<ParamField path="behaviour.jump_result_buffer_on_finish" type="boolean" default="false">
+  Automatically jump to the result buffer after generation completes
+</ParamField>
+
+```lua
+behaviour = {
+  auto_apply_diff_after_generation = false,
+  minimize_diff = true,
+  jump_result_buffer_on_finish = false,
+}
+```
+
+### Diff Configuration
+
+<ParamField path="diff.autojump" type="boolean" default="true">
+  Automatically jump to diff conflicts
+</ParamField>
+
+<ParamField path="diff.override_timeoutlen" type="number" default="500">
+  Override `timeoutlen` while hovering over diff to avoid operator-pending mode. Set to `-1` to disable.
+</ParamField>
+
+```lua
+diff = {
+  autojump = true,
+  override_timeoutlen = 500,
+}
+```
+
+## Highlight Groups
+
+<ParamField path="behaviour.auto_set_highlight_group" type="boolean" default="true">
+  Automatically set highlight groups for Avante windows
+</ParamField>
+
+```lua
+behaviour = {
+  auto_set_highlight_group = true,
+}
+```
+
+## Clipboard Support
+
+<ParamField path="behaviour.support_paste_from_clipboard" type="boolean" default="false">
+  Enable pasting images from clipboard (requires `img-clip.nvim`)
+</ParamField>
+
+```lua
+behaviour = {
+  support_paste_from_clipboard = false, -- Auto-detected if img-clip is installed
+}
+```
+
+<Note>
+  This is automatically enabled if `img-clip.nvim` is installed.
+</Note>
+
+## Token Counting
+
+<ParamField path="behaviour.enable_token_counting" type="boolean" default="true">
+  Enable token counting for requests and responses
+</ParamField>
+
+```lua
+behaviour = {
+  enable_token_counting = true,
+}
+```
+
+## File Management
+
+<ParamField path="behaviour.auto_add_current_file" type="boolean" default="true">
+  Automatically add the current file when opening a new chat
+</ParamField>
+
+<ParamField path="behaviour.use_cwd_as_project_root" type="boolean" default="false">
+  Use current working directory as project root instead of detecting via LSP
+</ParamField>
+
+<ParamField path="behaviour.allow_access_to_git_ignored_files" type="boolean" default="false">
+  Allow AI to access files that are in `.gitignore`
+</ParamField>
+
+```lua
+behaviour = {
+  auto_add_current_file = true,
+  use_cwd_as_project_root = false,
+  allow_access_to_git_ignored_files = false,
+}
+```
+
+## Tool Permissions
+
+<ParamField path="behaviour.auto_approve_tool_permissions" type="boolean | string[]" default="true">
+  Control tool permission prompts:
+  
+  - `true` - Auto-approve all tools (no prompts)
+  - `false` - Show permission prompts for all tools
+  - `string[]` - Auto-approve specific tools only
+</ParamField>
+
+```lua
+-- Auto-approve all tools (default)
+behaviour = {
+  auto_approve_tool_permissions = true,
+}
+
+-- Show prompts for all tools
+behaviour = {
+  auto_approve_tool_permissions = false,
+}
+
+-- Auto-approve only specific tools
+behaviour = {
+  auto_approve_tool_permissions = { "bash", "str_replace", "read_file" },
+}
+```
+
+## Diagnostics
+
+<ParamField path="behaviour.auto_check_diagnostics" type="boolean" default="true">
+  Automatically check and include diagnostics in AI context
+</ParamField>
+
+```lua
+behaviour = {
+  auto_check_diagnostics = true,
+}
+```
+
+## Fast Apply
+
+<ParamField path="behaviour.enable_fastapply" type="boolean" default="false">
+  Enable Fast Apply feature for instant code edits using specialized models
+</ParamField>
+
+```lua
+behaviour = {
+  enable_fastapply = false,
+}
+```
+
+<Tip>
+  See the [Fast Apply guide](/features/fast-apply) for more information on this feature.
+</Tip>
+
+## Git Integration
+
+<ParamField path="behaviour.include_generated_by_commit_line" type="boolean" default="false">
+  Add a "Generated-by: provider/model" line to git commit messages
+</ParamField>
+
+```lua
+behaviour = {
+  include_generated_by_commit_line = false,
+}
+```
+
+## Confirmation UI Style
+
+<ParamField path="behaviour.confirmation_ui_style" type="'popup' | 'inline_buttons'" default="inline_buttons">
+  Style of confirmation UI:
+  
+  - `popup` - Original floating window with yes/all/no buttons
+  - `inline_buttons` - Inline buttons in the sidebar
+</ParamField>
+
+```lua
+behaviour = {
+  confirmation_ui_style = "inline_buttons",
+}
+```
+
+## ACP Agent Settings
+
+<ParamField path="behaviour.acp_follow_agent_locations" type="boolean" default="true">
+  Automatically open files and navigate to lines when ACP agent makes edits
+</ParamField>
+
+```lua
+behaviour = {
+  acp_follow_agent_locations = true,
+}
+```
+
+## Selection Settings
+
+<ParamField path="selection.enabled" type="boolean" default="true">
+  Enable selection mode for asking questions about selected code
+</ParamField>
+
+<ParamField path="selection.hint_display" type="'delayed' | 'immediate' | 'none'" default="delayed">
+  When to show keymap hints for selection mode
+</ParamField>
+
+```lua
+selection = {
+  enabled = true,
+  hint_display = "delayed", -- delayed | immediate | none
+}
+```
+
+## History Settings
+
+<ParamField path="history.max_tokens" type="number" default="4096">
+  Maximum tokens to keep in chat history
+</ParamField>
+
+<ParamField path="history.carried_entry_count" type="number | nil" default="nil">
+  Number of history entries to carry over to new chats
+</ParamField>
+
+<ParamField path="history.storage_path" type="string">
+  Path where chat history is stored
+</ParamField>
+
+```lua
+history = {
+  max_tokens = 4096,
+  carried_entry_count = nil,
+  storage_path = vim.fn.stdpath("state") .. "/avante",
+}
+```
+
+## Prompt Logger
+
+<ParamField path="prompt_logger.enabled" type="boolean" default="true">
+  Enable logging prompts to disk for debugging/replay
+</ParamField>
+
+<ParamField path="prompt_logger.log_dir" type="string">
+  Directory where prompt logs are saved
+</ParamField>
+
+<ParamField path="prompt_logger.max_entries" type="number" default="100">
+  Maximum number of prompt log entries to keep
+</ParamField>
+
+```lua
+prompt_logger = {
+  enabled = true,
+  log_dir = vim.fn.stdpath("cache"),
+  max_entries = 100,
+  next_prompt = {
+    normal = "<C-n>",
+    insert = "<C-n>",
+  },
+  prev_prompt = {
+    normal = "<C-p>",
+    insert = "<C-p>",
+  },
+}
+```
+
+## Complete Behavior Configuration Example
+
+```lua
+require('avante').setup({
+  behaviour = {
+    -- Focus
+    auto_focus_sidebar = true,
+    auto_focus_on_diff_view = false,
+    
+    -- Suggestions
+    auto_suggestions = false,
+    auto_suggestions_respect_ignore = false,
+    
+    -- Keymaps and highlights
+    auto_set_keymaps = true,
+    auto_set_highlight_group = true,
+    
+    -- Diff handling
+    auto_apply_diff_after_generation = false,
+    minimize_diff = true,
+    jump_result_buffer_on_finish = false,
+    
+    -- Features
+    support_paste_from_clipboard = false,
+    enable_token_counting = true,
+    enable_fastapply = false,
+    
+    -- File management
+    auto_add_current_file = true,
+    use_cwd_as_project_root = false,
+    allow_access_to_git_ignored_files = false,
+    
+    -- Tool permissions
+    auto_approve_tool_permissions = true,
+    
+    -- Diagnostics
+    auto_check_diagnostics = true,
+    
+    -- Git
+    include_generated_by_commit_line = false,
+    
+    -- UI
+    confirmation_ui_style = "inline_buttons",
+    
+    -- ACP
+    acp_follow_agent_locations = true,
+  },
+  
+  selection = {
+    enabled = true,
+    hint_display = "delayed",
+  },
+  
+  diff = {
+    autojump = true,
+    override_timeoutlen = 500,
+  },
+  
+  suggestion = {
+    debounce = 600,
+    throttle = 600,
+  },
+  
+  history = {
+    max_tokens = 4096,
+    carried_entry_count = nil,
+    storage_path = vim.fn.stdpath("state") .. "/avante",
+  },
+  
+  prompt_logger = {
+    enabled = true,
+    log_dir = vim.fn.stdpath("cache"),
+    max_entries = 100,
+  },
+})
+```
+
+## Tips
+
+<Tip>
+  Start with `auto_suggestions = false` until you're comfortable with the plugin, as auto-suggestions can be distracting initially.
+</Tip>
+
+<Tip>
+  Enable `minimize_diff = true` to reduce clutter when reviewing AI-generated changes.
+</Tip>
+
+<Tip>
+  Use `auto_approve_tool_permissions = false` in sensitive environments where you want explicit control over what the AI can do.
+</Tip>
+
+<Tip>
+  Set `enable_fastapply = true` with Morph provider for instant code edits without delays.
+</Tip>

@@ -1,0 +1,408 @@
+---
+title: Keybindings
+description: Complete guide to Avante.nvim keybindings and how to customize them
+---
+
+Avante.nvim provides comprehensive keybindings for all plugin actions. This guide covers all default keybindings and how to customize them.
+
+## Default Keybindings
+
+### Global Actions
+
+| Key Binding | Description | Mode |
+|-------------|-------------|------|
+| `<leader>aa` | Show/open sidebar | Normal |
+| `<leader>an` | Start new chat | Normal |
+| `<leader>at` | Toggle sidebar visibility | Normal |
+| `<leader>ae` | Edit selected blocks | Visual |
+| `<leader>ar` | Refresh sidebar | Normal |
+| `<leader>af` | Switch sidebar focus | Normal |
+| `<leader>aS` | Stop current AI request | Normal |
+| `<leader>a?` | Select model | Normal |
+| `<leader>ah` | Select chat history | Normal |
+| `<leader>ad` | Toggle debug mode | Normal |
+| `<leader>as` | Toggle suggestion display | Normal |
+| `<leader>aC` | Toggle selection | Normal |
+| `<leader>aR` | Toggle repomap | Normal |
+| `<leader>az` | Enter Zen mode | Normal |
+
+### Sidebar Actions
+
+| Key Binding | Description | Mode |
+|-------------|-------------|------|
+| `]p` | Next prompt | Normal |
+| `[p` | Previous prompt | Normal |
+| `A` | Apply all changes | Normal |
+| `a` | Apply change at cursor | Normal |
+| `r` | Retry user request | Normal |
+| `e` | Edit user request | Normal |
+| `<Tab>` | Switch windows | Normal |
+| `<S-Tab>` | Reverse switch windows / Expand tool use | Normal |
+| `x` | Toggle code window | Normal |
+| `d` | Remove file | Normal |
+| `@` | Add file | Normal |
+| `q` | Close sidebar | Normal |
+
+### File Management
+
+| Key Binding | Description | Mode |
+|-------------|-------------|------|
+| `<leader>ac` | Add current buffer to selected files | Normal |
+| `<leader>aB` | Add all buffer files to selected files | Normal |
+
+### Suggestion Actions
+
+| Key Binding | Description | Mode |
+|-------------|-------------|------|
+| `<M-l>` | Accept suggestion | Insert |
+| `<M-]>` | Next suggestion | Insert |
+| `<M-[>` | Previous suggestion | Insert |
+| `<C-]>` | Dismiss suggestion | Insert |
+
+### Diff Navigation
+
+| Key Binding | Description | Mode |
+|-------------|-------------|------|
+| `co` | Choose ours | Normal |
+| `ct` | Choose theirs | Normal |
+| `ca` | Choose all theirs | Normal |
+| `cb` | Choose both | Normal |
+| `cc` | Choose cursor | Normal |
+| `]x` | Move to next conflict | Normal |
+| `[x` | Move to previous conflict | Normal |
+
+### Jump Actions
+
+| Key Binding | Description | Mode |
+|-------------|-------------|------|
+| `]]` | Jump to next | Normal |
+| `[[` | Jump to previous | Normal |
+
+### Submit/Cancel Actions
+
+| Key Binding | Description | Mode |
+|-------------|-------------|------|
+| `<CR>` | Submit (normal mode) | Normal |
+| `<C-s>` | Submit (insert mode) | Insert |
+| `<C-c>`, `<Esc>`, `q` | Cancel (normal mode) | Normal |
+| `<C-c>` | Cancel (insert mode) | Insert |
+
+### Confirm Window Actions
+
+| Key Binding | Description | Mode |
+|-------------|-------------|------|
+| `<C-w>f` | Focus confirm window | Normal |
+| `c` | Confirm code | Normal |
+| `r` | Confirm response | Normal |
+| `i` | Confirm input | Normal |
+
+## Customizing Keybindings
+
+All keybindings can be customized through the `mappings` configuration:
+
+```lua
+require('avante').setup({
+  mappings = {
+    ask = "<leader>aa",
+    new_ask = "<leader>an",
+    zen_mode = "<leader>az",
+    edit = "<leader>ae",
+    refresh = "<leader>ar",
+    focus = "<leader>af",
+    stop = "<leader>aS",
+    
+    toggle = {
+      default = "<leader>at",
+      debug = "<leader>ad",
+      selection = "<leader>aC",
+      suggestion = "<leader>as",
+      repomap = "<leader>aR",
+    },
+    
+    sidebar = {
+      expand_tool_use = "<S-Tab>",
+      next_prompt = "]p",
+      prev_prompt = "[p",
+      apply_all = "A",
+      apply_cursor = "a",
+      retry_user_request = "r",
+      edit_user_request = "e",
+      switch_windows = "<Tab>",
+      reverse_switch_windows = "<S-Tab>",
+      toggle_code_window = "x",
+      remove_file = "d",
+      add_file = "@",
+      close = { "q" },
+      close_from_input = nil, -- e.g., { normal = "<Esc>", insert = "<C-d>" }
+      toggle_code_window_from_input = nil, -- e.g., { normal = "x", insert = "<C-;>" }
+    },
+    
+    files = {
+      add_current = "<leader>ac",
+      add_all_buffers = "<leader>aB",
+    },
+    
+    select_model = "<leader>a?",
+    select_history = "<leader>ah",
+    
+    diff = {
+      ours = "co",
+      theirs = "ct",
+      all_theirs = "ca",
+      both = "cb",
+      cursor = "cc",
+      next = "]x",
+      prev = "[x",
+    },
+    
+    suggestion = {
+      accept = "<M-l>",
+      next = "<M-]>",
+      prev = "<M-[>",
+      dismiss = "<C-]>",
+    },
+    
+    jump = {
+      next = "]]",
+      prev = "[[",
+    },
+    
+    submit = {
+      normal = "<CR>",
+      insert = "<C-s>",
+    },
+    
+    cancel = {
+      normal = { "<C-c>", "<Esc>", "q" },
+      insert = { "<C-c>" },
+    },
+    
+    confirm = {
+      focus_window = "<C-w>f",
+      code = "c",
+      resp = "r",
+      input = "i",
+    },
+  },
+})
+```
+
+## Safe Keymap Setting
+
+<Note>
+  Avante.nvim uses **safe keymap setting** by default. If a keybinding is already in use, Avante will not override it.
+</Note>
+
+To disable auto-setting of keymaps:
+
+```lua
+behaviour = {
+  auto_set_keymaps = false,
+}
+```
+
+When `auto_set_keymaps = false`, you'll need to manually set all keybindings.
+
+## Manual Keybinding Setup
+
+If you disable automatic keymaps, set them manually:
+
+```lua
+local avante = require('avante')
+local api = require('avante.api')
+
+vim.keymap.set('n', '<leader>aa', api.ask, { desc = 'avante: ask' })
+vim.keymap.set('n', '<leader>an', api.new_ask, { desc = 'avante: new ask' })
+vim.keymap.set('n', '<leader>at', api.toggle, { desc = 'avante: toggle' })
+vim.keymap.set('v', '<leader>ae', api.edit, { desc = 'avante: edit' })
+vim.keymap.set('n', '<leader>ar', api.refresh, { desc = 'avante: refresh' })
+vim.keymap.set('n', '<leader>af', api.focus, { desc = 'avante: focus' })
+```
+
+## Sidebar-Specific Keybindings
+
+Some keybindings are only active when the sidebar is open:
+
+<ParamField path="sidebar.close_from_input" type="table | nil">
+  Close sidebar from input window:
+  
+  ```lua
+  close_from_input = {
+    normal = "<Esc>",
+    insert = "<C-d>"
+  }
+  ```
+</ParamField>
+
+<ParamField path="sidebar.toggle_code_window_from_input" type="table | nil">
+  Toggle code window from input:
+  
+  ```lua
+  toggle_code_window_from_input = {
+    normal = "x",
+    insert = "<C-;>"
+  }
+  ```
+</ParamField>
+
+## Conflict Mapping Customization
+
+Customize diff conflict resolution mappings:
+
+```lua
+mappings = {
+  diff = {
+    ours = "co",      -- Choose our changes
+    theirs = "ct",    -- Choose their changes
+    all_theirs = "ca", -- Choose all their changes
+    both = "cb",      -- Choose both changes
+    cursor = "cc",    -- Choose change at cursor
+    next = "]x",      -- Jump to next conflict
+    prev = "[x",      -- Jump to previous conflict
+  },
+}
+```
+
+### Timeout Override
+
+Avoid operator-pending mode issues with diff mappings:
+
+```lua
+diff = {
+  override_timeoutlen = 500, -- milliseconds, -1 to disable
+}
+```
+
+## Prompt Logger Keybindings
+
+Navigate through prompt logs:
+
+```lua
+prompt_logger = {
+  enabled = true,
+  next_prompt = {
+    normal = "<C-n>",
+    insert = "<C-n>",
+  },
+  prev_prompt = {
+    normal = "<C-p>",
+    insert = "<C-p>",
+  },
+}
+```
+
+## Example: Vim-Style Keybindings
+
+Use Vim-style hjkl for navigation:
+
+```lua
+mappings = {
+  sidebar = {
+    switch_windows = "<C-j>",
+    reverse_switch_windows = "<C-k>",
+  },
+  
+  jump = {
+    next = "<C-j>",
+    prev = "<C-k>",
+  },
+  
+  diff = {
+    next = "<C-j>",
+    prev = "<C-k>",
+  },
+}
+```
+
+## Example: Minimal Keybindings
+
+Minimal setup with only essential keybindings:
+
+```lua
+mappings = {
+  ask = "<leader>a",
+  toggle = {
+    default = "<leader>A",
+  },
+  sidebar = {
+    apply_all = "A",
+    close = { "q", "<Esc>" },
+  },
+}
+```
+
+## Integration with Other Plugins
+
+### NvimTree Integration
+
+Add files from NvimTree to Avante:
+
+```lua
+require('neo-tree').setup({
+  filesystem = {
+    window = {
+      mappings = {
+        ['oa'] = 'avante_add_files',
+      },
+    },
+    commands = {
+      avante_add_files = function(state)
+        local node = state.tree:get_node()
+        local filepath = node:get_id()
+        local relative_path = require('avante.utils').relative_path(filepath)
+        
+        local sidebar = require('avante').get()
+        local open = sidebar:is_open()
+        
+        if not open then
+          require('avante.api').ask()
+          sidebar = require('avante').get()
+        end
+        
+        sidebar.file_selector:add_selected_file(relative_path)
+        
+        if not open then
+          sidebar.file_selector:remove_selected_file('neo-tree filesystem [1]')
+        end
+      end,
+    },
+  },
+})
+```
+
+## Commands vs Keybindings
+
+All keybindings have corresponding commands:
+
+| Keybinding | Command | Description |
+|------------|---------|-------------|
+| `<leader>aa` | `:AvanteAsk` | Open sidebar |
+| `<leader>an` | `:AvanteChatNew` | New chat |
+| `<leader>at` | `:AvanteToggle` | Toggle sidebar |
+| `<leader>ae` | `:AvanteEdit` | Edit selection |
+| `<leader>ar` | `:AvanteRefresh` | Refresh |
+| `<leader>af` | `:AvanteFocus` | Focus sidebar |
+| `<leader>aS` | `:AvanteStop` | Stop request |
+| `<leader>a?` | `:AvanteSwitchProvider` | Switch provider |
+| `<leader>ah` | `:AvanteHistory` | Chat history |
+
+Use commands directly if you prefer:
+
+```vim
+:AvanteAsk What does this code do?
+:AvanteEdit Refactor this function
+```
+
+## Tips
+
+<Tip>
+  Use `:verbose map <leader>aa` to check if a keybinding is already in use before setting it.
+</Tip>
+
+<Tip>
+  The `ask`, `new_ask`, and other top-level mappings are only set if `behaviour.auto_set_keymaps = true`.
+</Tip>
+
+<Tip>
+  Sidebar-specific mappings (like `apply_all`, `retry_user_request`) are always active when the sidebar is focused.
+</Tip>
