@@ -1,0 +1,142 @@
+{
+  "projectType": "framework",
+  "projectName": "Avante.nvim",
+  "projectDescription": "A Neovim plugin that brings Cursor AI IDE's powerful AI-assisted coding capabilities to Neovim with agentic workflows, multi-provider support, and seamless code editing.",
+  "theme": "aspen",
+  "primaryColor": "#0577cc",
+  "lightColor": "#044c9c",
+  "darkColor": "#5ea439",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "installation",
+              "quickstart"
+            ]
+          },
+          {
+            "group": "Core Concepts",
+            "pages": [
+              "concepts/overview",
+              "concepts/modes",
+              "concepts/providers",
+              "concepts/agentic-workflow",
+              "concepts/zen-mode"
+            ]
+          },
+          {
+            "group": "Configuration",
+            "pages": [
+              "configuration/overview",
+              "configuration/providers",
+              "configuration/keybindings",
+              "configuration/windows",
+              "configuration/behavior",
+              "configuration/project-instructions"
+            ]
+          },
+          {
+            "group": "Features",
+            "pages": [
+              "features/ai-assistance",
+              "features/fast-apply",
+              "features/acp-support",
+              "features/rag-service",
+              "features/suggestions",
+              "features/diff-management"
+            ]
+          },
+          {
+            "group": "Providers",
+            "pages": [
+              "providers/overview",
+              "providers/claude",
+              "providers/openai",
+              "providers/gemini",
+              "providers/copilot",
+              "providers/ollama",
+              "providers/custom-providers"
+            ]
+          },
+          {
+            "group": "Advanced",
+            "pages": [
+              "advanced/tools",
+              "advanced/completion-sources",
+              "advanced/slash-commands",
+              "advanced/web-search",
+              "advanced/input-providers"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/usage",
+              "guides/neotree-integration",
+              "guides/blink-cmp",
+              "guides/troubleshooting"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "API",
+            "pages": [
+              "api/commands",
+              "api/lua-api",
+              "api/keymaps",
+              "api/highlights"
+            ]
+          },
+          {
+            "group": "Configuration Schema",
+            "pages": [
+              "api/config-schema"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "AI-powered code assistance with multiple provider support (Claude, OpenAI, Gemini, Copilot, etc.)",
+    "Agentic mode with autonomous tool execution and code generation",
+    "Fast Apply for instant code edits with specialized models",
+    "Zen Mode for terminal-based Vibe Coding experience",
+    "Agent Client Protocol (ACP) support for standardized agent communication",
+    "Project-specific instruction files (avante.md) for context-aware assistance",
+    "RAG service integration for project-aware code suggestions",
+    "Inline code suggestions and diff management",
+    "Extensive customization with keybindings, windows, and behavior options",
+    "Integration with completion frameworks (nvim-cmp, blink.cmp)"
+  ],
+  "publicApiSurface": [
+    ":AvanteAsk - Ask AI about code with optional positioning",
+    ":AvanteChat - Start chat session with codebase",
+    ":AvanteChatNew - Create new chat session",
+    ":AvanteEdit - Edit selected code blocks",
+    ":AvanteToggle - Toggle AI sidebar",
+    ":AvanteFocus - Switch focus to/from sidebar",
+    ":AvanteRefresh - Refresh all windows",
+    ":AvanteStop - Stop current AI request",
+    ":AvanteSwitchProvider - Switch AI provider",
+    ":AvanteShowRepoMap - Show project structure map",
+    ":AvanteModels - Show available models",
+    ":AvanteHistory - Open chat history picker",
+    ":AvanteClear - Clear chat history or cache",
+    ":AvanteBuild - Build plugin dependencies",
+    "require('avante').setup() - Plugin setup function",
+    "require('avante.api').ask() - Programmatic ask",
+    "require('avante.api').edit() - Programmatic edit",
+    "require('avante.api').zen_mode() - Enter Zen Mode",
+    "require('avante').toggle() - Toggle sidebar programmatically"
+  ]
+}
